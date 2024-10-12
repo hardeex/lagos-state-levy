@@ -235,44 +235,71 @@
                     <p class="text-gray-700">Block B, Lagos State Secretariat, Alausa</p>
                     <p class="text-gray-700">Phone: (01) 234-5678</p>
                     <div class="mt-4">
-                        <a href="#" class="text-blue-500 hover:text-blue-700 transition duration-300">View on
-                            map</a>
+                        <a href="https://www.google.com/maps/search/?api=1&query=Block+B,+Lagos+State+Secretariat,+Alausa"
+                            target="_blank" class="text-blue-500 hover:text-blue-700 transition duration-300">
+                            View on map
+                        </a>
                     </div>
                 </div>
+
                 <div
                     class="bg-gradient-to-br from-green-100 to-yellow-100 p-4 rounded-lg shadow-md transform hover:scale-105 transition duration-300">
                     <h4 class="font-medium text-green-700 mb-2">Lagos Island Zone</h4>
                     <p class="text-gray-700">12 Campbell Street, Lagos Island</p>
                     <p class="text-gray-700">Phone: (01) 987-6543</p>
                     <div class="mt-4">
-                        <a href="#" class="text-green-500 hover:text-green-700 transition duration-300">View on
-                            map</a>
+                        <a href="https://www.google.com/maps/search/?api=1&query=12+Campbell+Street,+Lagos+Island"
+                            target="_blank" class="text-green-500 hover:text-green-700 transition duration-300">
+                            View on map
+                        </a>
                     </div>
                 </div>
+
                 <div
                     class="bg-gradient-to-br from-yellow-100 to-red-100 p-4 rounded-lg shadow-md transform hover:scale-105 transition duration-300">
                     <h4 class="font-medium text-yellow-700 mb-2">Lekki Zone</h4>
                     <p class="text-gray-700">Block 5, Lekki Phase 1, Lekki</p>
                     <p class="text-gray-700">Phone: (01) 555-1212</p>
                     <div class="mt-4">
-                        <a href="#" class="text-yellow-500 hover:text-yellow-700 transition duration-300">View on
-                            map</a>
+                        <a href="https://www.google.com/maps/search/?api=1&query=Block+5,+Lekki+Phase+1,+Lekki"
+                            target="_blank" class="text-yellow-500 hover:text-yellow-700 transition duration-300">
+                            View on map
+                        </a>
                     </div>
                 </div>
+
             </div>
         </section>
-
         <section class="mt-12 bg-white p-6 rounded-lg shadow-md">
             <h3 class="text-2xl font-semibold mb-6 text-blue-600">Live Chat Support</h3>
             <div class="bg-gray-100 p-4 rounded-lg">
                 <p class="text-gray-700 mb-4">Need immediate assistance? Our live chat support is available during office
                     hours.</p>
-                <button
-                    class="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition duration-300 transform hover:scale-105">
+                <button id="liveChatButton"
+                    class="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition duration-300 transform hover:scale-105"
+                    aria-label="Start Live Chat" onclick="startLiveChat()">
                     Start Live Chat
                 </button>
+                <div id="chatStatus" class="mt-4 text-gray-600 hidden">
+                    <p>Connecting to live support...</p>
+                </div>
             </div>
         </section>
+
+        <script>
+            function startLiveChat() {
+                // Display chat status message
+                const chatStatus = document.getElementById('chatStatus');
+                chatStatus.classList.remove('hidden');
+
+                // Simulate connecting to live chat (replace with actual chat initialization)
+                setTimeout(() => {
+                    window.open('https://your-live-chat-url.com', '_blank');
+                    chatStatus.classList.add('hidden');
+                }, 2000); // Simulate a 2-second loading time
+            }
+        </script>
+
 
         <section class="mt-12">
             <h3 class="text-2xl font-semibold mb-6 text-green-600">Find Us on Social Media</h3>

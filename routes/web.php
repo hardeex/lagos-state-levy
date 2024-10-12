@@ -4,9 +4,7 @@ use App\Http\Controllers\AuthenticationController;
 use App\Http\Controllers\GeneralController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+
 
 // Authentication Routes
 Route::get('/register', [AuthenticationController::class, 'registerUser'])->name('auth.register-user');
@@ -15,5 +13,6 @@ Route::post('/api/register', [AuthenticationController::class, 'storeRegisteruse
 
 
 // Generic page route
+Route::get('/', [GeneralController::class, 'home'])->name('welcome');
 Route::get('/contact', [GeneralController::class, 'contact'])->name('user.contact');
 Route::post('/contact-send-message', [GeneralController::class, 'sendMessage'])->name('user.send-message');
