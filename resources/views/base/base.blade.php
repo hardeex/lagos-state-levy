@@ -22,6 +22,49 @@
 </head>
 
 <body>
+    <div id="preloader" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gray-100">
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold text-blue-600 overflow-hidden">
+                <span class="inline-block logo-letter">L</span>
+                <span class="inline-block logo-letter">A</span>
+                <span class="inline-block logo-letter">G</span>
+                <span class="inline-block logo-letter">O</span>
+                <span class="inline-block logo-letter">S</span>
+                <span class="inline-block logo-letter">F</span>
+                <span class="inline-block logo-letter">S</span>
+                <span class="inline-block logo-letter">L</span>
+                <span class="inline-block logo-letter">C</span>
+            </h1>
+        </div>
+        <div class="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            gsap.set('.logo-letter', {
+                opacity: 0,
+                y: 20
+            });
+
+            gsap.to('.logo-letter', {
+                opacity: 1,
+                y: 0,
+                stagger: 0.1,
+                duration: 0.5,
+                ease: 'power2.out'
+            });
+
+            gsap.to('#preloader', {
+                opacity: 0,
+                duration: 0.5,
+                delay: 2,
+                onComplete: function() {
+                    document.getElementById('preloader').style.display = 'none';
+                }
+            });
+        });
+    </script>
 
     <header class="bg-white shadow-md">
         <div class="container mx-auto px-4 py-3">
@@ -30,8 +73,8 @@
                     <img src="/api/placeholder/200/80" alt="Lagos State Logo" class="h-16">
                 </a>
 
-                <nav class="hidden md:block">
-                    <ul class="flex space-x-6 text-gray-700">
+                <nav class="hidden md:flex items-center space-x-6 text-gray-700">
+                    <ul class="flex space-x-6">
                         <li><a href="#" class="hover:text-green-600">Home</a></li>
                         <li><a href="#" class="hover:text-green-600">About</a></li>
                         <li><a href="#" class="hover:text-green-600">Services</a></li>
@@ -51,7 +94,15 @@
                             </div>
                         </li>
                     </ul>
+
+                    <!-- Language Selection -->
+                    <select class="border rounded-md p-2 text-gray-700 ml-6">
+                        <option value="en">English</option>
+                        <option value="fr">French</option>
+                        <option value="es">Spanish</option>
+                    </select>
                 </nav>
+
                 <button id="mobile-menu-button" class="md:hidden">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                         xmlns="http://www.w3.org/2000/svg">
@@ -108,7 +159,8 @@
                                 Portal</a></li>
                         <li><a href="#" class="hover:text-green-400 transition duration-300">Privacy Policy</a>
                         </li>
-                        <li><a href="#" class="hover:text-green-400 transition duration-300">Terms of Service</a>
+                        <li><a href="#" class="hover:text-green-400 transition duration-300">Terms of
+                                Service</a>
                         </li>
                         <li><a href="#" class="hover:text-green-400 transition duration-300">Sitemap</a></li>
                     </ul>

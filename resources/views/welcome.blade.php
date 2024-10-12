@@ -140,25 +140,6 @@
             </section>
 
 
-            {{-- <section class="bg-gray-200 py-16">
-                <div class="container mx-auto px-4">
-                    <h2 class="text-3xl font-bold text-center mb-12">Quick Links</h2>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                        <a href="#" class="bg-white p-4 rounded-lg shadow hover:shadow-md transition duration-300">
-                            <span class="block text-xl font-semibold text-blue-600">Payment Status</span>
-                        </a>
-                        <a href="#" class="bg-white p-4 rounded-lg shadow hover:shadow-md transition duration-300">
-                            <span class="block text-xl font-semibold text-blue-600">Verify Certificate</span>
-                        </a>
-                        <a href="#" class="bg-white p-4 rounded-lg shadow hover:shadow-md transition duration-300">
-                            <span class="block text-xl font-semibold text-blue-600">FAQs</span>
-                        </a>
-                        <a href="#" class="bg-white p-4 rounded-lg shadow hover:shadow-md transition duration-300">
-                            <span class="block text-xl font-semibold text-blue-600">Contact Support</span>
-                        </a>
-                    </div>
-                </div>
-            </section> --}}
 
             <section class="bg-gray-100 py-16">
                 <div class="container mx-auto px-4">
@@ -191,6 +172,174 @@
                     </div>
                 </div>
             </section>
+
+            <section class="mt-12 bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-3xl font-bold mb-6 text-blue-600 text-center">Latest News</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <article
+                        class="flex flex-col border rounded-lg overflow-hidden shadow hover:shadow-xl transition-transform transform hover:scale-105 duration-300">
+                        <img src="https://via.placeholder.com/400x200" alt="News Image" class="w-full h-48 object-cover">
+                        <div class="p-4">
+                            <div class="flex items-center mb-2">
+                                <svg class="w-6 h-6 text-blue-500 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                                    <path
+                                        d="M12 0C5.372 0 0 5.372 0 12s5.372 12 12 12 12-5.372 12-12S18.628 0 12 0zm0 22c-5.525 0-10-4.475-10-10S6.475 2 12 2s10 4.475 10 10-4.475 10-10 10zm-1-15h2v7h-2zm0 8h2v2h-2z" />
+                                </svg>
+                                <h4 class="font-semibold text-gray-800">New Levy Policies Announced</h4>
+                            </div>
+                            <p class="text-gray-600 mb-4">Details about the recent changes in levy policies...</p>
+                            <a href="#"
+                                class="text-blue-500 hover:text-blue-700 font-semibold transition duration-300">Read
+                                more</a>
+                        </div>
+                    </article>
+                    <article
+                        class="flex flex-col border rounded-lg overflow-hidden shadow hover:shadow-xl transition-transform transform hover:scale-105 duration-300">
+                        <img src="https://via.placeholder.com/400x200" alt="News Image" class="w-full h-48 object-cover">
+                        <div class="p-4">
+                            <div class="flex items-center mb-2">
+                                <svg class="w-6 h-6 text-blue-500 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                                    <path
+                                        d="M12 0C5.372 0 0 5.372 0 12s5.372 12 12 12 12-5.372 12-12S18.628 0 12 0zm0 22c-5.525 0-10-4.475-10-10S6.475 2 12 2s10 4.475 10 10-4.475 10-10 10zm-1-15h2v7h-2zm0 8h2v2h-2z" />
+                                </svg>
+                                <h4 class="font-semibold text-gray-800">Upcoming Deadline for Payments</h4>
+                            </div>
+                            <p class="text-gray-600 mb-4">Don’t miss the upcoming deadline on...</p>
+                            <a href="#"
+                                class="text-blue-500 hover:text-blue-700 font-semibold transition duration-300">Read
+                                more</a>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+
+
+            <section class="mt-12 bg-gradient-to-r from-green-100 to-blue-100 p-6 rounded-lg shadow-md">
+                <h3 class="text-2xl font-semibold mb-4 text-green-700">Featured Program</h3>
+                <p class="text-gray-700 mb-4">This month, we are highlighting...</p>
+                <a href="#"
+                    class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300">Learn
+                    More</a>
+            </section>
+
+
+            <section class="mt-12 bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-2xl font-semibold mb-4 text-blue-600">Statistical Dashboard</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-gray-100 p-4 rounded-lg">
+                        <h4 class="font-medium text-gray-800">Total Levies Collected</h4>
+                        <p class="text-3xl font-bold text-blue-600">₦2,000,000</p>
+                    </div>
+                    <div class="bg-gray-100 p-4 rounded-lg">
+                        <h4 class="font-medium text-gray-800">Funds Utilized</h4>
+                        <p class="text-3xl font-bold text-blue-600">₦1,500,000</p>
+                    </div>
+                    <div class="bg-gray-100 p-4 rounded-lg">
+                        <h4 class="font-medium text-gray-800">Programs Supported</h4>
+                        <p class="text-3xl font-bold text-blue-600">15</p>
+                    </div>
+                </div>
+            </section>
+
+
+            <section class="mt-12 bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-2xl font-semibold mb-4 text-blue-600">Testimonials</h3>
+                <div class="carousel">
+                    <div class="carousel-item">
+                        <blockquote class="border-l-4 border-blue-600 pl-4">
+                            <p class="text-gray-600">"The levy programs have greatly improved our community..."</p>
+                            <cite class="font-semibold">- John Doe, Community Leader</cite>
+                            <div class="flex items-center mt-2">
+                                <img src="path/to/john-doe.jpg" alt="John Doe" class="w-12 h-12 rounded-full">
+                                <div class="ml-2">
+                                    <p class="text-sm font-medium">John Doe</p>
+                                    <p class="text-xs text-gray-500">Community Leader</p>
+                                </div>
+                            </div>
+                        </blockquote>
+                    </div>
+                </div>
+            </section>
+
+
+            <section class="mt-12 bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-2xl font-semibold mb-4 text-blue-600">Frequently Asked Questions</h3>
+                <div class="space-y-4">
+                    <div class="border-b pb-4">
+                        <h4 class="font-medium text-gray-700">What is a government levy?</h4>
+                        <p class="text-gray-600">A government levy is...</p>
+                    </div>
+                    <div class="border-b pb-4">
+                        <h4 class="font-medium text-gray-700">How can I pay my levy?</h4>
+                        <p class="text-gray-600">You can pay through...</p>
+                    </div>
+                </div>
+            </section>
+
+
+            <section class="mt-12 bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-2xl font-semibold mb-4 text-blue-600">Upcoming Events</h3>
+                <ul class="list-disc pl-5 space-y-2">
+                    <li><span class="font-medium">Town Hall Meeting:</span> March 15, 2024</li>
+                    <li><span class="font-medium">Deadline for Submissions:</span> April 1, 2024</li>
+                </ul>
+            </section>
+
+
+            <section class="mt-12 bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-2xl font-semibold mb-4 text-blue-600">Resources and Downloads</h3>
+                <ul class="space-y-2">
+                    <li><a href="#" class="text-blue-500 hover:text-blue-700">Levy Payment Guide (PDF)</a></li>
+                    <li><a href="#" class="text-blue-500 hover:text-blue-700">Annual Report 2023 (PDF)</a></li>
+                </ul>
+            </section>
+
+            <section class="mt-12 bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-2xl font-semibold mb-4 text-blue-600">Contact Information</h3>
+                <p class="text-gray-700">For any inquiries, please reach out to us:</p>
+                <p class="text-gray-700">Email: <a href="mailto:info@lagos.gov.ng"
+                        class="text-blue-500 hover:text-blue-700">info@lagos.gov.ng</a></p>
+                <p class="text-gray-700">Phone: <span class="font-medium">(01) 234-5678</span></p>
+            </section>
+
+           
+
+
+            <section class="mt-12 bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-2xl font-semibold mb-4 text-blue-600">We Value Your Feedback</h3>
+                <form action="#" method="POST" class="space-y-4">
+                    <textarea class="border rounded-md w-full p-2" rows="4" placeholder="Your feedback..."></textarea>
+                    <button type="submit"
+                        class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300">Submit</button>
+                </form>
+            </section>
+
+            <section class="mt-12 bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-2xl font-semibold mb-4 text-blue-600">Follow Us</h3>
+                <div class="flex space-x-4">
+                    <a href="#" class="text-blue-600 hover:text-blue-800"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="text-blue-600 hover:text-blue-800"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="text-blue-600 hover:text-blue-800"><i class="fab fa-instagram"></i></a>
+                </div>
+            </section>
+
+            <section class="mt-12 bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-2xl font-semibold mb-4 text-blue-600">Levy Estimator</h3>
+                <input type="number" placeholder="Enter your income" class="border rounded-md w-full p-2 mb-4">
+                <button
+                    class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300">Estimate
+                    Levy</button>
+            </section>
+
+            <section class="mt-12 bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-2xl font-semibold mb-4 text-blue-600">What are Government Levies?</h3>
+                <div class="aspect-w-16 aspect-h-9">
+                    <iframe class="rounded-lg" src="https://www.youtube.com/embed/your-video-id" allowfullscreen></iframe>
+                </div>
+            </section>
+
+
         </div>
     </main>
 
