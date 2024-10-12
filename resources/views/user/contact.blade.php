@@ -10,170 +10,101 @@
     </div>
 
     <main class="container mx-auto px-4 py-8">
-        <div class="max-w-6xl mx-auto">
+        <div class="max-w-6xl mx-auto p-6">
             <div class="flex flex-col md:flex-row gap-8">
-                <div class="side">
-                    <section
-                        class="bg-white p-6 rounded-lg shadow-md transform hover:scale-105 transition duration-300 md:w-1/2"
-                        style="flex:2">
-                        <h3 class="text-2xl font-semibold mb-4 text-blue-600">Contact Form</h3>
-                        <form>
-                            <div class="mb-4">
-                                <label for="name" class="block text-gray-700 font-medium mb-2">Full Name</label>
-                                <input type="text" id="name" name="name"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300"
-                                    required>
-                            </div>
-                            <div class="mb-4">
-                                <label for="email" class="block text-gray-700 font-medium mb-2">Email Address</label>
-                                <input type="email" id="email" name="email"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300"
-                                    required>
-                            </div>
-                            <div class="mb-4">
-                                <label for="subject" class="block text-gray-700 font-medium mb-2">Subject</label>
-                                <select id="subject" name="subject"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300"
-                                    required>
-                                    <option value="">Select a subject</option>
-                                    <option value="general">General Inquiry</option>
-                                    <option value="payment">Payment Issues</option>
-                                    <option value="refund">Refund Request</option>
-                                    <option value="complaint">File a Complaint</option>
-                                </select>
-                            </div>
-                            <div class="mb-4">
-                                <label for="message" class="block text-gray-700 font-medium mb-2">Message</label>
-                                <textarea id="message" name="message" rows="4"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300"
-                                    required></textarea>
-                            </div>
-                            <button type="submit"
-                                class="bg-gradient-to-r from-blue-500 to-green-500 text-white px-6 py-3 rounded-md hover:from-blue-600 hover:to-green-600 transition duration-300 transform hover:scale-105">Send
-                                Message</button>
-                        </form>
-                    </section>
+                <section
+                    class="bg-white p-6 rounded-lg shadow-md transform hover:scale-105 transition duration-300 md:w-1/2">
+                    <h3 class="text-2xl font-semibold mb-4 text-blue-600">Contact Form</h3>
+                    <form>
+                        <div class="mb-4">
+                            <label for="name" class="block text-gray-700 font-medium mb-2">Full Name</label>
+                            <input type="text" id="name" name="name"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300"
+                                required>
+                        </div>
+                        <div class="mb-4">
+                            <label for="email" class="block text-gray-700 font-medium mb-2">Email Address</label>
+                            <input type="email" id="email" name="email"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300"
+                                required>
+                        </div>
+                        <div class="mb-4">
+                            <label for="subject" class="block text-gray-700 font-medium mb-2">Subject</label>
+                            <select id="subject" name="subject"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300"
+                                required>
+                                <option value="">Select a subject</option>
+                                <option value="general">General Inquiry</option>
+                                <option value="payment">Payment Issues</option>
+                                <option value="refund">Refund Request</option>
+                                <option value="complaint">File a Complaint</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label for="message" class="block text-gray-700 font-medium mb-2">Message</label>
+                            <textarea id="message" name="message" rows="4"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300"
+                                required></textarea>
+                        </div>
+                        <button type="submit"
+                            class="bg-gradient-to-r from-blue-500 to-green-500 text-white px-6 py-3 rounded-md hover:from-blue-600 hover:to-green-600 transition duration-300 transform hover:scale-105">Send
+                            Message</button>
+                    </form>
+                </section>
 
-                    <style>
-                        .contact-section {
-                            background-color: #ffffff;
-                            padding: 2rem;
-                            /* Increased padding for better spacing */
-                            border-radius: 0.5rem;
-                            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-                            max-width: 600px;
-                            /* Added a max width for larger screens */
-                            margin: 0 auto;
-                            /* Center the section */
-                        }
-
-                        .contact-title {
-                            font-size: 2rem;
-                            /* Increased title size */
-                            font-weight: 600;
-                            margin-bottom: 1.5rem;
-                            /* Spacing below the title */
-                            color: #38a169;
-                            /* Updated color */
-                        }
-
-                        .contact-item {
-                            display: flex;
-                            align-items: center;
-                            margin-bottom: 1.5rem;
-                            /* Space between items */
-                            padding: 0.5rem;
-                            /* Add padding around each item */
-                            border-left: 4px solid #38a169;
-                            /* Added a border for emphasis */
-                            transition: background-color 0.2s;
-                            /* Smooth hover effect */
-                        }
-
-                        .contact-item:hover {
-                            background-color: #f7fafc;
-                            /* Light background on hover */
-                        }
-
-                        .contact-icon {
-                            height: 1.5rem;
-                            /* Adjusted icon size */
-                            width: 1.5rem;
-                            color: #38a169;
-                            margin-right: 0.5rem;
-                            /* Space between icon and text */
-                        }
-
-                        .contact-title-sub {
-                            font-weight: 500;
-                            color: #4a5568;
-                            /* Darker gray for better contrast */
-                        }
-
-                        .contact-text {
-                            color: #718096;
-                            /* Subtle gray for text */
-                        }
-                    </style>
-
-                    <section class="contact-section">
-                        <h3 class="contact-title">Contact Information</h3>
-                        <div class="space-y-4">
-                            <div class="contact-item">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="contact-icon" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                </svg>
-                                <div>
-                                    <h4 class="contact-title-sub">Main Office</h4>
-                                    <p class="contact-text">Lagos State Government Secretariat, Alausa, Ikeja, Lagos</p>
-                                </div>
-                            </div>
-                            <div class="contact-item">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="contact-icon" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                                </svg>
-                                <div>
-                                    <h4 class="contact-title-sub">Phone</h4>
-                                    <p class="contact-text">Toll-free: 0800-LAGOS-TAX (0800-52467-829)</p>
-                                    <p class="contact-text">Local: 01-2920101</p>
-                                </div>
-                            </div>
-                            <div class="contact-item">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="contact-icon" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                </svg>
-                                <div>
-                                    <h4 class="contact-title-sub">Email</h4>
-                                    <p class="contact-text">info@lagosstate.gov.ng</p>
-                                </div>
-                            </div>
-                            <div class="contact-item">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="contact-icon" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <div>
-                                    <h4 class="contact-title-sub">Office Hours</h4>
-                                    <p class="contact-text">Monday - Friday: 8:00 AM - 4:00 PM</p>
-                                    <p class="contact-text">Saturday - Sunday: Closed</p>
-                                </div>
+                <section class="contact-section md:w-1/2 p-6">
+                    <h3 class="contact-title">Contact Information</h3>
+                    <div class="space-y-4">
+                        <div class="contact-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="contact-icon" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <div>
+                                <h4 class="contact-title-sub">Main Office</h4>
+                                <p class="contact-text">Lagos State Government Secretariat, Alausa, Ikeja, Lagos</p>
                             </div>
                         </div>
-                    </section>
-
-                </div>
-
-
-
+                        <div class="contact-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="contact-icon" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                            </svg>
+                            <div>
+                                <h4 class="contact-title-sub">Phone</h4>
+                                <p class="contact-text">Toll-free: 0800-LAGOS-TAX (0800-52467-829)</p>
+                                <p class="contact-text">Local: 01-2920101</p>
+                            </div>
+                        </div>
+                        <div class="contact-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="contact-icon" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                            <div>
+                                <h4 class="contact-title-sub">Email</h4>
+                                <p class="contact-text">info@lagosstate.gov.ng</p>
+                            </div>
+                        </div>
+                        <div class="contact-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="contact-icon" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <div>
+                                <h4 class="contact-title-sub">Office Hours</h4>
+                                <p class="contact-text">Monday - Friday: 8:00 AM - 4:00 PM</p>
+                                <p class="contact-text">Saturday - Sunday: Closed</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
             </div>
         </div>
 
@@ -369,32 +300,48 @@
             </div>
         </section>
     </main>
-
     <style>
-        .side {
-            display: flex;
-            flex-direction: row;
-            /* Default layout */
-            justify-content: space-between;
-            /* Space items evenly */
-            align-items: center;
-            /* Center items vertically */
-            flex-wrap: wrap;
-            /* Allow items to wrap on smaller screens */
-            padding: 1rem;
-            /* Add some padding */
+        .contact-section {
+            background-color: #ffffff;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
 
-        /* Media query for mobile responsiveness */
-        @media (max-width: 768px) {
-            .side {
-                flex-direction: column;
-                /* Stack items vertically on small screens */
-                align-items: flex-start;
-                /* Align items to the start */
-            }
+        .contact-title {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: #38a169;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding: 0.5rem;
+            border-left: 4px solid #38a169;
+            transition: background-color 0.2s;
+        }
+
+        .contact-item:hover {
+            background-color: #f7fafc;
+        }
+
+        .contact-icon {
+            height: 1.5rem;
+            width: 1.5rem;
+            color: #38a169;
+            margin-right: 0.5rem;
+        }
+
+        .contact-title-sub {
+            font-weight: 500;
+            color: #4a5568;
+        }
+
+        .contact-text {
+            color: #718096;
         }
     </style>
-
     <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js" defer></script>
 @endsection
