@@ -8,6 +8,7 @@
     <title>@yield('title', 'LagosFSLC')</title>
     @vite('resources/css/app.css')
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
     <style>
         @media (max-width: 768px) {
             .mobile-menu {
@@ -69,37 +70,44 @@
     <header class="bg-white shadow-md">
         <div class="container mx-auto px-4 py-3">
             <div class="flex justify-between items-center">
-                <a href="{{ route('welcome') }}">
+                {{-- <a href="{{ route('welcome') }}">
                     <img src="/api/placeholder/200/80" alt="Lagos State Logo" class="h-16">
-                </a>
+                </a> --}}
 
+                <a href="{{ route('welcome') }}">
+                    <div class="font-sans text-2xl font-bold tracking-wide">
+                        <span class="text-red-500">Lagos</span><span class="text-blue-500">F</span><span
+                            class="text-yellow-500">S</span><span class="text-green-500">LC</span>
+                    </div>
+                </a>
                 <nav class="hidden md:flex items-center space-x-6 text-gray-700">
                     <ul class="flex space-x-6">
                         <li><a href="#" class="hover:text-green-600">Home</a></li>
-                        <li><a href="#" class="hover:text-green-600">About</a></li>
-                        <li><a href="#" class="hover:text-green-600">Services</a></li>
-                        <li><a href="#" class="hover:text-green-600">Payments</a></li>
                         <li><a href="{{ route('user.contact') }}" class="hover:text-green-600">Contact</a></li>
-                        <li class="relative group">
+                        <li><a href="{{ route('auth.safety-consultant-login') }}"
+                                class="hover:text-green-600">Registered Safety Consultant</a></li>
+                        <li><a href="{{ route('auth.login-user') }}" class="hover:text-green-600">Login</a></li>
+                        <li><a href="{{ route('auth.register-user') }}" class="hover:text-green-600">Register</a></li>
+                        {{-- <li class="relative group">
                             <a href="#" class="hover:text-green-600">Account</a>
                             <div class="absolute hidden bg-white shadow-lg mt-2 rounded-md w-40 group-hover:block">
                                 <ul class="flex flex-col">
-                                    <li><a href="#"
+                                    <li><a href="{{ route('auth.login-user') }}"
                                             class="block px-4 py-2 text-gray-700 hover:bg-gray-200">Login</a></li>
-                                    <li><a href="#"
+                                    <li><a href="{{ route('auth.register-user') }}"
                                             class="block px-4 py-2 text-gray-700 hover:bg-gray-200">Register</a></li>
                                     <li><a href="#"
                                             class="block px-4 py-2 text-gray-700 hover:bg-gray-200">Profile</a></li>
                                 </ul>
                             </div>
-                        </li>
+                        </li> --}}
                     </ul>
 
                     <!-- Language Selection -->
                     <select class="border rounded-md p-2 text-gray-700 ml-6">
                         <option value="en">English</option>
-                        <option value="fr">French</option>
-                        <option value="es">Spanish</option>
+                        <option value="fr">Yoruba</option>
+                        {{-- <option value="es">Spanish</option> --}}
                     </select>
                 </nav>
 
@@ -113,21 +121,24 @@
             </div>
             <nav id="mobile-menu" class="mobile-menu mt-4 md:hidden">
                 <ul class="flex flex-col space-y-2 text-gray-700">
-                    <li><a href="#" class="block py-2 px-4 hover:bg-gray-200">Home</a></li>
-                    <li><a href="#" class="block py-2 px-4 hover:bg-gray-200">About</a></li>
-                    <li><a href="#" class="block py-2 px-4 hover:bg-gray-200">Services</a></li>
-                    <li><a href="#" class="block py-2 px-4 hover:bg-gray-200">Payments</a></li>
-                    <li><a href="{{ route('user.contact') }}" class="block py-2 px-4 hover:bg-gray-200">Contact</a></li>
-                    <li class="relative">
+                    <li><a href="#" class="hover:text-green-600">Home</a></li>
+                    <li><a href="{{ route('user.contact') }}" class="hover:text-green-600">Contact</a></li>
+                    <li><a href="{{ route('auth.safety-consultant-login') }}" class="hover:text-green-600">Registered
+                            Safety Consultant</a></li>
+                    <li><a href="{{ route('auth.login-user') }}" class="hover:text-green-600">Login</a></li>
+                    <li><a href="{{ route('auth.register-user') }}" class="hover:text-green-600">Register</a></li>
+                    {{-- <li class="relative">
                         <a href="#" class="block py-2 px-4 hover:bg-gray-200">Account</a>
                         <ul class="absolute hidden bg-white shadow-lg mt-2 rounded-md w-40">
-                            <li><a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-200">Login</a></li>
-                            <li><a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-200">Register</a>
+                            <li><a href="{{ route('auth.login-user') }}"
+                                    class="block px-4 py-2 text-gray-700 hover:bg-gray-200">Login</a></li>
+                            <li><a href="{{ route('auth.register-user') }}"
+                                    class="block px-4 py-2 text-gray-700 hover:bg-gray-200">Register</a>
                             </li>
                             <li><a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-200">Profile</a>
                             </li>
                         </ul>
-                    </li>
+                    </li> --}}
                 </ul>
             </nav>
         </div>

@@ -6,7 +6,7 @@
         <div class="bg-gray-100 font-sans">
 
 
-            <section class="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-20">
+            {{-- <section class="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-20">
                 <div class="container mx-auto px-4 text-center">
                     <h1 class="text-5xl font-bold mb-4 animate__animated animate__fadeInDown">Welcome to Lagos State Levy
                         Collection</h1>
@@ -17,10 +17,142 @@
                         Make a Payment
                     </a>
                 </div>
-            </section>
+            </section> --}}
+
+
+
+            <style>
+                .bg-image {
+                    background-size: cover;
+                    background-position: center;
+                    background-repeat: no-repeat;
+                }
+            </style>
+
+            <div x-data="carousel()" x-init="startAutoSlide()" @keydown.right="next()" @keydown.left="prev()"
+                class="relative overflow-hidden h-screen">
+                <div class="flex h-full transition-transform duration-500 ease-in-out"
+                    :style="`transform: translateX(-${currentIndex * 100}%)`">
+                    <!-- Slide 1: Lagos State Levy Collection -->
+                    <div class="w-full flex-shrink-0 bg-image" style="background-image: url('/images/red-blue-yelllow.jpg');">
+                        <div
+                            class="container mx-auto px-4 h-full flex flex-col justify-center items-center text-center text-white">
+                            <h2 class="text-5xl font-bold mb-4 animate__animated animate__fadeInDown">Welcome to Lagos State
+                                Levy Collection</h2>
+                            <p class="text-xl mb-8 animate__animated animate__fadeInUp">Easy, secure, and efficient payment
+                                of government levies</p>
+                            <a href="#"
+                                class="bg-yellow-500 text-blue-900 px-8 py-4 rounded-full font-semibold text-lg hover:bg-yellow-400 transition duration-300 animate__animated animate__bounceIn">
+                                Make a Payment
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Slide 2: Fire and Rescue Service -->
+                    <div class="w-full flex-shrink-0 bg-image"
+                        style="background-image: url('/images/lagos-state-levy-image-generator.jpg');">
+                        <div
+                            class="container mx-auto px-4 h-full flex flex-col justify-center items-center text-center text-white">
+                            <h2 class="text-4xl font-bold mb-4 animate__animated animate__fadeInDown">Lagos State Fire and
+                                Rescue Service</h2>
+                            <p class="text-2xl mb-8 animate__animated animate__fadeInUp">"WE PUT OUT FIRE WITH PASSION AND
+                                PRECISION"</p>
+                        </div>
+                    </div>
+
+                    <!-- Slide 3: Our Mission -->
+                    <div class="w-full flex-shrink-0 bg-image" style="background-image: url('/images/our-mission.jpg');">
+                        <div
+                            class="container mx-auto px-4 h-full flex flex-col justify-center items-center text-center text-white">
+                            <h2 class="text-4xl font-bold mb-4 animate__animated animate__fadeInDown">Our Mission</h2>
+                            <p class="text-2xl mb-8 animate__animated animate__fadeInUp">"Bringing calm to chaos has always
+                                been OUR MISSION"</p>
+                        </div>
+                    </div>
+
+                    <!-- Slide 4: Our Commitment -->
+                    <div class="w-full flex-shrink-0 bg-image" style="background-image: url('/images/water-lagos.jpg');">
+                        <div
+                            class="container mx-auto px-4 h-full flex flex-col justify-center items-center text-center text-white">
+                            <h2 class="text-4xl font-bold mb-4 animate__animated animate__fadeInDown">Our Commitment</h2>
+                            <p class="text-2xl mb-8 animate__animated animate__fadeInUp">"With brave hands and strong
+                                hearts, OUR COURAGE AND COMMITMENT TO KEEP THE COMMUNITY SAFE IS NEXT TO NONE"</p>
+                        </div>
+                    </div>
+
+                    <!-- Slide 5: Our Duty -->
+                    <div class="w-full flex-shrink-0 bg-image" style="background-image: url('/images/duty-image.jpg');">
+                        <div
+                            class="container mx-auto px-4 h-full flex flex-col justify-center items-center text-center text-white">
+                            <h2 class="text-4xl font-bold mb-4 animate__animated animate__fadeInDown">Our Duty</h2>
+                            <p class="text-2xl mb-8 animate__animated animate__fadeInUp">"OUR DUTY IS YOUR PROTECTION"</p>
+                        </div>
+                    </div>
+
+                    <!-- Slide 6: Our Motto -->
+                    <div class="w-full flex-shrink-0 bg-image" style="background-image: url('/images/safety.jpg');">
+                        <div
+                            class="container mx-auto px-4 h-full flex flex-col justify-center items-center text-center text-white">
+                            <h2 class="text-4xl font-bold mb-4 animate__animated animate__fadeInDown">Our Motto</h2>
+                            <p class="text-2xl mb-8 animate__animated animate__fadeInUp">"SAFETY FIRST AND ALWAYS"</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Arrows -->
+                <button @click="prev()"
+                    class="absolute left-0 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-r">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
+                <button @click="next()"
+                    class="absolute right-0 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-l">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
+
+                <!-- Navigation Dots -->
+                <div class="absolute bottom-4 left-0 right-0">
+                    <div class="flex items-center justify-center gap-2">
+                        <template x-for="(slide, index) in slides" :key="index">
+                            <button @click="goToSlide(index)"
+                                class="w-3 h-3 rounded-full transition-all duration-300 ease-in-out"
+                                :class="currentIndex === index ? 'bg-white scale-110' : 'bg-white bg-opacity-50'"></button>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                function carousel() {
+                    return {
+                        currentIndex: 0,
+                        slides: [0, 1, 2, 3, 4, 5],
+                        next() {
+                            this.currentIndex = (this.currentIndex + 1) % this.slides.length;
+                        },
+                        prev() {
+                            this.currentIndex = (this.currentIndex - 1 + this.slides.length) % this.slides.length;
+                        },
+                        goToSlide(index) {
+                            this.currentIndex = index;
+                        },
+                        startAutoSlide() {
+                            setInterval(() => {
+                                this.next();
+                            }, 5000); // Change slide every 5 seconds
+                        }
+                    }
+                }
+            </script>
 
             <!-- Notification Banner -->
-            <div class="bg-green-100 border-t-4 border-green-500 rounded-b text-green-900 px-4 py-3 shadow-md" role="alert">
+            <div class="bg-green-100 border-t-4 border-green-500 rounded-b text-green-900 px-4 py-3 shadow-md"
+                role="alert">
                 <div class="flex">
                     <div class="py-1"><svg class="fill-current h-6 w-6 text-green-500 mr-4"
                             xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
@@ -173,171 +305,201 @@
                 </div>
             </section>
 
-            <section class="mt-12 bg-white p-6 rounded-lg shadow-md">
-                <h3 class="text-3xl font-bold mb-6 text-blue-600 text-center">Latest News</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <article
-                        class="flex flex-col border rounded-lg overflow-hidden shadow hover:shadow-xl transition-transform transform hover:scale-105 duration-300">
-                        <img src="https://via.placeholder.com/400x200" alt="News Image" class="w-full h-48 object-cover">
-                        <div class="p-4">
-                            <div class="flex items-center mb-2">
-                                <svg class="w-6 h-6 text-blue-500 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                                    <path
-                                        d="M12 0C5.372 0 0 5.372 0 12s5.372 12 12 12 12-5.372 12-12S18.628 0 12 0zm0 22c-5.525 0-10-4.475-10-10S6.475 2 12 2s10 4.475 10 10-4.475 10-10 10zm-1-15h2v7h-2zm0 8h2v2h-2z" />
-                                </svg>
-                                <h4 class="font-semibold text-gray-800">New Levy Policies Announced</h4>
-                            </div>
-                            <p class="text-gray-600 mb-4">Details about the recent changes in levy policies...</p>
-                            <a href="#"
-                                class="text-blue-500 hover:text-blue-700 font-semibold transition duration-300">Read
-                                more</a>
-                        </div>
-                    </article>
-                    <article
-                        class="flex flex-col border rounded-lg overflow-hidden shadow hover:shadow-xl transition-transform transform hover:scale-105 duration-300">
-                        <img src="https://via.placeholder.com/400x200" alt="News Image" class="w-full h-48 object-cover">
-                        <div class="p-4">
-                            <div class="flex items-center mb-2">
-                                <svg class="w-6 h-6 text-blue-500 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                                    <path
-                                        d="M12 0C5.372 0 0 5.372 0 12s5.372 12 12 12 12-5.372 12-12S18.628 0 12 0zm0 22c-5.525 0-10-4.475-10-10S6.475 2 12 2s10 4.475 10 10-4.475 10-10 10zm-1-15h2v7h-2zm0 8h2v2h-2z" />
-                                </svg>
-                                <h4 class="font-semibold text-gray-800">Upcoming Deadline for Payments</h4>
-                            </div>
-                            <p class="text-gray-600 mb-4">Don’t miss the upcoming deadline on...</p>
-                            <a href="#"
-                                class="text-blue-500 hover:text-blue-700 font-semibold transition duration-300">Read
-                                more</a>
-                        </div>
-                    </article>
-                </div>
-            </section>
+            <div class="container mx-auto px-4 py-8">
+                {{-- <h1 class="text-4xl font-bold text-center text-blue-700 mb-12">Government Levy Dashboard</h1> --}}
 
 
 
-            <section class="mt-12 bg-gradient-to-r from-green-100 to-blue-100 p-6 rounded-lg shadow-md">
-                <h3 class="text-2xl font-semibold mb-4 text-green-700">Featured Program</h3>
-                <p class="text-gray-700 mb-4">This month, we are highlighting...</p>
-                <a href="#"
-                    class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300">Learn
-                    More</a>
-            </section>
-
-
-            <section class="mt-12 bg-white p-6 rounded-lg shadow-md">
-                <h3 class="text-2xl font-semibold mb-4 text-blue-600">Statistical Dashboard</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="bg-gray-100 p-4 rounded-lg">
-                        <h4 class="font-medium text-gray-800">Total Levies Collected</h4>
-                        <p class="text-3xl font-bold text-blue-600">₦2,000,000</p>
+                <!-- Latest News Section -->
+                <section class="mb-12">
+                    <h3 class="text-3xl font-bold mb-6 text-blue-700">Latest Updates</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        @foreach ([['New Levy Policies', 'Important changes to our levy structure...'], ['Upcoming Payment Deadline', 'Don\'t forget to submit your payments by...'], ['Community Project Showcase', 'See the impact of your contributions...']] as [$title, $excerpt])
+                            <article
+                                class="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+                                <img src="https://placehold.co/400x200?text=News+Image" alt="News Image"
+                                    class="w-full h-48 object-cover">
+                                <div class="p-6">
+                                    <h4 class="font-semibold text-xl text-gray-800 mb-2">{{ $title }}</h4>
+                                    <p class="text-gray-600 mb-4">{{ $excerpt }}</p>
+                                    <a href="#"
+                                        class="text-blue-500 hover:text-blue-700 font-semibold transition duration-300 flex items-center">
+                                        Read more
+                                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 5l7 7-7 7"></path>
+                                        </svg>
+                                    </a>
+                                </div>
+                            </article>
+                        @endforeach
                     </div>
-                    <div class="bg-gray-100 p-4 rounded-lg">
-                        <h4 class="font-medium text-gray-800">Funds Utilized</h4>
-                        <p class="text-3xl font-bold text-blue-600">₦1,500,000</p>
-                    </div>
-                    <div class="bg-gray-100 p-4 rounded-lg">
-                        <h4 class="font-medium text-gray-800">Programs Supported</h4>
-                        <p class="text-3xl font-bold text-blue-600">15</p>
-                    </div>
-                </div>
-            </section>
+                </section>
 
-
-            <section class="mt-12 bg-white p-6 rounded-lg shadow-md">
-                <h3 class="text-2xl font-semibold mb-4 text-blue-600">Testimonials</h3>
-                <div class="carousel">
-                    <div class="carousel-item">
-                        <blockquote class="border-l-4 border-blue-600 pl-4">
-                            <p class="text-gray-600">"The levy programs have greatly improved our community..."</p>
-                            <cite class="font-semibold">- John Doe, Community Leader</cite>
-                            <div class="flex items-center mt-2">
-                                <img src="path/to/john-doe.jpg" alt="John Doe" class="w-12 h-12 rounded-full">
-                                <div class="ml-2">
-                                    <p class="text-sm font-medium">John Doe</p>
-                                    <p class="text-xs text-gray-500">Community Leader</p>
+                <!-- Statistical Dashboard -->
+                <section class="mb-12 bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-2xl font-semibold mb-6 text-blue-700">Statistical Overview</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        @foreach ([['Total Levies Collected', '₦2,500,000', 'text-green-600', 'currency-dollar'], ['Funds Utilized', '₦1,800,000', 'text-blue-600', 'chart-bar'], ['Programs Supported', '18', 'text-purple-600', 'users']] as [$title, $value, $color, $icon])
+                            <div class="bg-gray-50 p-6 rounded-xl border border-gray-200 flex items-center">
+                                <div class="mr-4">
+                                    <svg class="w-12 h-12 {{ $color }}" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        @if ($icon == 'currency-dollar')
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                                            </path>
+                                        @elseif($icon == 'chart-bar')
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+                                            </path>
+                                        @else
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z">
+                                            </path>
+                                        @endif
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-gray-800 mb-2">{{ $title }}</h4>
+                                    <p class="text-3xl font-bold {{ $color }}">{{ $value }}</p>
                                 </div>
                             </div>
-                        </blockquote>
+                        @endforeach
                     </div>
-                </div>
-            </section>
+                </section>
 
+                <!-- Featured Program -->
+                <section class="mb-12 bg-gradient-to-r from-green-400 to-blue-500 p-8 rounded-xl shadow-lg text-white">
+                    <h3 class="text-3xl font-semibold mb-4">Featured: Community Health Initiative</h3>
+                    <p class="text-xl mb-6">This month, we're highlighting our efforts to improve local healthcare
+                        facilities. Your levies are making a difference!</p>
+                    <a href="#"
+                        class="bg-white text-blue-600 px-6 py-3 rounded-full font-semibold hover:bg-blue-100 transition duration-300 inline-block">Learn
+                        More</a>
+                </section>
 
-            <section class="mt-12 bg-white p-6 rounded-lg shadow-md">
-                <h3 class="text-2xl font-semibold mb-4 text-blue-600">Frequently Asked Questions</h3>
-                <div class="space-y-4">
-                    <div class="border-b pb-4">
-                        <h4 class="font-medium text-gray-700">What is a government levy?</h4>
-                        <p class="text-gray-600">A government levy is...</p>
+                <!-- Testimonials -->
+                <section class="mb-12 bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-2xl font-semibold mb-6 text-blue-700">Community Voices</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        @foreach ([['John Doe', 'Community Leader', 'The levy programs have greatly improved our local infrastructure...'], ['Jane Smith', 'Small Business Owner', 'Thanks to the business development initiatives funded by these levies...']] as [$name, $role, $quote])
+                            <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
+                                <blockquote class="text-gray-600 mb-4">"{{ $quote }}"</blockquote>
+                                <div class="flex items-center">
+                                    <img src="https://placehold.co/100x100?text={{ substr($name, 0, 1) }}"
+                                        alt="{{ $name }}" class="w-12 h-12 rounded-full mr-4">
+                                    <div>
+                                        <p class="font-semibold text-gray-800">{{ $name }}</p>
+                                        <p class="text-gray-600">{{ $role }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
-                    <div class="border-b pb-4">
-                        <h4 class="font-medium text-gray-700">How can I pay my levy?</h4>
-                        <p class="text-gray-600">You can pay through...</p>
+                </section>
+
+                <!-- FAQ Section -->
+                <section class="mb-12 bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-2xl font-semibold mb-6 text-blue-700">Frequently Asked Questions</h3>
+                    <div class="space-y-4">
+                        @foreach ([['What is a government levy?', 'A government levy is a tax imposed on specific goods, services, or transactions...'], ['How can I pay my levy?', 'You can pay your levy through various methods including online payments, bank transfers...'], ['What are the deadlines for levy payments?', 'Levy payment deadlines vary depending on the type of levy. Generally...']] as [$question, $answer])
+                            <div class="border-b pb-4">
+                                <button
+                                    class="flex justify-between w-full text-left p-2 font-medium text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-lg focus:outline-none"
+                                    onclick="toggleAnswer(this)">
+                                    <span>{{ $question }}</span>
+                                    <span class="ml-2">&#x25BC;</span> <!-- Down arrow icon -->
+                                </button>
+                                <p class="hidden text-gray-600 mt-2">{{ $answer }}</p>
+                            </div>
+                        @endforeach
                     </div>
-                </div>
-            </section>
+                    <div class="mt-6">
+                        <a href="#"
+                            class="block w-full text-center py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200">
+                            View All FAQs
+                        </a>
+                    </div>
+                </section>
+
+                @push('scripts')
+                    <script>
+                        function toggleAnswer(button) {
+                            const answer = button.nextElementSibling;
+                            if (answer.classList.contains('hidden')) {
+                                answer.classList.remove('hidden');
+                                button.querySelector('span:last-child').innerHTML = '&#x25B2;'; // Up arrow icon
+                            } else {
+                                answer.classList.add('hidden');
+                                button.querySelector('span:last-child').innerHTML = '&#x25BC;'; // Down arrow icon
+                            }
+                        }
+                    </script>
+                @endpush
 
 
-            <section class="mt-12 bg-white p-6 rounded-lg shadow-md">
-                <h3 class="text-2xl font-semibold mb-4 text-blue-600">Upcoming Events</h3>
-                <ul class="list-disc pl-5 space-y-2">
-                    <li><span class="font-medium">Town Hall Meeting:</span> March 15, 2024</li>
-                    <li><span class="font-medium">Deadline for Submissions:</span> April 1, 2024</li>
-                </ul>
-            </section>
+                <!-- Contact and Feedback -->
+                <section class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-2xl font-semibold mb-4 text-blue-700">Contact Us</h3>
+                        <p class="text-gray-700 mb-4">For any inquiries, please reach out to us:</p>
+                        <p class="text-gray-700">Email: <a href="mailto:info@lagos.gov.ng"
+                                class="text-blue-500 hover:text-blue-700">info@lagos.gov.ng</a></p>
+                        <p class="text-gray-700">Phone: <span class="font-medium">(01) 234-5678</span></p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-2xl font-semibold mb-4 text-blue-700">We Value Your Feedback</h3>
+                        <form action="#" method="POST" class="space-y-4">
+                            @csrf
+                            <div>
+                                <label for="feedback" class="block text-gray-700 mb-2">Your Feedback</label>
+                                <textarea id="feedback" name="feedback" rows="4"
+                                    class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:border-blue-500"
+                                    placeholder="Share your thoughts..."></textarea>
+                            </div>
+                            <button type="submit"
+                                class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300">Submit
+                                Feedback</button>
+                        </form>
+                    </div>
+                </section>
+            </div>
 
-
-            <section class="mt-12 bg-white p-6 rounded-lg shadow-md">
-                <h3 class="text-2xl font-semibold mb-4 text-blue-600">Resources and Downloads</h3>
-                <ul class="space-y-2">
-                    <li><a href="#" class="text-blue-500 hover:text-blue-700">Levy Payment Guide (PDF)</a></li>
-                    <li><a href="#" class="text-blue-500 hover:text-blue-700">Annual Report 2023 (PDF)</a></li>
-                </ul>
-            </section>
-
-            <section class="mt-12 bg-white p-6 rounded-lg shadow-md">
-                <h3 class="text-2xl font-semibold mb-4 text-blue-600">Contact Information</h3>
-                <p class="text-gray-700">For any inquiries, please reach out to us:</p>
-                <p class="text-gray-700">Email: <a href="mailto:info@lagos.gov.ng"
-                        class="text-blue-500 hover:text-blue-700">info@lagos.gov.ng</a></p>
-                <p class="text-gray-700">Phone: <span class="font-medium">(01) 234-5678</span></p>
-            </section>
-
-           
-
-
-            <section class="mt-12 bg-white p-6 rounded-lg shadow-md">
-                <h3 class="text-2xl font-semibold mb-4 text-blue-600">We Value Your Feedback</h3>
-                <form action="#" method="POST" class="space-y-4">
-                    <textarea class="border rounded-md w-full p-2" rows="4" placeholder="Your feedback..."></textarea>
-                    <button type="submit"
-                        class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300">Submit</button>
-                </form>
-            </section>
-
-            <section class="mt-12 bg-white p-6 rounded-lg shadow-md">
-                <h3 class="text-2xl font-semibold mb-4 text-blue-600">Follow Us</h3>
-                <div class="flex space-x-4">
-                    <a href="#" class="text-blue-600 hover:text-blue-800"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#" class="text-blue-600 hover:text-blue-800"><i class="fab fa-twitter"></i></a>
-                    <a href="#" class="text-blue-600 hover:text-blue-800"><i class="fab fa-instagram"></i></a>
-                </div>
-            </section>
-
-            <section class="mt-12 bg-white p-6 rounded-lg shadow-md">
-                <h3 class="text-2xl font-semibold mb-4 text-blue-600">Levy Estimator</h3>
-                <input type="number" placeholder="Enter your income" class="border rounded-md w-full p-2 mb-4">
-                <button
-                    class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300">Estimate
-                    Levy</button>
-            </section>
-
-            <section class="mt-12 bg-white p-6 rounded-lg shadow-md">
-                <h3 class="text-2xl font-semibold mb-4 text-blue-600">What are Government Levies?</h3>
-                <div class="aspect-w-16 aspect-h-9">
-                    <iframe class="rounded-lg" src="https://www.youtube.com/embed/your-video-id" allowfullscreen></iframe>
-                </div>
-            </section>
+            @push('scripts')
+                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                <script>
+                    // Sample chart data
+                    const ctx = document.getElementById('levy-chart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                            datasets: [{
+                                label: 'Monthly Levy Collection (₦)',
+                                data: [1200000, 1500000, 1800000, 1600000, 2000000, 2200000],
+                                backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                                borderColor: 'rgb(59, 130, 246)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: function(value, index, values) {
+                                            return '₦' + value.toLocaleString();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                </script>
+            @endpush
 
 
         </div>

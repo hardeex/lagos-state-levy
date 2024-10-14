@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\Route;
 // Authentication Routes
 Route::get('/register', [AuthenticationController::class, 'registerUser'])->name('auth.register-user');
 Route::post('/api/register', [AuthenticationController::class, 'storeRegisteruser'])->name('auth.register-submit');
+Route::get('/login', [AuthenticationController::class, 'loginUser'])->name('auth.login-user');
+Route::post('/api/login', [AuthenticationController::class, 'storeLoginUser'])->name('auth.login-submit');
+Route::get('/safety-consultant/login', [AuthenticationController::class, 'safetyConsultantLogin'])->name('auth.safety-consultant-login');
 
 
 

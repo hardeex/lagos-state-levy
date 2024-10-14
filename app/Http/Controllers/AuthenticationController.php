@@ -10,4 +10,15 @@ class AuthenticationController extends Controller
     {
         return view('auth.register-user');
     }
+
+    public function loginUser()
+    {
+        return view('auth.login-user');
+    }
+
+
+    public function safetyConsultantLogin()
+    {
+        return view('auth.safety-consultant-login');
+    }
 }
