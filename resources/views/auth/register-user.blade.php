@@ -46,6 +46,30 @@
                                 @enderror
                             </div>
 
+
+                            <div>
+                                <label for="password" class="block text-sm font-medium text-gray-700">
+                                    Password
+                                </label>
+                                <div class="mt-1">
+                                    <input id="password" name="password" type="password" autocomplete="current-password"
+                                        required
+                                        class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                </div>
+                            </div>
+
+
+                            <div>
+                                <label for="password" class="block text-sm font-medium text-gray-700">
+                                    Confirm Password
+                                </label>
+                                <div class="mt-1">
+                                    <input id="password" name="password" type="password" autocomplete="current-password"
+                                        required
+                                        class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                </div>
+                            </div>
+
                             <!-- Business Reg No -->
                             <div class="relative group">
                                 <input type="text" name="business_reg_no" id="business_reg_no" required
@@ -90,12 +114,29 @@
                                 @enderror
                             </div>
 
+                            <!-- Nationality-->
+                            <div class="relative group">
+                                <select name="nigeria" id="nigeria" required
+                                    class="peer w-full h-10 bg-gray-50 text-gray-800 border-b-2 border-gray-300 focus:outline-none focus:border-blue-600 transition-all appearance-none">
+                                    <option value="">Select your country</option>
+                                    <option value="Nigeria" {{ old('nigeria') == 'Nigeria' ? 'selected' : '' }}>
+                                        Nigeria
+                                    </option>
+
+                                </select>
+                                <label for="lga_lcda" class="label">Country</label>
+                                @error('nigeria')
+                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
                             <!-- LGA/LCDA -->
                             <div class="relative group">
                                 <select name="lga_lcda" id="lga_lcda" required
                                     class="peer w-full h-10 bg-gray-50 text-gray-800 border-b-2 border-gray-300 focus:outline-none focus:border-blue-600 transition-all appearance-none">
                                     <option value="">Select LGA/LCDA</option>
-                                    <option value="ALIMOSHO" {{ old('lga_lcda') == 'ALIMOSHO' ? 'selected' : '' }}>ALIMOSHO
+                                    <option value="ALIMOSHO" {{ old('lga_lcda') == 'ALIMOSHO' ? 'selected' : '' }}>
+                                        ALIMOSHO
                                     </option>
                                     <!-- Add more options here -->
                                 </select>
@@ -136,6 +177,20 @@
                                 </select>
                                 <label for="industry_sector" class="label">Industry Sector</label>
                                 @error('industry_sector')
+                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div class="relative group">
+                                <select name="sub_industry_sector" id="sub_industry_sector" required
+                                    class="peer w-full h-10 bg-gray-50 text-gray-800 border-b-2 border-gray-300 focus:outline-none focus:border-blue-600 transition-all appearance-none">
+                                    <option value="">Select sub Industry</option>
+                                    <option value="Technology"
+                                        {{ old('industry_sector') == 'Technology' ? 'selected' : '' }}>Technology</option>
+                                    <!-- Add more options here -->
+                                </select>
+                                <label for="industry_sector" class="label">Sub Industry Sector</label>
+                                @error('sub_industry_sector')
                                     <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
                             </div>
@@ -181,10 +236,10 @@
                 const taxId = document.getElementById('taxIdInput').value;
                 if (taxId) {
                     document.getElementById('tax_payer_id').value =
-                    taxId; // Assign the value to the hidden field
+                        taxId; // Assign the value to the hidden field
                     modal.classList.add('hidden');
                     document.getElementById('registrationFormContainer').style.display =
-                    'block'; // Show registration form
+                        'block'; // Show registration form
                 } else {
                     alert('Please enter a valid Tax ID.');
                 }

@@ -8,6 +8,7 @@
     <title>@yield('title', 'LagosFSLC')</title>
     @vite('resources/css/app.css')
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 
     <style>
         @media (max-width: 768px) {
@@ -88,19 +89,6 @@
                                 class="hover:text-green-600">Registered Safety Consultant</a></li>
                         <li><a href="{{ route('auth.login-user') }}" class="hover:text-green-600">Login</a></li>
                         <li><a href="{{ route('auth.register-user') }}" class="hover:text-green-600">Register</a></li>
-                        {{-- <li class="relative group">
-                            <a href="#" class="hover:text-green-600">Account</a>
-                            <div class="absolute hidden bg-white shadow-lg mt-2 rounded-md w-40 group-hover:block">
-                                <ul class="flex flex-col">
-                                    <li><a href="{{ route('auth.login-user') }}"
-                                            class="block px-4 py-2 text-gray-700 hover:bg-gray-200">Login</a></li>
-                                    <li><a href="{{ route('auth.register-user') }}"
-                                            class="block px-4 py-2 text-gray-700 hover:bg-gray-200">Register</a></li>
-                                    <li><a href="#"
-                                            class="block px-4 py-2 text-gray-700 hover:bg-gray-200">Profile</a></li>
-                                </ul>
-                            </div>
-                        </li> --}}
                     </ul>
 
                     <!-- Language Selection -->
@@ -123,22 +111,11 @@
                 <ul class="flex flex-col space-y-2 text-gray-700">
                     <li><a href="#" class="hover:text-green-600">Home</a></li>
                     <li><a href="{{ route('user.contact') }}" class="hover:text-green-600">Contact</a></li>
+                    <li><a href="#" class="hover:text-green-600">Services</a></li>
                     <li><a href="{{ route('auth.safety-consultant-login') }}" class="hover:text-green-600">Registered
                             Safety Consultant</a></li>
                     <li><a href="{{ route('auth.login-user') }}" class="hover:text-green-600">Login</a></li>
                     <li><a href="{{ route('auth.register-user') }}" class="hover:text-green-600">Register</a></li>
-                    {{-- <li class="relative">
-                        <a href="#" class="block py-2 px-4 hover:bg-gray-200">Account</a>
-                        <ul class="absolute hidden bg-white shadow-lg mt-2 rounded-md w-40">
-                            <li><a href="{{ route('auth.login-user') }}"
-                                    class="block px-4 py-2 text-gray-700 hover:bg-gray-200">Login</a></li>
-                            <li><a href="{{ route('auth.register-user') }}"
-                                    class="block px-4 py-2 text-gray-700 hover:bg-gray-200">Register</a>
-                            </li>
-                            <li><a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-200">Profile</a>
-                            </li>
-                        </ul>
-                    </li> --}}
                 </ul>
             </nav>
         </div>
