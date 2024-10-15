@@ -48,4 +48,9 @@ class GeneralController extends Controller
     {
         return view('user.contact');
     }
+
+    public function training()
+    {
+        return view('user.training');
+    }
 }

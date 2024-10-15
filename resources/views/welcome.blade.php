@@ -34,67 +34,79 @@
                 <div class="flex h-full transition-transform duration-500 ease-in-out"
                     :style="`transform: translateX(-${currentIndex * 100}%)`">
                     <!-- Slide 1: Lagos State Levy Collection -->
-                    <div class="w-full flex-shrink-0 bg-image" style="background-image: url('/images/red-blue-yelllow.jpg');">
+                    <div class="w-full flex-shrink-0 bg-image relative" style="background-image: url('/images/lagos9.jpg');">
+                        <div class="absolute inset-0 bg-black bg-opacity-50"></div>
                         <div
-                            class="container mx-auto px-4 h-full flex flex-col justify-center items-center text-center text-white">
-                            <h2 class="text-5xl font-bold mb-4 animate__animated animate__fadeInDown">Welcome to Lagos State
-                                Levy Collection</h2>
-                            <p class="text-xl mb-8 animate__animated animate__fadeInUp">Easy, secure, and efficient payment
-                                of government levies</p>
-                            <a href="#"
-                                class="bg-yellow-500 text-blue-900 px-8 py-4 rounded-full font-semibold text-lg hover:bg-yellow-400 transition duration-300 animate__animated animate__bounceIn">
-                                Make a Payment
-                            </a>
+                            class="container mx-auto px-4 h-full flex flex-col justify-center items-center text-center text-white relative z-10">
+                            <h2 class="text-5xl font-bold mb-4 animate__animated animate__fadeInDown">Empowering Lagos:
+                                Streamline Your Levy Payments</h2>
+                            <p class="text-xl mb-8 animate__animated animate__fadeInUp">Fuel our city's growth with swift,
+                                secure government levy contributions</p>
                         </div>
                     </div>
 
                     <!-- Slide 2: Fire and Rescue Service -->
-                    <div class="w-full flex-shrink-0 bg-image"
-                        style="background-image: url('/images/lagos-state-levy-image-generator.jpg');">
+                    <div class="w-full flex-shrink-0 bg-image relative"
+                        style="background-image: url('/images/lagos10.jpg');">
+                        <div class="absolute inset-0 bg-black bg-opacity-50"></div>
                         <div
-                            class="container mx-auto px-4 h-full flex flex-col justify-center items-center text-center text-white">
-                            <h2 class="text-4xl font-bold mb-4 animate__animated animate__fadeInDown">Lagos State Fire and
-                                Rescue Service</h2>
-                            <p class="text-2xl mb-8 animate__animated animate__fadeInUp">"WE PUT OUT FIRE WITH PASSION AND
-                                PRECISION"</p>
+                            class="container mx-auto px-4 h-full flex flex-col justify-center items-center text-center text-white relative z-10">
+                            <h2 class="text-4xl font-bold mb-4 animate__animated animate__fadeInDown">Safeguarding Lagos:
+                                Your Fire and Rescue Heroes</h2>
+                            <p class="text-2xl mb-8 animate__animated animate__fadeInUp">"Extinguishing Threats, Igniting
+                                Hope - With Passion and Precision"</p>
                         </div>
                     </div>
 
                     <!-- Slide 3: Our Mission -->
-                    <div class="w-full flex-shrink-0 bg-image" style="background-image: url('/images/our-mission.jpg');">
+                    <div class="w-full flex-shrink-0 bg-image relative"
+                        style="background-image: url('/images/lagos14.jpg');">
+                        <div class="absolute inset-0 bg-black bg-opacity-50"></div>
                         <div
-                            class="container mx-auto px-4 h-full flex flex-col justify-center items-center text-center text-white">
-                            <h2 class="text-4xl font-bold mb-4 animate__animated animate__fadeInDown">Our Mission</h2>
-                            <p class="text-2xl mb-8 animate__animated animate__fadeInUp">"Bringing calm to chaos has always
-                                been OUR MISSION"</p>
+                            class="container mx-auto px-4 h-full flex flex-col justify-center items-center text-center text-white relative z-10">
+                            <h2 class="text-4xl font-bold mb-4 animate__animated animate__fadeInDown">Our Unwavering Mission
+                            </h2>
+                            <p class="text-2xl mb-8 animate__animated animate__fadeInUp">"Transforming Chaos into Calm -
+                                Your Lifeline in Crisis"</p>
                         </div>
                     </div>
 
                     <!-- Slide 4: Our Commitment -->
-                    <div class="w-full flex-shrink-0 bg-image" style="background-image: url('/images/water-lagos.jpg');">
+                    <div class="w-full flex-shrink-0 bg-image relative"
+                        style="background-image: url('/images/lagos17.jpg');">
+                        <div class="absolute inset-0 bg-black bg-opacity-50"></div>
                         <div
-                            class="container mx-auto px-4 h-full flex flex-col justify-center items-center text-center text-white">
-                            <h2 class="text-4xl font-bold mb-4 animate__animated animate__fadeInDown">Our Commitment</h2>
-                            <p class="text-2xl mb-8 animate__animated animate__fadeInUp">"With brave hands and strong
-                                hearts, OUR COURAGE AND COMMITMENT TO KEEP THE COMMUNITY SAFE IS NEXT TO NONE"</p>
+                            class="container mx-auto px-4 h-full flex flex-col justify-center items-center text-center text-white relative z-10">
+                            <h2 class="text-4xl font-bold mb-4 animate__animated animate__fadeInDown">Unwavering Commitment
+                                to You</h2>
+                            <p class="text-2xl mb-8 animate__animated animate__fadeInUp">"Forging Safety with Brave Hands
+                                and Strong Hearts - Your Community's Unmatched Guardians"</p>
                         </div>
                     </div>
 
                     <!-- Slide 5: Our Duty -->
-                    <div class="w-full flex-shrink-0 bg-image" style="background-image: url('/images/duty-image.jpg');">
+                    <div class="w-full flex-shrink-0 bg-image relative"
+                        style="background-image: url('/images/lagos4.jpg');">
+                        <div class="absolute inset-0 bg-black bg-opacity-50"></div>
                         <div
-                            class="container mx-auto px-4 h-full flex flex-col justify-center items-center text-center text-white">
-                            <h2 class="text-4xl font-bold mb-4 animate__animated animate__fadeInDown">Our Duty</h2>
-                            <p class="text-2xl mb-8 animate__animated animate__fadeInUp">"OUR DUTY IS YOUR PROTECTION"</p>
+                            class="container mx-auto px-4 h-full flex flex-col justify-center items-center text-center text-white relative z-10">
+                            <h2 class="text-4xl font-bold mb-4 animate__animated animate__fadeInDown">Embracing Our Sacred
+                                Duty</h2>
+                            <p class="text-2xl mb-8 animate__animated animate__fadeInUp">"Shielding Lives, Securing Futures
+                                - Your Protection is Our Purpose"</p>
                         </div>
                     </div>
 
                     <!-- Slide 6: Our Motto -->
-                    <div class="w-full flex-shrink-0 bg-image" style="background-image: url('/images/safety.jpg');">
+                    <div class="w-full flex-shrink-0 bg-image relative"
+                        style="background-image: url('/images/lagos8.jpg');">
+                        <div class="absolute inset-0 bg-black bg-opacity-50"></div>
                         <div
-                            class="container mx-auto px-4 h-full flex flex-col justify-center items-center text-center text-white">
-                            <h2 class="text-4xl font-bold mb-4 animate__animated animate__fadeInDown">Our Motto</h2>
-                            <p class="text-2xl mb-8 animate__animated animate__fadeInUp">"SAFETY FIRST AND ALWAYS"</p>
+                            class="container mx-auto px-4 h-full flex flex-col justify-center items-center text-center text-white relative z-10">
+                            <h2 class="text-4xl font-bold mb-4 animate__animated animate__fadeInDown">Living Our Motto Every
+                                Day</h2>
+                            <p class="text-2xl mb-8 animate__animated animate__fadeInUp">"Prioritizing Safety, Always and
+                                Everywhere - Your Well-being is Our Mandate"</p>
                         </div>
                     </div>
                 </div>
@@ -173,22 +185,63 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                         <div class="bg-white p-6 rounded-lg shadow-md">
                             <h3 class="text-xl font-semibold mb-4">Fire Safety Levy</h3>
-                            <p class="text-gray-600 mb-4">Ensure compliance with fire safety regulations and contribute to a
-                                safer Lagos.</p>
-                            <a href="#" class="text-green-600 hover:underline">Learn More</a>
-                        </div>
-                        <div class="bg-white p-6 rounded-lg shadow-md">
-                            <h3 class="text-xl font-semibold mb-4">Business Premises Levy</h3>
-                            <p class="text-gray-600 mb-4">Register and pay levies for your business premises in Lagos State.
+                            <p class="text-gray-600 mb-4">
+                                The Fire Safety Levy is a vital program designed to ensure compliance with fire safety
+                                regulations in buildings. By participating, you help create a safer environment and reduce
+                                fire hazards in Lagos.
                             </p>
-                            <a href="#" class="text-green-600 hover:underline">Learn More</a>
+                            <a href="#" class="text-green-600 hover:underline">Make Payment</a>
                         </div>
+
+
                         <div class="bg-white p-6 rounded-lg shadow-md">
-                            <h3 class="text-xl font-semibold mb-4">Environmental Levy</h3>
-                            <p class="text-gray-600 mb-4">Support environmental initiatives and sustainable development in
-                                Lagos.</p>
-                            <a href="#" class="text-green-600 hover:underline">Learn More</a>
+                            <h3 class="text-xl font-semibold mb-4">Registered Lagos state fire satefy consultant
+                            </h3>
+                            <p class="text-gray-600 mb-4">Register and manage your safety consulting services in Lagos
+                                State. Ensure compliance and provide top-notch safety solutions for businesses.</p>
+                            <a href="{{ route('auth.register-user') }}" class="text-green-600 hover:underline">Register</a>
                         </div>
+
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-xl font-semibold mb-4">Training &amp; Certification</h3>
+                            <p class="text-gray-600 mb-4">Enhance your skills and knowledge with our training programs in
+                                Lagos. We offer various courses designed to empower individuals and organizations.</p> <br>
+                            <a href="{{ route('user.training') }}" class="text-green-600 hover:underline">Apply
+                                Now...</a>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-xl font-semibold mb-4">Obtain Company Clearance and Fire Certificate for
+                                Building</h3>
+                            <p class="text-gray-600 mb-4">
+                                Improve your expertise with our training programs in Lagos, designed to empower individuals
+                                and organizations.
+                            </p>
+                            <a href="{{ route('auth.register-user') }}" class="text-green-600 hover:underline">Apply
+                                Now...</a>
+                        </div>
+
+
+                        <div class="bg-white p-6 rounded-lg shadow-md mt-4">
+                            <h3 class="text-xl font-semibold mb-4">Fire Safety Training Workshops</h3>
+                            <p class="text-gray-600 mb-4">
+                                Join our interactive workshops to learn essential fire safety techniques and regulations,
+                                helping you stay prepared and informed.
+                            </p>
+                            <a href="{{ route('auth.register-user') }}" class="text-green-600 hover:underline">Register
+                                Now...</a>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-lg shadow-md mt-4">
+                            <h3 class="text-xl font-semibold mb-4">Other Services</h3>
+                            <p class="text-gray-600 mb-4">
+                                Explore additional services we offer, including fire risk assessments, safety audits, and
+                                compliance consultations to enhance your safety measures.
+                            </p>
+                            <a href="{{ route('auth.register-user') }}" class="text-green-600 hover:underline">Discover
+                                More...</a>
+                        </div>
+
                     </div>
                 </div>
             </section>
@@ -310,7 +363,7 @@
 
 
 
-                <!-- Latest News Section -->
+                {{-- <!-- Latest News Section -->
                 <section class="mb-12">
                     <h3 class="text-3xl font-bold mb-6 text-blue-700">Latest Updates</h3>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -398,7 +451,7 @@
                             </div>
                         @endforeach
                     </div>
-                </section>
+                </section> --}}
 
                 <!-- FAQ Section -->
                 <section class="mb-12 bg-white p-6 rounded-lg shadow-md">

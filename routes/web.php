@@ -22,8 +22,13 @@ Route::post('/api/login', [AuthenticationController::class, 'storeLoginUser'])->
 Route::get('/safety-consultant/login', [AuthenticationController::class, 'safetyConsultantLogin'])->name('auth.safety-consultant-login');
 
 
+// ashboard routes
+Route::get('/dashboard', [AuthenticationController::class, 'dashboard'])->name('auth.dashboard');
+
+
 
 // Generic page route
 Route::get('/', [GeneralController::class, 'home'])->name('welcome');
 Route::get('/contact', [GeneralController::class, 'contact'])->name('user.contact');
 Route::post('/contact-send-message', [GeneralController::class, 'sendMessage'])->name('user.send-message');
+Route::get('/training', [GeneralController::class, 'training'])->name('user.training');

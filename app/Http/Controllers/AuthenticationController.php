@@ -37,6 +37,11 @@ class AuthenticationController extends Controller
     }
 
 
+    public function dashboard()
+    {
+        return view('auth.dashboard');
+    }
+
     public function safetyConsultantLogin()
     {
         return view('auth.safety-consultant-login');

@@ -11,6 +11,28 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 
     <style>
+        @keyframes scroll {
+            0% {
+                transform: translateX(100%);
+            }
+
+            100% {
+                transform: translateX(-100%);
+            }
+        }
+
+        .scroll-container {
+            overflow: hidden;
+            background: linear-gradient(90deg, #4a90e2, #50e3c2);
+            padding: 0.5rem 0;
+        }
+
+        .scroll-text {
+            display: inline-block;
+            white-space: nowrap;
+            animation: scroll 20s linear infinite;
+        }
+
         @media (max-width: 768px) {
             .mobile-menu {
                 display: none;
@@ -71,9 +93,6 @@
     <header class="bg-white shadow-md">
         <div class="container mx-auto px-4 py-3">
             <div class="flex justify-between items-center">
-                {{-- <a href="{{ route('welcome') }}">
-                    <img src="/api/placeholder/200/80" alt="Lagos State Logo" class="h-16">
-                </a> --}}
 
                 <a href="{{ route('welcome') }}">
                     <div class="font-sans text-2xl font-bold tracking-wide">
@@ -81,14 +100,77 @@
                             class="text-yellow-500">S</span><span class="text-green-500">LC</span>
                     </div>
                 </a>
+
                 <nav class="hidden md:flex items-center space-x-6 text-gray-700">
                     <ul class="flex space-x-6">
-                        <li><a href="#" class="hover:text-green-600">Home</a></li>
+                        <li><a href="{{ route('welcome') }}" class="hover:text-green-600">Home</a></li>
+                        <li><a href="#" class="hover:text-green-600">About</a></li>
+                        <li><a href="#" class="hover:text-green-600">Services</a></li>
                         <li><a href="{{ route('user.contact') }}" class="hover:text-green-600">Contact</a></li>
-                        <li><a href="{{ route('auth.safety-consultant-login') }}"
-                                class="hover:text-green-600">Registered Safety Consultant</a></li>
-                        <li><a href="{{ route('auth.login-user') }}" class="hover:text-green-600">Login</a></li>
-                        <li><a href="{{ route('auth.register-user') }}" class="hover:text-green-600">Register</a></li>
+
+                        <!-- Account Dropdown for Desktop -->
+                        <li x-data="{ open: false }" class="relative inline-block">
+                            <button @click="open = !open" class="flex items-center hover:text-green-600">
+                                Register
+                                <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                                    fill="currentColor" aria-hidden="true">
+                                    <path fill-rule="evenodd"
+                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </button>
+
+                            <!-- Dropdown Menu -->
+                            <div x-show="open" @click.away="open = false"
+                                class="absolute right-0 z-10 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+                                role="menu" aria-orientation="vertical" tabindex="-1">
+                                <div class="py-1" role="none">
+                                    <a href="{{ route('auth.register-user') }}"
+                                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                        role="menuitem">User Register</a>
+                                    <a href="{{ route('auth.safety-consultant-login') }}"
+                                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                        role="menuitem">Registered Safety Consultant</a>
+                                </div>
+                            </div>
+                        </li>
+
+                        <!-- Account Dropdown for Desktop -->
+                        <li x-data="{ open: false }" class="relative inline-block">
+                            <button @click="open = !open" class="flex items-center hover:text-green-600">
+                                Login
+                                <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                                    fill="currentColor" aria-hidden="true">
+                                    <path fill-rule="evenodd"
+                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </button>
+
+                            <!-- Dropdown Menu -->
+                            <div x-show="open" @click.away="open = false"
+                                class="absolute right-0 z-10 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+                                role="menu" aria-orientation="vertical" tabindex="-1">
+                                <div class="py-1" role="none">
+                                    <a href="{{ route('auth.login-user') }}"
+                                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                        role="menuitem">User Login</a>
+                                    <a href="{{ route('auth.safety-consultant-login') }}"
+                                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                        role="menuitem">Login Safety Consultant</a>
+                                </div>
+                            </div>
+                        </li>
+
+                        <!--- TO be deleted-->
+                        <li><a href="{{ route('auth.declaration') }}" class="hover:text-green-600">Declaration</a></li>
+                        <li><a href="{{ route('auth.user-otp-verify') }}" class="hover:text-green-600">OTP
+                                Verification</a></li>
+                        <li><a href="{{ route('auth.forgot-password') }}" class="hover:text-green-600">Forgot
+                                Password</a></li>
+                        <li><a href="{{ route('auth.billing') }}" class="hover:text-green-600">Billing</a></li>
+
+                        <!----End of to be deleted-->
                     </ul>
 
                     <!-- Language Selection -->
@@ -107,6 +189,7 @@
                     </svg>
                 </button>
             </div>
+
             <nav id="mobile-menu" class="mobile-menu mt-4 md:hidden">
                 <ul class="flex flex-col space-y-2 text-gray-700">
                     <li><a href="#" class="hover:text-green-600">Home</a></li>
@@ -114,12 +197,83 @@
                     <li><a href="#" class="hover:text-green-600">Services</a></li>
                     <li><a href="{{ route('auth.safety-consultant-login') }}" class="hover:text-green-600">Registered
                             Safety Consultant</a></li>
-                    <li><a href="{{ route('auth.login-user') }}" class="hover:text-green-600">Login</a></li>
-                    <li><a href="{{ route('auth.register-user') }}" class="hover:text-green-600">Register</a></li>
+
+                    <!-- Mobile Account Dropdown for Register -->
+                    <li x-data="{ open: false }" class="relative inline-block">
+                        <button @click="open = !open" class="flex items-center hover:text-green-600">
+                            Register
+                            <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                                fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd"
+                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </button>
+
+                        <!-- Mobile Dropdown Menu -->
+                        <div x-show="open" @click.away="open = false"
+                            class="absolute right-0 z-10 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+                            role="menu" aria-orientation="vertical" tabindex="-1">
+                            <div class="py-1" role="none">
+                                <a href="{{ route('auth.register-user') }}"
+                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                    role="menuitem">User Register</a>
+                                <a href="{{ route('auth.safety-consultant-login') }}"
+                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                    role="menuitem">Registered Safety Consultant</a>
+                            </div>
+                        </div>
+                    </li>
+
+                    <!-- Mobile Account Dropdown for Login -->
+                    <li x-data="{ open: false }" class="relative inline-block">
+                        <button @click="open = !open" class="flex items-center hover:text-green-600">
+                            Login
+                            <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                                fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd"
+                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </button>
+
+                        <!-- Mobile Dropdown Menu -->
+                        <div x-show="open" @click.away="open = false"
+                            class="absolute right-0 z-10 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+                            role="menu" aria-orientation="vertical" tabindex="-1">
+                            <div class="py-1" role="none">
+                                <a href="{{ route('auth.login-user') }}"
+                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                    role="menuitem">User Login</a>
+                                <a href="{{ route('auth.safety-consultant-login') }}"
+                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                    role="menuitem">Login Safety Consultant</a>
+                            </div>
+                        </div>
+                    </li>
+
+                    <!--- TO be deleted-->
+                    <li><a href="{{ route('auth.declaration') }}" class="hover:text-green-600">Declaration</a></li>
+                    <li><a href="{{ route('auth.user-otp-verify') }}" class="hover:text-green-600">OTP
+                            Verification</a></li>
+                    <li><a href="{{ route('auth.forgot-password') }}" class="hover:text-green-600">Forgot
+                            Password</a></li>
+                    <li><a href="{{ route('auth.billing') }}" class="hover:text-green-600">Billing</a></li>
+
+                    <!----End of to be deleted-->
                 </ul>
             </nav>
         </div>
+        <div class="relative overflow-hidden bg-gray-100 ">
+            <div class="scroll-container">
+                <div class="scroll-text text-white text-lg font-semibold">
+                    Collection of Fire Certificate for Building is Free
+                </div>
+
+            </div>
+        </div>
     </header>
+
 
 
     @yield('content')
