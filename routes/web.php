@@ -12,10 +12,12 @@ Route::post('/api/register', [AuthenticationController::class, 'storeRegisteruse
 Route::get('/register/otp-verify', [AuthenticationController::class, 'verifyOTP'])->name('auth.user-otp-verify');
 Route::post('/api/verify-otp', [AuthenticationController::class, 'verifyOTPSubmit'])->name('auth.otp-verify-submit');
 Route::get('/forgot-password', [AuthenticationController::class, 'forgotPassword'])->name('auth.forgot-password');
+Route::get('/change-password', [AuthenticationController::class, 'changePassword'])->name('auth.change-password');
 
 Route::get('/declaration', [AuthenticationController::class, 'declaration'])->name('auth.declaration');
 Route::post('/api/declaration', [AuthenticationController::class, 'storeDeclaration'])->name('auth.declaration-submit');
 Route::get('/billing/business', [AuthenticationController::class, 'billing'])->name('auth.billing');
+Route::get('/official-returns', [AuthenticationController::class, 'officialReturns'])->name('auth.official-returns');
 
 Route::get('/login', [AuthenticationController::class, 'loginUser'])->name('auth.login-user');
 Route::post('/api/login', [AuthenticationController::class, 'storeLoginUser'])->name('auth.login-submit');

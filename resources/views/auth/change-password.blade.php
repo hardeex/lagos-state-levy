@@ -1,5 +1,5 @@
 @extends('dashboard.base')
-@Section('title', 'Declaration')
+@Section('title', 'Change Password')
 
 
 @section('sidebar')
@@ -8,9 +8,5 @@
 
 
 @section('content')
-    @include('partials.billing')
+    @include('partials.change-password')
 @endsection
-
-
-
-

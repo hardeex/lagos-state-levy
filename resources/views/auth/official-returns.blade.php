@@ -8,9 +8,5 @@
 
 
 @section('content')
-    @include('partials.billing')
+    @include('partials.official-returns')
 @endsection
-
-
-
-

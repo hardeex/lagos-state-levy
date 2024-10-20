@@ -21,6 +21,11 @@ class AuthenticationController extends Controller
         return view('auth.forgot-password');
     }
 
+    public function changePassword()
+    {
+        return view('auth.change-password');
+    }
+
     public function declaration()
     {
         return view('auth.declaration');
@@ -29,6 +34,11 @@ class AuthenticationController extends Controller
     public function billing()
     {
         return view('auth.billing');
+    }
+
+    public function officialReturns()
+    {
+        return  view('auth.official-returns');
     }
 
     public function loginUser()

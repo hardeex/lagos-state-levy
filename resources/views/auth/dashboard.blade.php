@@ -1,12 +1,12 @@
-@extends('base.base')
-@Section('title', 'User Dashboard')
+@extends('dashboard.base')
+@Section('title', 'Lagos FSLC')
 
 
-
-@include('partials.sidebar')
+@section('sidebar')
+    @include('dashboard.sidebar')
+@endsection
 
 
 @section('content')
-    @include('partials.content')
-
+    @include('partials.dashboard-main-content')
 @endsection
