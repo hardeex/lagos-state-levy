@@ -53,10 +53,14 @@
                 <a href="#" class="block py-2 px-4 text-sm hover:bg-blue-700 rounded">Accounting</a>
                 <a href="{{ route('auth.billing') }}"
                     class="block py-2 px-4 text-sm hover:bg-blue-700 rounded">Billing</a>
+
+                <a href="{{ route('auth.calendar') }}"
+                    class="block py-2 px-4 text-sm hover:bg-blue-700 rounded">Calendar</a>
+
                 <a href="{{ route('auth.declaration') }}"
                     class="block py-2 px-4 text-sm hover:bg-blue-700 rounded">Declarations</a>
 
-                <a href="#" class="block py-2 px-4 text-sm hover:bg-blue-700 rounded">Calendar</a>
+                {{-- <a href="#" class="block py-2 px-4 text-sm hover:bg-blue-700 rounded">Calendar</a> --}}
                 <a href="#" class="block py-2 px-4 text-sm hover:bg-blue-700 rounded">Upload
                     <a href="#" class="block py-2 px-4 text-sm hover:bg-blue-700 rounded">Compliance</a>
                 </a>
@@ -74,6 +78,32 @@
             <div class="submenu pl-4">
                 <a href="{{ route('auth.official-returns') }}"
                     class="block py-2 px-4 text-sm hover:bg-blue-700 rounded">Official Returns</a>
+
+                <a href="{{ route('auth.receipt') }}" class="block py-2 px-4 text-sm hover:bg-blue-700 rounded">
+                    Upload Receipt</a>
+
+                <a href="{{ route('auth.upload-receipt') }}"
+                    class="block py-2 px-4 text-sm hover:bg-blue-700 rounded">Receipt</a>
+
+                <a href="{{ route('auth.invoice-list') }}"
+                    class="block py-2 px-4 text-sm hover:bg-blue-700 rounded">Invoice List</a>
+
+            </div>
+        </div>
+
+
+        <div class="menu-item">
+            <a href="#"
+                class="block py-2.5 px-4 rounded transition duration-200 hover:bg-blue-700 hover:text-white flex justify-between items-center">
+                <span><i class="fas fa-building mr-2"></i>Accounts</span>
+                <i class="fas fa-chevron-down text-xs"></i>
+            </a>
+            <div class="submenu pl-4">
+                <a href="{{ route('auth.account-history') }}"
+                    class="block py-2 px-4 text-sm hover:bg-blue-700 rounded">History</a>
+
+                <a href="{{ route('auth.clearance') }}"
+                    class="block py-2 px-4 text-sm hover:bg-blue-700 rounded">Clearance </a>
 
 
             </div>

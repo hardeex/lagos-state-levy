@@ -6,11 +6,19 @@ use Illuminate\Support\Facades\Route;
 
 
 
+
 // Authentication Routes
 Route::get('/register', [AuthenticationController::class, 'registerUser'])->name('auth.register-user');
-Route::post('/api/register', [AuthenticationController::class, 'storeRegisteruser'])->name('auth.register-submit');
+Route::post('/register', [AuthenticationController::class, 'storeRegisterUser'])->name('auth.register-submit');
+
+
+// Route::get('/register/otp-verify', [AuthenticationController::class, 'verifyOTP'])->name('auth.user-otp-verify');
+// Route::post('/api/verify-otp', [AuthenticationController::class, 'verifyOTPSubmit'])->name('auth.otp-verify-submit');
+
 Route::get('/register/otp-verify', [AuthenticationController::class, 'verifyOTP'])->name('auth.user-otp-verify');
 Route::post('/api/verify-otp', [AuthenticationController::class, 'verifyOTPSubmit'])->name('auth.otp-verify-submit');
+Route::post('/api/resend-otp', [AuthenticationController::class, 'resendOTP'])->name('auth.resend-otp');
+
 Route::get('/forgot-password', [AuthenticationController::class, 'forgotPassword'])->name('auth.forgot-password');
 Route::get('/change-password', [AuthenticationController::class, 'changePassword'])->name('auth.change-password');
 
@@ -18,6 +26,13 @@ Route::get('/declaration', [AuthenticationController::class, 'declaration'])->na
 Route::post('/api/declaration', [AuthenticationController::class, 'storeDeclaration'])->name('auth.declaration-submit');
 Route::get('/billing/business', [AuthenticationController::class, 'billing'])->name('auth.billing');
 Route::get('/official-returns', [AuthenticationController::class, 'officialReturns'])->name('auth.official-returns');
+Route::get('/receipt', [AuthenticationController::class, 'receipt'])->name('auth.receipt');
+Route::get('/upload-receipt', [AuthenticationController::class, 'uploadReceipt'])->name('auth.upload-receipt');
+Route::get('/invoice-list', [AuthenticationController::class, 'invoiceList'])->name('auth.invoice-list');
+
+Route::get('/account-history', [AuthenticationController::class, 'accountHistory'])->name('auth.account-history');
+Route::get('/calendar', [AuthenticationController::class, 'calendar'])->name('auth.calendar');
+Route::get('/clearance', [AuthenticationController::class, 'clearance'])->name('auth.clearance');
 
 Route::get('/login', [AuthenticationController::class, 'loginUser'])->name('auth.login-user');
 Route::post('/api/login', [AuthenticationController::class, 'storeLoginUser'])->name('auth.login-submit');

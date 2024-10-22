@@ -123,12 +123,12 @@
                         </li>
 
                         <!--- TO be deleted-->
-                        <li><a href="{{ route('auth.declaration') }}" class="hover:text-green-600">Declaration</a></li>
+                        {{-- <li><a href="{{ route('auth.declaration') }}" class="hover:text-green-600">Declaration</a></li>
                         <li><a href="{{ route('auth.user-otp-verify') }}" class="hover:text-green-600">OTP
                                 Verification</a></li>
                         <li><a href="{{ route('auth.forgot-password') }}" class="hover:text-green-600">Forgot
                                 Password</a></li>
-                        <li><a href="{{ route('auth.billing') }}" class="hover:text-green-600">Billing</a></li>
+                        <li><a href="{{ route('auth.billing') }}" class="hover:text-green-600">Billing</a></li> --}}
 
                         <!----End of to be deleted-->
                     </ul>
@@ -213,12 +213,12 @@
                     </li>
 
                     <!--- TO be deleted-->
-                    <li><a href="{{ route('auth.declaration') }}" class="hover:text-green-600">Declaration</a></li>
+                    {{-- <li><a href="{{ route('auth.declaration') }}" class="hover:text-green-600">Declaration</a></li>
                     <li><a href="{{ route('auth.user-otp-verify') }}" class="hover:text-green-600">OTP
                             Verification</a></li>
                     <li><a href="{{ route('auth.forgot-password') }}" class="hover:text-green-600">Forgot
                             Password</a></li>
-                    <li><a href="{{ route('auth.billing') }}" class="hover:text-green-600">Billing</a></li>
+                    <li><a href="{{ route('auth.billing') }}" class="hover:text-green-600">Billing</a></li> --}}
 
                     <!----End of to be deleted-->
                 </ul>

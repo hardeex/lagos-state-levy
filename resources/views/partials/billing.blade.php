@@ -49,7 +49,7 @@
         </div>
 
         <div class="bg-white rounded-lg shadow-md p-6 text-center hover:shadow-lg transition duration-300">
-            <a href="#">
+            <a href="{{route('auth.upload-receipt')}}">
                  <i class="fas fa-upload text-4xl text-orange-500 mb-4"></i>
             <h3 class="text-xl font-semibold mb-2">Upload Receipt</h3>
             <p class="text-gray-600">Upload and manage your payment receipts easily.</p>
