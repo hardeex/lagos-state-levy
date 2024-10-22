@@ -11,13 +11,14 @@ use Illuminate\Support\Facades\Route;
 Route::get('/register', [AuthenticationController::class, 'registerUser'])->name('auth.register-user');
 Route::post('/register', [AuthenticationController::class, 'storeRegisterUser'])->name('auth.register-submit');
 
-
-// Route::get('/register/otp-verify', [AuthenticationController::class, 'verifyOTP'])->name('auth.user-otp-verify');
-// Route::post('/api/verify-otp', [AuthenticationController::class, 'verifyOTPSubmit'])->name('auth.otp-verify-submit');
-
+// OTP verification routes
 Route::get('/register/otp-verify', [AuthenticationController::class, 'verifyOTP'])->name('auth.user-otp-verify');
 Route::post('/api/verify-otp', [AuthenticationController::class, 'verifyOTPSubmit'])->name('auth.otp-verify-submit');
 Route::post('/api/resend-otp', [AuthenticationController::class, 'resendOTP'])->name('auth.resend-otp');
+
+// user login routes
+Route::get('/login', [AuthenticationController::class, 'loginUser'])->name('auth.login-user');
+Route::post('/api/login', [AuthenticationController::class, 'storeLoginUser'])->name('auth.login-submit');
 
 Route::get('/forgot-password', [AuthenticationController::class, 'forgotPassword'])->name('auth.forgot-password');
 Route::get('/change-password', [AuthenticationController::class, 'changePassword'])->name('auth.change-password');
@@ -34,8 +35,7 @@ Route::get('/account-history', [AuthenticationController::class, 'accountHistory
 Route::get('/calendar', [AuthenticationController::class, 'calendar'])->name('auth.calendar');
 Route::get('/clearance', [AuthenticationController::class, 'clearance'])->name('auth.clearance');
 
-Route::get('/login', [AuthenticationController::class, 'loginUser'])->name('auth.login-user');
-Route::post('/api/login', [AuthenticationController::class, 'storeLoginUser'])->name('auth.login-submit');
+
 Route::get('/safety-consultant/login', [AuthenticationController::class, 'safetyConsultantLogin'])->name('auth.safety-consultant-login');
 
 

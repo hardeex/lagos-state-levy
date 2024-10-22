@@ -84,115 +84,224 @@ class AuthenticationController extends Controller
         }
     }
 
-        public function verifyOTP()
-        {
-            // If no registration data in session, redirect back to register
-            if (!session()->has('registration_data')) {
-                return redirect()->route('auth.register-user')->withErrors(['error' => 'Please complete registration first']);
+    public function verifyOTP()
+    {
+
+
+        return view('auth.user-otp-verify');
+    }
+    public function verifyOTPSubmit(Request $request)
+    {
+        Log::info('OTP verification method called');
+
+        // Validate the request
+        $validatedData = $request->validate([
+            'verification_method' => ['required', 'in:email,phone'],
+            'otp' => ['required', 'string', 'size:6', 'regex:/^[0-9]+$/'],
+            'business_email' => ['required', 'email'],
+        ]);
+
+        $client = new Client();
+        $apiUrl = config('api.base_url') . '/changeotps';
+
+        try {
+            // Log the validated data
+            Log::info('Validated data:', $validatedData);
+
+            // Prepare the payload based on verification method
+            $payload = [
+                'business_email' => $validatedData['business_email']
+            ];
+
+            // Set the appropriate OTP field based on verification method
+            if ($validatedData['verification_method'] === 'email') {
+                $payload['email_otp'] = $validatedData['otp'];
+                $payload['phone_otp'] = '000000'; // dummy value for unused method
+            } else {
+                $payload['phone_otp'] = $validatedData['otp'];
+                $payload['email_otp'] = '000000'; // dummy value for unused method
             }
-            
-            return view('auth.user-otp-verify');
-        }
-    
-        public function verifyOTPSubmit(Request $request)
-        {
-            // Validate the incoming request
-            $validatedData = $request->validate([
-                'email_otp' => ['required', 'string', 'size:6', 'regex:/^[0-9]+$/'],
-                'phone_otp' => ['required', 'string', 'size:6', 'regex:/^[0-9]+$/'],
+
+            // Log the payload before making the API call
+            Log::info('Payload for API request:', $payload);
+
+            $response = $client->post($apiUrl, [
+                'headers' => ['Content-Type' => 'application/json'],
+                'json' => $payload,
             ]);
-    
-            $client = new Client();
-            $apiUrl = config('api.base_url') . '/changeotps';
-    
-            try {
-                // Get the registration data from session
-                $registrationData = session('registration_data', []);
-                
-                // Prepare the payload according to API specifications
-                $payload = [
-                    'email_otp' => $validatedData['email_otp'],
-                    'phone_otp' => $validatedData['phone_otp'],
-                    'business_email' => $registrationData['lemail'] ?? null,
-                ];
-    
-                $response = $client->post($apiUrl, [
-                    'headers' => [
-                        'Content-Type' => 'application/json',
-                    ],
-                    'json' => $payload,
-                ]);
-    
-                $responseData = json_decode($response->getBody(), true);
-    
-                if (isset($responseData['status']) && $responseData['status'] === 'success') {
-                    // Clear the registration session data
-                    session()->forget('registration_data');
-                    
-                    // Log successful verification
-                    Log::info('OTP verification successful', [
-                        'business_email' => $payload['business_email']
-                    ]);
-    
-                    return redirect()->route('auth.login-user')
-                        ->with('success', 'Account verified successfully. Please login.');
-                }
-    
-                return redirect()->back()
-                    ->withErrors(['error' => $responseData['message'] ?? 'Verification failed']);
-    
-            } catch (RequestException $e) {
-                Log::error('OTP verification request failed: ' . $e->getMessage(), [
-                    'request' => (string) $e->getRequest()->getBody(),
-                    'response' => $e->hasResponse() ? (string) $e->getResponse()->getBody() : null,
-                ]);
-    
-                return redirect()->back()
-                    ->withErrors(['error' => 'Failed to verify OTP. Please try again.']);
+
+            // Log the API response
+            $responseData = json_decode($response->getBody(), true);
+            Log::info('API response received:', $responseData);
+
+            if (isset($responseData['status']) && $responseData['status'] === 'success') {
+                return redirect()->route('auth.login-user')
+                    ->with('success', 'Account verified successfully!');
             }
+
+            // Log the error message if verification fails
+            Log::warning('Verification failed:', [
+                'error_message' => $responseData['message'] ?? 'Unknown error.',
+                'payload' => $payload
+            ]);
+
+            return redirect()->back()
+                ->withErrors(['error' => $responseData['message'] ?? 'Verification failed.'])
+                ->withInput();
+        } catch (RequestException $e) {
+            Log::error('OTP verification failed', [
+                'error' => $e->getMessage(),
+                'payload' => $payload,
+                'response' => $e->hasResponse() ? (string) $e->getResponse()->getBody() : null,
+            ]);
+
+            return redirect()->back()
+                ->withErrors(['error' => 'Failed to verify OTP. Please try again.'])
+                ->withInput();
         }
-    
-        public function resendOTP(Request $request)
-        {
-            $client = new Client();
-            $apiUrl = config('api.base_url') . '/resend-otp';
-    
-            try {
-                // Get the registration data from session
-                $registrationData = session('registration_data', []);
-                
-                $payload = [
-                    'business_email' => $registrationData['lemail'] ?? null,
-                ];
-    
-                $response = $client->post($apiUrl, [
-                    'headers' => [
-                        'Content-Type' => 'application/json',
-                    ],
-                    'json' => $payload,
-                ]);
-    
-                $responseData = json_decode($response->getBody(), true);
-    
-                if (isset($responseData['status']) && $responseData['status'] === 'success') {
-                    return redirect()->back()
-                        ->with('success', 'OTPs have been resent successfully.');
-                }
-    
+    }
+
+
+    public function resendOTP(Request $request)
+    {
+        // Validate the request
+        $validatedData = $request->validate([
+            'verification_method' => ['required', 'in:email,phone'],
+            'business_email' => ['required', 'email'],
+        ]);
+
+        $client = new Client();
+        $apiUrl = config('api.base_url') . '/resendotp'; // Make sure this endpoint exists
+
+        try {
+            $payload = [
+                'business_email' => $validatedData['business_email'],
+                'verification_method' => $validatedData['verification_method'],
+            ];
+
+            $response = $client->post($apiUrl, [
+                'headers' => ['Content-Type' => 'application/json'],
+                'json' => $payload,
+            ]);
+
+            $responseData = json_decode($response->getBody(), true);
+
+            if (isset($responseData['status']) && $responseData['status'] === 'success') {
                 return redirect()->back()
-                    ->withErrors(['error' => $responseData['message'] ?? 'Failed to resend OTPs']);
-    
-            } catch (RequestException $e) {
-                Log::error('Resend OTP request failed: ' . $e->getMessage(), [
-                    'request' => (string) $e->getRequest()->getBody(),
-                    'response' => $e->hasResponse() ? (string) $e->getResponse()->getBody() : null,
-                ]);
-    
-                return redirect()->back()
-                    ->withErrors(['error' => 'Failed to resend OTPs. Please try again.']);
+                    ->with('success', 'OTP has been resent successfully.');
             }
+
+            return redirect()->back()
+                ->withErrors(['error' => $responseData['message'] ?? 'Failed to resend OTP.']);
+        } catch (RequestException $e) {
+            Log::error('OTP resend failed', [
+                'error' => $e->getMessage(),
+                'payload' => $payload,
+                'response' => $e->hasResponse() ? (string) $e->getResponse()->getBody() : null,
+            ]);
+
+            return redirect()->back()
+                ->withErrors(['error' => 'Failed to resend OTP. Please try again.']);
         }
-    
+    }
+
+    public function verifyOTPSubmit22(Request $request)
+    {
+        // Validate the incoming request
+        $validatedData = $request->validate([
+            'email_otp' => ['required', 'string', 'size:6', 'regex:/^[0-9]+$/'],
+            'phone_otp' => ['required', 'string', 'size:6', 'regex:/^[0-9]+$/'],
+        ]);
+
+        $client = new Client();
+        $apiUrl = config('api.base_url') . '/changeotps';
+
+        try {
+            // Get the registration data from session
+            $registrationData = session('registration_data', []);
+
+            // Prepare the payload according to API specifications
+            $payload = [
+                'email_otp' => $validatedData['email_otp'],
+                'phone_otp' => $validatedData['phone_otp'],
+                'business_email' => $registrationData['lemail'] ?? null,
+            ];
+
+            $response = $client->post($apiUrl, [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => $payload,
+            ]);
+
+            $responseData = json_decode($response->getBody(), true);
+
+            if (isset($responseData['status']) && $responseData['status'] === 'success') {
+                // Clear the registration session data
+                session()->forget('registration_data');
+
+                // Log successful verification
+                Log::info('OTP verification successful', [
+                    'business_email' => $payload['business_email']
+                ]);
+
+                return redirect()->route('auth.login-user')
+                    ->with('success', 'Account verified successfully. Please login.');
+            }
+
+            return redirect()->back()
+                ->withErrors(['error' => $responseData['message'] ?? 'Verification failed']);
+        } catch (RequestException $e) {
+            Log::error('OTP verification request failed: ' . $e->getMessage(), [
+                'request' => (string) $e->getRequest()->getBody(),
+                'response' => $e->hasResponse() ? (string) $e->getResponse()->getBody() : null,
+            ]);
+
+            return redirect()->back()
+                ->withErrors(['error' => 'Failed to verify OTP. Please try again.']);
+        }
+    }
+
+    public function resendOTP22(Request $request)
+    {
+        $client = new Client();
+        $apiUrl = config('api.base_url') . '/resend-otp';
+
+        try {
+            // Get the registration data from session
+            $registrationData = session('registration_data', []);
+
+            $payload = [
+                'business_email' => $registrationData['lemail'] ?? null,
+            ];
+
+            $response = $client->post($apiUrl, [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => $payload,
+            ]);
+
+            $responseData = json_decode($response->getBody(), true);
+
+            if (isset($responseData['status']) && $responseData['status'] === 'success') {
+                return redirect()->back()
+                    ->with('success', 'OTPs have been resent successfully.');
+            }
+
+            return redirect()->back()
+                ->withErrors(['error' => $responseData['message'] ?? 'Failed to resend OTPs']);
+        } catch (RequestException $e) {
+            Log::error('Resend OTP request failed: ' . $e->getMessage(), [
+                'request' => (string) $e->getRequest()->getBody(),
+                'response' => $e->hasResponse() ? (string) $e->getResponse()->getBody() : null,
+            ]);
+
+            return redirect()->back()
+                ->withErrors(['error' => 'Failed to resend OTPs. Please try again.']);
+        }
+    }
+
 
     public function forgotPassword()
     {
