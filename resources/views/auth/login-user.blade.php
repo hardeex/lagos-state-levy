@@ -29,7 +29,7 @@
                         account</a>
                 </p>
             </div>
-            <form class="mt-8 space-y-6" action="{{ route('auth.login-user') }}" method="POST">
+            <form class="mt-8 space-y-6" action="{{ route('auth.login-submit') }}" method="POST">
                 @csrf
                 <div class="rounded-md shadow-sm -space-y-px">
                     <!-- Email Input -->
@@ -80,9 +80,3 @@
         </div>
     </div>
 @endsection
-
-@push('scripts')
-    <script>
-        // Additional JavaScript can be added here for enhanced functionality
-    </script>
-@endpush

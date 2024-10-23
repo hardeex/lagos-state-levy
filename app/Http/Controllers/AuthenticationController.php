@@ -27,8 +27,8 @@ class AuthenticationController extends Controller
             'lemail' => ['required', 'email'],
             'lpw' => ['required', 'string'],
             'lcpw' => ['required', 'string', 'same:lpw'],
-            'lregno' => ['required', 'string', 'regex:/^RC\d{6}$/'], // Matches format like "RC123456"
-            'ltaxid' => ['required', 'string', 'regex:/^TAX\d{6}$/'], // Matches format like "TAX123456"
+            'lregno' => ['required', 'string', 'regex:/^RC\d{6}$/'],
+            'ltaxid' => ['required', 'string', 'regex:/^TAX\d{6}$/'],
             'lbizname' => ['required', 'string', 'max:255'],
             'ladd' => ['required', 'string', 'max:255'],
             'llga' => ['required', 'string', 'max:255'],
@@ -57,8 +57,8 @@ class AuthenticationController extends Controller
                 if ($responseData['status'] === 'success') {
                     // Log the success response data and message
                     Log::info('API request successful', [
-                        'data' => $validatedData, // Log the validated data sent
-                        'response' => $responseData // Log the full response from the API
+                        'data' => $validatedData,
+                        'response' => $responseData
                     ]);
                     return redirect()->route('auth.user-otp-verify')->with('success', $responseData['message']);
                 } else {
@@ -171,7 +171,7 @@ class AuthenticationController extends Controller
         ]);
 
         $client = new Client();
-        $apiUrl = config('api.base_url') . '/resendotp'; // Make sure this endpoint exists
+        $apiUrl = config('api.base_url') . '/resendotp';
 
         try {
             $payload = [
@@ -205,100 +205,87 @@ class AuthenticationController extends Controller
         }
     }
 
-    public function verifyOTPSubmit22(Request $request)
+    public function loginUser()
     {
-        // Validate the incoming request
+        return view('auth.login-user');
+    }
+
+    public function storeLoginUser(Request $request)
+    {
+        // Validate incoming request data
         $validatedData = $request->validate([
-            'email_otp' => ['required', 'string', 'size:6', 'regex:/^[0-9]+$/'],
-            'phone_otp' => ['required', 'string', 'size:6', 'regex:/^[0-9]+$/'],
+            'lemail' => ['required', 'email'],
+            'lpw' => ['required', 'string'],
         ]);
 
         $client = new Client();
-        $apiUrl = config('api.base_url') . '/changeotps';
+        $apiUrl = config('api.base_url') . '/login'; // I will be validating the API endpoint with Mr. James
 
         try {
-            // Get the registration data from session
-            $registrationData = session('registration_data', []);
-
-            // Prepare the payload according to API specifications
-            $payload = [
-                'email_otp' => $validatedData['email_otp'],
-                'phone_otp' => $validatedData['phone_otp'],
-                'business_email' => $registrationData['lemail'] ?? null,
-            ];
-
             $response = $client->post($apiUrl, [
                 'headers' => [
                     'Content-Type' => 'application/json',
                 ],
-                'json' => $payload,
+                'json' => $validatedData,
             ]);
 
             $responseData = json_decode($response->getBody(), true);
 
-            if (isset($responseData['status']) && $responseData['status'] === 'success') {
-                // Clear the registration session data
-                session()->forget('registration_data');
+            if (isset($responseData['status'])) {
+                if ($responseData['status'] === 'success') {
+                    // Log the successful login attempt
+                    Log::info('Login successful', [
+                        'email' => $validatedData['lemail']
+                    ]);
 
-                // Log successful verification
-                Log::info('OTP verification successful', [
-                    'business_email' => $payload['business_email']
-                ]);
+                    // Store any necessary session data
+                    if (isset($responseData['token'])) {
+                        session(['auth_token' => $responseData['token']]);
+                    }
 
-                return redirect()->route('auth.login-user')
-                    ->with('success', 'Account verified successfully. Please login.');
-            }
+                    if (isset($responseData['user'])) {
+                        session(['user' => $responseData['user']]);
+                    }
 
-            return redirect()->back()
-                ->withErrors(['error' => $responseData['message'] ?? 'Verification failed']);
-        } catch (RequestException $e) {
-            Log::error('OTP verification request failed: ' . $e->getMessage(), [
-                'request' => (string) $e->getRequest()->getBody(),
-                'response' => $e->hasResponse() ? (string) $e->getResponse()->getBody() : null,
-            ]);
+                    // Redirect to dashboard or home page after successful login
+                    return redirect()->route('dashboard')
+                        ->with('success', $responseData['message'] ?? 'Login successful!');
+                } else {
+                    // Log failed login attempt
+                    Log::warning('Login failed', [
+                        'email' => $validatedData['lemail'],
+                        'message' => $responseData['message']
+                    ]);
 
-            return redirect()->back()
-                ->withErrors(['error' => 'Failed to verify OTP. Please try again.']);
-        }
-    }
-
-    public function resendOTP22(Request $request)
-    {
-        $client = new Client();
-        $apiUrl = config('api.base_url') . '/resend-otp';
-
-        try {
-            // Get the registration data from session
-            $registrationData = session('registration_data', []);
-
-            $payload = [
-                'business_email' => $registrationData['lemail'] ?? null,
-            ];
-
-            $response = $client->post($apiUrl, [
-                'headers' => [
-                    'Content-Type' => 'application/json',
-                ],
-                'json' => $payload,
-            ]);
-
-            $responseData = json_decode($response->getBody(), true);
-
-            if (isset($responseData['status']) && $responseData['status'] === 'success') {
+                    return redirect()->back()
+                        ->withErrors(['error' => $responseData['message'] ?? 'Invalid credentials.'])
+                        ->withInput($request->except('lpw'));
+                }
+            } else {
+                Log::error('Unexpected response from login API: ', ['response' => $responseData]);
                 return redirect()->back()
-                    ->with('success', 'OTPs have been resent successfully.');
+                    ->withErrors(['error' => 'Unexpected response from the server.'])
+                    ->withInput($request->except('lpw'));
             }
-
-            return redirect()->back()
-                ->withErrors(['error' => $responseData['message'] ?? 'Failed to resend OTPs']);
         } catch (RequestException $e) {
-            Log::error('Resend OTP request failed: ' . $e->getMessage(), [
+            Log::error('Login request failed: ' . $e->getMessage(), [
                 'request' => (string) $e->getRequest()->getBody(),
                 'response' => $e->hasResponse() ? (string) $e->getResponse()->getBody() : null,
+                'email' => $validatedData['lemail']
             ]);
 
             return redirect()->back()
-                ->withErrors(['error' => 'Failed to resend OTPs. Please try again.']);
+                ->withErrors(['error' => 'An error occurred while connecting to the server.'])
+                ->withInput($request->except('lpw'));
+        } catch (\Exception $e) {
+            Log::error('General login error occurred: ' . $e->getMessage(), [
+                'exception' => $e,
+                'email' => $validatedData['lemail']
+            ]);
+
+            return redirect()->back()
+                ->withErrors(['error' => 'An unexpected error occurred.'])
+                ->withInput($request->except('lpw'));
         }
     }
 
@@ -308,9 +295,310 @@ class AuthenticationController extends Controller
         return view('auth.forgot-password');
     }
 
+    public function storeForgotPassword(Request $request)
+    {
+        // Validate incoming request data
+        $validatedData = $request->validate([
+            'lemail' => ['required', 'email'],
+        ]);
+
+        $client = new Client();
+        $apiUrl = config('api.base_url') . '/forgot-password'; // en-point to be confirmed
+
+        try {
+            $response = $client->post($apiUrl, [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => $validatedData,
+            ]);
+
+            $responseData = json_decode($response->getBody(), true);
+
+            if (isset($responseData['status'])) {
+                if ($responseData['status'] === 'success') {
+                    // Log the successful password reset request
+                    Log::info('Password reset requested', [
+                        'email' => $validatedData['lemail']
+                    ]);
+
+                    return redirect()->route('auth.change-password')
+                        ->with('success', $responseData['message'] ?? 'Password reset link has been sent to your email.');
+                } else {
+                    Log::warning('Password reset request failed', [
+                        'email' => $validatedData['lemail'],
+                        'message' => $responseData['message']
+                    ]);
+
+                    return redirect()->back()
+                        ->withErrors(['error' => $responseData['message'] ?? 'Unable to process password reset request.'])
+                        ->withInput();
+                }
+            } else {
+                Log::error('Unexpected response from forgot password API: ', ['response' => $responseData]);
+                return redirect()->back()
+                    ->withErrors(['error' => 'Unexpected response from the server.'])
+                    ->withInput();
+            }
+        } catch (RequestException $e) {
+            Log::error('Forgot password request failed: ' . $e->getMessage(), [
+                'request' => (string) $e->getRequest()->getBody(),
+                'response' => $e->hasResponse() ? (string) $e->getResponse()->getBody() : null,
+                'email' => $validatedData['lemail']
+            ]);
+
+            return redirect()->back()
+                ->withErrors(['error' => 'An error occurred while connecting to the server.'])
+                ->withInput();
+        } catch (\Exception $e) {
+            Log::error('General forgot password error occurred: ' . $e->getMessage(), [
+                'exception' => $e,
+                'email' => $validatedData['lemail']
+            ]);
+
+            return redirect()->back()
+                ->withErrors(['error' => 'An unexpected error occurred.'])
+                ->withInput();
+        }
+    }
+
+
     public function changePassword()
     {
         return view('auth.change-password');
+    }
+
+    public function storeChangePassword(Request $request)
+    {
+        // Validate incoming request data
+        $validatedData = $request->validate([
+            'token' => ['required', 'string'],
+            'lemail' => ['required', 'email'],
+            'lpw' => ['required', 'string', 'min:8'],
+            'lcpw' => ['required', 'string', 'same:lpw'],
+        ]);
+
+        $client = new Client();
+        $apiUrl = config('api.base_url') . '/reset-password'; // end-point to be confirmed
+
+        try {
+            $response = $client->post($apiUrl, [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => $validatedData,
+            ]);
+
+            $responseData = json_decode($response->getBody(), true);
+
+            if (isset($responseData['status'])) {
+                if ($responseData['status'] === 'success') {
+                    // Log the successful password change
+                    Log::info('Password changed successfully', [
+                        'email' => $validatedData['lemail']
+                    ]);
+
+                    return redirect()->route('auth.login-user')
+                        ->with('success', $responseData['message'] ?? 'Password has been reset successfully.');
+                } else {
+                    Log::warning('Password change failed', [
+                        'email' => $validatedData['lemail'],
+                        'message' => $responseData['message']
+                    ]);
+
+                    return redirect()->back()
+                        ->withErrors(['error' => $responseData['message'] ?? 'Unable to reset password.'])
+                        ->withInput($request->except(['lpw', 'lcpw']));
+                }
+            } else {
+                Log::error('Unexpected response from reset password API: ', ['response' => $responseData]);
+                return redirect()->back()
+                    ->withErrors(['error' => 'Unexpected response from the server.'])
+                    ->withInput($request->except(['lpw', 'lcpw']));
+            }
+        } catch (RequestException $e) {
+            Log::error('Reset password request failed: ' . $e->getMessage(), [
+                'request' => (string) $e->getRequest()->getBody(),
+                'response' => $e->hasResponse() ? (string) $e->getResponse()->getBody() : null,
+                'email' => $validatedData['lemail']
+            ]);
+
+            return redirect()->back()
+                ->withErrors(['error' => 'An error occurred while connecting to the server.'])
+                ->withInput($request->except(['lpw', 'lcpw']));
+        } catch (\Exception $e) {
+            Log::error('General reset password error occurred: ' . $e->getMessage(), [
+                'exception' => $e,
+                'email' => $validatedData['lemail']
+            ]);
+
+            return redirect()->back()
+                ->withErrors(['error' => 'An unexpected error occurred.'])
+                ->withInput($request->except(['lpw', 'lcpw']));
+        }
+    }
+
+    // loading local government end-point
+
+    public function loadLGALCDA()
+    {
+        Log::info('The user requested LGA/LCDA data');
+        $client = new Client();
+        $apiUrl = config('api.base_url') . '/loadlgalcda';
+
+        try {
+            $response = $client->get($apiUrl, [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json'
+                ]
+            ]);
+
+            // Log the full response for debugging
+            Log::info('LGA/LCDA API response received', [
+                'url' => $apiUrl,
+                'response' => (string) $response->getBody(),
+            ]);
+
+            $responseData = json_decode($response->getBody(), true);
+
+            if (isset($responseData['status']) && $responseData['status'] === 'success') {
+                return response()->json($responseData['data'] ?? []);
+            }
+
+            Log::warning('Unexpected response format from LGA/LCDA API', [
+                'response' => $responseData
+            ]);
+            return response()->json([], 500);
+        } catch (\Exception $e) {
+            Log::error('Failed to load LGA/LCDA data: ' . $e->getMessage(), [
+                'url' => $apiUrl,
+                'exception' => $e,
+            ]);
+            return response()->json([], 500);
+        }
+    }
+
+    // load industry options for registration form
+    // Controller Method
+    public function loadIndustry()
+    {
+        Log::info('The user requested Industry Sector data');
+        $client = new Client();
+        $apiUrl = config('api.base_url') . '/loadindustry';
+
+        try {
+            $response = $client->get($apiUrl, [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json'
+                ]
+            ]);
+
+            // Log the full response for debugging
+            Log::info('Industry Sector API response received', [
+                'url' => $apiUrl,
+                'response' => (string) $response->getBody(),
+            ]);
+
+            $responseData = json_decode($response->getBody(), true);
+
+            if (isset($responseData['status']) && $responseData['status'] === 'success') {
+                return response()->json($responseData['data'] ?? []);
+            }
+
+            Log::warning('Unexpected response format from Industry Sector API', [
+                'response' => $responseData
+            ]);
+            return response()->json([], 500);
+        } catch (\Exception $e) {
+            Log::error('Failed to load Industry Sector data: ' . $e->getMessage(), [
+                'url' => $apiUrl,
+                'exception' => $e,
+            ]);
+            return response()->json([], 500);
+        }
+    }
+
+    // sub sector options for registration form
+    // Controller Method
+    public function loadSubSectorUSINGGET()
+    {
+        Log::info('The user requested Sub-Sector data');
+        $client = new Client();
+        $apiUrl = config('api.base_url') . '/loadsubsector';
+
+        try {
+            $response = $client->get($apiUrl, [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json'
+                ]
+            ]);
+
+            // Log the full response for debugging
+            Log::info('Sub-Sector API response received', [
+                'url' => $apiUrl,
+                'response' => (string) $response->getBody(),
+            ]);
+
+            $responseData = json_decode($response->getBody(), true);
+
+            if (isset($responseData['status']) && $responseData['status'] === 'success') {
+                return response()->json($responseData['data'] ?? []);
+            }
+
+            Log::warning('Unexpected response format from Sub-Sector API', [
+                'response' => $responseData
+            ]);
+            return response()->json([], 500);
+        } catch (\Exception $e) {
+            Log::error('Failed to load Sub-Sector data: ' . $e->getMessage(), [
+                'url' => $apiUrl,
+                'exception' => $e,
+            ]);
+            return response()->json([], 500);
+        }
+    }
+
+    // Controller Method
+    public function loadSubSector()
+    {
+        Log::info('The user requested Sub-Sector data');
+        $client = new Client();
+        $apiUrl = config('api.base_url') . '/loadsubsector';
+
+        try {
+            $response = $client->post($apiUrl, [  // Changed from get to post
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json'
+                ]
+            ]);
+
+            // Log the full response for debugging
+            Log::info('Sub-Sector API response received', [
+                'url' => $apiUrl,
+                'response' => (string) $response->getBody(),
+            ]);
+
+            $responseData = json_decode($response->getBody(), true);
+
+            if (isset($responseData['status']) && $responseData['status'] === 'success') {
+                return response()->json($responseData['data'] ?? []);
+            }
+
+            Log::warning('Unexpected response format from Sub-Sector API', [
+                'response' => $responseData
+            ]);
+            return response()->json([], 500);
+        } catch (\Exception $e) {
+            Log::error('Failed to load Sub-Sector data: ' . $e->getMessage(), [
+                'url' => $apiUrl,
+                'exception' => $e,
+            ]);
+            return response()->json([], 500);
+        }
     }
 
     public function calendar()
@@ -358,10 +646,7 @@ class AuthenticationController extends Controller
         return view('auth.upload-receipt');
     }
 
-    public function loginUser()
-    {
-        return view('auth.login-user');
-    }
+
 
 
     public function dashboard()

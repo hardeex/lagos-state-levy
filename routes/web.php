@@ -10,6 +10,10 @@ use Illuminate\Support\Facades\Route;
 // Authentication Routes
 Route::get('/register', [AuthenticationController::class, 'registerUser'])->name('auth.register-user');
 Route::post('/register', [AuthenticationController::class, 'storeRegisterUser'])->name('auth.register-submit');
+Route::get('/business/load-lga-lcda', [AuthenticationController::class, 'loadLGALCDA'])->name('business.load-lga-lcda');
+Route::get('/api/business/load-industry', [AuthenticationController::class, 'loadIndustry']);
+//Route::get('/api/business/load-subsector', [AuthenticationController::class, 'loadSubSector']);
+Route::post('/business/load-subsector', [AuthenticationController::class, 'loadSubSector']);
 
 // OTP verification routes
 Route::get('/register/otp-verify', [AuthenticationController::class, 'verifyOTP'])->name('auth.user-otp-verify');
@@ -21,7 +25,9 @@ Route::get('/login', [AuthenticationController::class, 'loginUser'])->name('auth
 Route::post('/api/login', [AuthenticationController::class, 'storeLoginUser'])->name('auth.login-submit');
 
 Route::get('/forgot-password', [AuthenticationController::class, 'forgotPassword'])->name('auth.forgot-password');
+Route::post('/api/forgot-password', [AuthenticationController::class, 'storeForgotPassword'])->name('auth.forgot-password-submit');
 Route::get('/change-password', [AuthenticationController::class, 'changePassword'])->name('auth.change-password');
+Route::post('/api/change-password', [AuthenticationController::class, 'storeChangePassword'])->name('auth.change-password-submit');
 
 Route::get('/declaration', [AuthenticationController::class, 'declaration'])->name('auth.declaration');
 Route::post('/api/declaration', [AuthenticationController::class, 'storeDeclaration'])->name('auth.declaration-submit');

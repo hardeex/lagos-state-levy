@@ -129,18 +129,20 @@
                         this.email = '';
                     }, 2000);
 
-                    // In a real application, you would make an API call here
-                    // axios.post('/api/forgot-password', { email: this.email })
-                    //     .then(response => {
-                    //         this.isLoading = false;
-                    //         this.showSuccessMessage = true;
-                    //         this.email = '';
-                    //     })
-                    //     .catch(error => {
-                    //         this.isLoading = false;
-                    //         this.error = true;
-                    //         this.errorMessage = error.response.data.message || 'An error occurred. Please try again.';
-                    //     });
+
+                    axios.post('/api/forgot-password', {
+                            email: this.email
+                        })
+                        .then(response => {
+                            this.isLoading = false;
+                            this.showSuccessMessage = true;
+                            this.email = '';
+                        })
+                        .catch(error => {
+                            this.isLoading = false;
+                            this.error = true;
+                            this.errorMessage = error.response.data.message || 'An error occurred. Please try again.';
+                        });
                 }
             }
         }
