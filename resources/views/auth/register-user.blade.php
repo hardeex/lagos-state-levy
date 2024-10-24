@@ -2,6 +2,38 @@
 @section('title', 'Register')
 @section('content')
     <div class="min-h-screen bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+        <div class="space-y-4 max-w-2xl mx-auto p-4">
+            @if ($errors->any())
+                <div class="bg-red-50 border-l-4 border-red-500 rounded-lg p-4 shadow-sm">
+                    <div class="flex items-center mb-2">
+                        <svg class="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        <h3 class="text-red-800 font-medium">There were some errors with your submission</h3>
+                    </div>
+                    <ul class="list-disc list-inside text-red-700 space-y-1">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+            @if (session('success'))
+                <div class="bg-green-50 border-l-4 border-green-500 rounded-lg p-4 shadow-sm">
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        <p class="text-green-700 font-medium">{{ session('success') }}</p>
+                    </div>
+                </div>
+            @endif
+        </div>
         <div id="taxIdModal" class="fixed inset-0 flex items-center justify-center z-50 hidden">
 
             <div class="bg-white rounded-lg shadow-md p-6 w-11/12 max-w-md">
@@ -305,7 +337,7 @@
                                 @enderror
                             </div>
 
-                            <script>
+                            {{-- <script>
                                 document.addEventListener('DOMContentLoaded', function() {
                                     const industrySelect = document.getElementById('lindustryone');
 
@@ -374,9 +406,9 @@
                                     // Load the Industry Sector data when the page loads
                                     loadIndustrySector();
                                 });
-                            </script>
+                            </script> --}}
                             <!-- Sub Industry Sector -->
-                            {{-- <div class="relative group">
+                            <div class="relative group">
                                 <input type="text" name="lsubsectorone" id="lsubsectorone" required
                                     class="peer w-full h-10 bg-gray-50 text-gray-800 border-b-2 border-gray-300 focus:outline-none focus:border-blue-600 transition-all"
                                     placeholder="Sub Industry Sector" value="{{ old('lsubsectorone') }}">
@@ -384,31 +416,20 @@
                                 @error('lsubsectorone')
                                     <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
-                            </div> --}}
-                            <!-- Sub Industry Sector Dropdown -->
-                            {{-- <div class="relative group">
-                                <select name="lsubsectorone" id="lsubsectorone" required
-                                    class="peer w-full h-10 bg-gray-50 text-gray-800 border-b-2 border-gray-300 focus:outline-none focus:border-blue-600 transition-all">
-                                    <option value="">Select Sub Industry Sector</option>
-                                    <!-- Options will be populated via JavaScript -->
-                                </select>
-                                <label for="lsubsectorone" class="label">Sub Industry Sector</label>
-                                @error('lsubsectorone')
-                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div> --}}
+                            </div>
 
-                            {{-- <script>
+
+                            <script>
                                 document.addEventListener('DOMContentLoaded', function() {
-                                    const subSectorSelect = document.getElementById('lsubsectorone');
+                                    const industrySelect = document.getElementById('lindustryone');
+                                    const subSectorContainer = document.querySelector('[data-subsector-container]') ||
+                                        document.getElementById('lsubsectorone').parentElement;
 
-                                    function loadSubSectors() {
-                                        subSectorSelect.disabled = true; // Disable while loading
+                                    // Function to load industry sectors
+                                    function loadIndustrySector() {
+                                        industrySelect.disabled = true;
 
-                                        // Add debug logging
-                                        console.log('Loading sub-sectors...');
-
-                                        fetch('/api/business/load-subsector', {
+                                        fetch('/api/business/load-industry', {
                                                 method: 'GET',
                                                 headers: {
                                                     'Accept': 'application/json',
@@ -416,151 +437,148 @@
                                                 }
                                             })
                                             .then(response => {
-                                                console.log('Response received:', response);
                                                 if (!response.ok) {
                                                     throw new Error(`HTTP error! status: ${response.status}`);
                                                 }
                                                 return response.json();
                                             })
                                             .then(data => {
-                                                console.log('Parsed data:', data);
-
                                                 // Clear existing options except the first one
-                                                while (subSectorSelect.options.length > 1) {
-                                                    subSectorSelect.remove(1);
+                                                while (industrySelect.options.length > 1) {
+                                                    industrySelect.remove(1);
                                                 }
 
                                                 if (data && Array.isArray(data)) {
-                                                    // Sort sub-sectors alphabetically
+                                                    // Sort industries alphabetically
                                                     data.sort();
 
                                                     // Populate options
-                                                    data.forEach(subSector => {
-                                                        const option = new Option(subSector, subSector);
-                                                        subSectorSelect.add(option);
+                                                    data.forEach(industryName => {
+                                                        const option = new Option(industryName, industryName);
+                                                        industrySelect.add(option);
                                                     });
 
-                                                    // If there's an old value, try to select it
-                                                    const oldValue = "{{ old('lsubsectorone') }}";
+                                                    // If there's an old value, select it and load its subsectors
+                                                    const oldValue = industrySelect.getAttribute('data-old-value') ||
+                                                        "{{ old('lindustryone') }}";
                                                     if (oldValue) {
-                                                        subSectorSelect.value = oldValue;
+                                                        industrySelect.value = oldValue;
+                                                        loadSubSectors(oldValue);
                                                     }
-                                                } else {
-                                                    console.warn('Unexpected data format received:', data);
-                                                    throw new Error('Invalid data format received');
                                                 }
                                             })
                                             .catch(error => {
-                                                console.error('Error loading Sub-Sectors:', error);
-                                                // Clear existing options except the first one
-                                                while (subSectorSelect.options.length > 1) {
-                                                    subSectorSelect.remove(1);
-                                                }
-                                                // Add error option
-                                                const errorOption = new Option('Error loading Sub-Sectors', '');
-                                                subSectorSelect.add(errorOption);
+                                                console.error('Error loading Industry Sectors:', error);
+                                                const errorOption = new Option('Error loading Industry Sectors', '');
+                                                industrySelect.add(errorOption);
                                             })
                                             .finally(() => {
-                                                subSectorSelect.disabled = false;
+                                                industrySelect.disabled = false;
                                             });
                                     }
 
-                                    // Load sub-sectors when the page loads
-                                    console.log('Sub-sector script loaded');
-                                    loadSubSectors();
-                                });
-                            </script> --}}
+                                    // Function to load subsectors for selected industry
+                                    function loadSubSectors(industry) {
+                                        if (!industry) return;
 
-                            <!-- Sub Industry Sector Dropdown -->
-                            <div class="relative group">
-                                <select name="lsubsectorone" id="lsubsectorone" required
-                                    class="peer w-full h-10 bg-gray-50 text-gray-800 border-b-2 border-gray-300 focus:outline-none focus:border-blue-600 transition-all">
-                                    <option value="">Select Sub Industry Sector</option>
-                                    <!-- Options will be populated via JavaScript -->
-                                </select>
-                                <label for="lsubsectorone" class="label">Sub Industry Sector</label>
-                                @error('lsubsectorone')
-                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
+                                        // Show loading state
+                                        const currentSubsectorElement = document.getElementById('lsubsectorone');
+                                        if (currentSubsectorElement) {
+                                            currentSubsectorElement.disabled = true;
+                                        }
 
-                            <script>
-                                document.addEventListener('DOMContentLoaded', function() {
-                                    const subSectorSelect = document.getElementById('lsubsectorone');
-
-                                    function loadSubSectors() {
-                                        subSectorSelect.disabled = true; // Disable while loading
-
-                                        // Add debug logging
-                                        console.log('Loading sub-sectors...');
-
-                                        // Get CSRF token
-                                        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-
-                                        fetch('/business/load-subsector', {
-                                                method: 'POST', // Changed from GET to POST
+                                        fetch('/api/business/load-subsector', {
+                                                method: 'POST',
                                                 headers: {
-                                                    'Accept': 'application/json',
                                                     'Content-Type': 'application/json',
-                                                    'X-Requested-With': 'XMLHttpRequest',
-                                                    'X-CSRF-TOKEN': csrfToken // Add CSRF token for Laravel
-                                                }
+                                                    'Accept': 'application/json',
+                                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                                                },
+                                                body: JSON.stringify({
+                                                    industry: industry
+                                                })
                                             })
                                             .then(response => {
-                                                console.log('Response received:', response);
                                                 if (!response.ok) {
                                                     throw new Error(`HTTP error! status: ${response.status}`);
                                                 }
                                                 return response.json();
                                             })
                                             .then(data => {
-                                                console.log('Parsed data:', data);
-
-                                                // Clear existing options except the first one
-                                                while (subSectorSelect.options.length > 1) {
-                                                    subSectorSelect.remove(1);
-                                                }
-
-                                                if (data && Array.isArray(data)) {
-                                                    // Sort sub-sectors alphabetically
-                                                    data.sort();
-
-                                                    // Populate options
-                                                    data.forEach(subSector => {
-                                                        const option = new Option(subSector, subSector);
-                                                        subSectorSelect.add(option);
-                                                    });
-
-                                                    // If there's an old value, try to select it
-                                                    const oldValue = "{{ old('lsubsectorone') }}";
-                                                    if (oldValue) {
-                                                        subSectorSelect.value = oldValue;
-                                                    }
+                                                if (Array.isArray(data)) {
+                                                    createSubsectorSelect(data);
                                                 } else {
-                                                    console.warn('Unexpected data format received:', data);
                                                     throw new Error('Invalid data format received');
                                                 }
                                             })
                                             .catch(error => {
-                                                console.error('Error loading Sub-Sectors:', error);
-                                                // Clear existing options except the first one
-                                                while (subSectorSelect.options.length > 1) {
-                                                    subSectorSelect.remove(1);
-                                                }
-                                                // Add error option
-                                                const errorOption = new Option('Error loading Sub-Sectors', '');
-                                                subSectorSelect.add(errorOption);
-                                            })
-                                            .finally(() => {
-                                                subSectorSelect.disabled = false;
+                                                console.error('Error loading subsectors:', error);
+                                                createSubsectorSelect([]);
                                             });
                                     }
 
-                                    // Load sub-sectors when the page loads
-                                    console.log('Sub-sector script loaded');
-                                    loadSubSectors();
+                                    // Function to create/update subsector select element
+                                    function createSubsectorSelect(subsectors) {
+                                        const oldSubsectorValue = document.getElementById('lsubsectorone').value;
+
+                                        // Create new select element
+                                        const select = document.createElement('select');
+                                        select.id = 'lsubsectorone';
+                                        select.name = 'lsubsectorone';
+                                        select.required = true;
+                                        select.className =
+                                            'peer w-full h-10 bg-gray-50 text-gray-800 border-b-2 border-gray-300 focus:outline-none focus:border-blue-600 transition-all';
+
+                                        // Add default option
+                                        const defaultOption = document.createElement('option');
+                                        defaultOption.value = '';
+                                        defaultOption.textContent = 'Select Sub Industry Sector';
+                                        select.appendChild(defaultOption);
+
+                                        // Add subsector options
+                                        if (subsectors.length > 0) {
+                                            subsectors
+                                                .sort((a, b) => (a.llabel || '').localeCompare(b.llabel || ''))
+                                                .forEach(subsector => {
+                                                    const option = document.createElement('option');
+                                                    option.value = subsector.id;
+                                                    option.textContent = subsector.llabel;
+                                                    select.appendChild(option);
+                                                });
+                                        }
+
+                                        // Replace existing element
+                                        const currentElement = document.getElementById('lsubsectorone');
+                                        const parent = currentElement.parentElement;
+                                        parent.replaceChild(select, currentElement);
+
+                                        // Restore old value if it exists
+                                        if (oldSubsectorValue) {
+                                            select.value = oldSubsectorValue;
+                                        }
+                                    }
+
+                                    // Event listener for industry selection change
+                                    if (industrySelect) {
+                                        industrySelect.addEventListener('change', function() {
+                                            const selectedIndustry = this.value;
+                                            if (selectedIndustry) {
+                                                loadSubSectors(selectedIndustry);
+                                            } else {
+                                                createSubsectorSelect([]); // Reset subsector select with empty options
+                                            }
+                                        });
+                                    }
+
+                                    // Initialize
+                                    loadIndustrySector();
                                 });
                             </script>
+
+
+
+
+
                         </div>
 
                         <div class="flex items-center justify-between mt-6">

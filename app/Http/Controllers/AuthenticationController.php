@@ -210,8 +210,10 @@ class AuthenticationController extends Controller
         return view('auth.login-user');
     }
 
-    public function storeLoginUser(Request $request)
+    public function storeLoginUserWITHOUTDECLARATION(Request $request)
     {
+        Log::info('Incoming request data', ['request' => $request->all()]);
+
         // Validate incoming request data
         $validatedData = $request->validate([
             'lemail' => ['required', 'email'],
@@ -219,14 +221,20 @@ class AuthenticationController extends Controller
         ]);
 
         $client = new Client();
-        $apiUrl = config('api.base_url') . '/login'; // I will be validating the API endpoint with Mr. James
+        $apiUrl = config('api.base_url') . '/bloginaction';
 
         try {
+            // Change the payload to match the expected format
+            $payload = [
+                'email' => $validatedData['lemail'], // Correct key
+                'password' => $validatedData['lpw'],  // Correct key
+            ];
+
             $response = $client->post($apiUrl, [
                 'headers' => [
                     'Content-Type' => 'application/json',
                 ],
-                'json' => $validatedData,
+                'json' => $payload, // Use the updated payload
             ]);
 
             $responseData = json_decode($response->getBody(), true);
@@ -248,7 +256,7 @@ class AuthenticationController extends Controller
                     }
 
                     // Redirect to dashboard or home page after successful login
-                    return redirect()->route('dashboard')
+                    return redirect()->route('auth.billing')
                         ->with('success', $responseData['message'] ?? 'Login successful!');
                 } else {
                     // Log failed login attempt
@@ -287,6 +295,137 @@ class AuthenticationController extends Controller
                 ->withErrors(['error' => 'An unexpected error occurred.'])
                 ->withInput($request->except('lpw'));
         }
+    }
+
+
+    public function storeLoginUser(Request $request)
+    {
+        Log::info('Incoming request data', ['request' => $request->all()]);
+
+        // Validate incoming request data
+        $validatedData = $request->validate([
+            'lemail' => ['required', 'email'],
+            'lpw' => ['required', 'string'],
+        ]);
+
+        $client = new Client();
+        $apiUrl = config('api.base_url') . '/bloginaction';
+
+        try {
+            $payload = [
+                'email' => $validatedData['lemail'],
+                'password' => $validatedData['lpw'],
+            ];
+
+            $response = $client->post($apiUrl, [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                ],
+                'json' => $payload,
+            ]);
+
+            $responseData = json_decode($response->getBody(), true);
+
+            // Handle the response based on status codes and response data
+            return $this->handleLoginResponse($responseData, $validatedData['lemail']);
+        } catch (RequestException $e) {
+            $statusCode = $e->hasResponse() ? $e->getResponse()->getStatusCode() : 500;
+            $responseBody = $e->hasResponse() ? json_decode($e->getResponse()->getBody(), true) : null;
+
+            // Log the error with detailed information
+            Log::error('Login request failed', [
+                'status_code' => $statusCode,
+                'request' => $payload,
+                'response' => $responseBody,
+                'email' => $validatedData['lemail']
+            ]);
+
+            // Handle specific HTTP status codes
+            switch ($statusCode) {
+                case 401:
+                    return redirect()->back()
+                        ->withErrors(['error' => 'Invalid credentials.'])
+                        ->withInput($request->except('lpw'));
+
+                case 403:
+                    // Handle business declaration requirement
+                    if ($responseBody && $responseBody['message'] === 'Business declaration required!') {
+                        return redirect()->route('auth.declaration')
+                            ->withErrors(['error' => 'Please complete the business declaration process to access your account.']);
+                    }
+                    return redirect()->back()
+                        ->withErrors(['error' => $responseBody['message'] ?? 'Access denied.'])
+                        ->withInput($request->except('lpw'));
+
+                case 422:
+                    return redirect()->back()
+                        ->withErrors(['error' => 'Please provide all required information.'])
+                        ->withInput($request->except('lpw'));
+
+                default:
+                    return redirect()->back()
+                        ->withErrors(['error' => 'An error occurred while connecting to the server.'])
+                        ->withInput($request->except('lpw'));
+            }
+        } catch (\Exception $e) {
+            Log::error('General login error occurred', [
+                'exception' => $e,
+                'email' => $validatedData['lemail']
+            ]);
+
+            return redirect()->back()
+                ->withErrors(['error' => 'An unexpected error occurred.'])
+                ->withInput($request->except('lpw'));
+        }
+    }
+
+    /**
+     * Handle the login response from the API
+     * 
+     * @param array $responseData
+     * @param string $email
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    private function handleLoginResponse(array $responseData, string $email)
+    {
+        if (!isset($responseData['status'])) {
+            Log::error('Unexpected response format from login API', ['response' => $responseData]);
+            return redirect()->back()
+                ->withErrors(['error' => 'Unexpected response from the server.'])
+                ->withInput();
+        }
+
+        if ($responseData['status'] === 'success') {
+            Log::info('Login successful', ['email' => $email]);
+
+            // Store session data
+            if (isset($responseData['token'])) {
+                session(['auth_token' => $responseData['token']]);
+            }
+
+            if (isset($responseData['user'])) {
+                session(['user' => $responseData['user']]);
+            }
+
+            // Store balance if provided
+            if (isset($responseData['data']['balance'])) {
+                session(['balance' => $responseData['data']['balance']]);
+            }
+
+            return redirect()->route('auth.billing')
+                ->with('success', $responseData['message'] ?? 'Login successful!');
+        }
+
+        // Handle error status
+        Log::warning('Login failed', [
+            'email' => $email,
+            'message' => $responseData['message'] ?? 'Unknown error'
+        ]);
+
+        return redirect()->back()
+            ->withErrors(['error' => $responseData['message'] ?? 'Login failed.'])
+            ->withInput();
     }
 
 
@@ -481,6 +620,45 @@ class AuthenticationController extends Controller
 
     // load industry options for registration form
     // Controller Method
+    // public function loadIndustry()
+    // {
+    //     Log::info('The user requested Industry Sector data');
+    //     $client = new Client();
+    //     $apiUrl = config('api.base_url') . '/loadindustry';
+
+    //     try {
+    //         $response = $client->get($apiUrl, [
+    //             'headers' => [
+    //                 'Content-Type' => 'application/json',
+    //                 'Accept' => 'application/json'
+    //             ]
+    //         ]);
+
+    //         // Log the full response for debugging
+    //         Log::info('Industry Sector API response received', [
+    //             'url' => $apiUrl,
+    //             'response' => (string) $response->getBody(),
+    //         ]);
+
+    //         $responseData = json_decode($response->getBody(), true);
+
+    //         if (isset($responseData['status']) && $responseData['status'] === 'success') {
+    //             return response()->json($responseData['data'] ?? []);
+    //         }
+
+    //         Log::warning('Unexpected response format from Industry Sector API', [
+    //             'response' => $responseData
+    //         ]);
+    //         return response()->json([], 500);
+    //     } catch (\Exception $e) {
+    //         Log::error('Failed to load Industry Sector data: ' . $e->getMessage(), [
+    //             'url' => $apiUrl,
+    //             'exception' => $e,
+    //         ]);
+    //         return response()->json([], 500);
+    //     }
+    // }
+
     public function loadIndustry()
     {
         Log::info('The user requested Industry Sector data');
@@ -495,13 +673,12 @@ class AuthenticationController extends Controller
                 ]
             ]);
 
-            // Log the full response for debugging
+            $responseData = json_decode($response->getBody(), true);
+
             Log::info('Industry Sector API response received', [
                 'url' => $apiUrl,
-                'response' => (string) $response->getBody(),
+                'response' => $responseData
             ]);
-
-            $responseData = json_decode($response->getBody(), true);
 
             if (isset($responseData['status']) && $responseData['status'] === 'success') {
                 return response()->json($responseData['data'] ?? []);
@@ -519,10 +696,130 @@ class AuthenticationController extends Controller
             return response()->json([], 500);
         }
     }
-
     // sub sector options for registration form
+    // public function loadSubSector(Request $request)
+    // {
+    //     Log::info('The user requested Sub-Industry Sector data', [
+    //         'industry' => $request->industry
+    //     ]);
+
+    //     // Validate the request
+    //     $validated = $request->validate([
+    //         'industry' => 'required|string'
+    //     ]);
+
+    //     $client = new Client();
+    //     $apiUrl = config('api.base_url') . '/loadsubsector';
+
+    //     try {
+    //         $response = $client->post($apiUrl, [
+    //             'headers' => [
+    //                 'Content-Type' => 'application/json',
+    //                 'Accept' => 'application/json'
+    //             ],
+    //             'json' => [
+    //                 'industry' => $validated['industry']
+    //             ]
+    //         ]);
+
+    //         // Log the full response for debugging
+    //         Log::info('Sub-Industry Sector API response received', [
+    //             'url' => $apiUrl,
+    //             'industry' => $validated['industry'],
+    //             'response' => (string) $response->getBody(),
+    //         ]);
+
+    //         $responseData = json_decode($response->getBody(), true);
+
+    //         if (isset($responseData['status']) && $responseData['status'] === 'success') {
+    //             return response()->json($responseData['data'] ?? []);
+    //         }
+
+    //         Log::warning('Unexpected response format from Sub-Industry Sector API', [
+    //             'response' => $responseData
+    //         ]);
+    //         return response()->json([
+    //             'message' => $responseData['message'] ?? 'Failed to load sub-sectors'
+    //         ], 500);
+    //     } catch (\Exception $e) {
+    //         Log::error('Failed to load Sub-Industry Sector data: ' . $e->getMessage(), [
+    //             'url' => $apiUrl,
+    //             'industry' => $validated['industry'],
+    //             'exception' => $e,
+    //         ]);
+    //         return response()->json([
+    //             'message' => 'Failed to load sub-sectors'
+    //         ], 500);
+    //     }
+    // }
+
+    public function loadSubSector(Request $request)
+    {
+        Log::info('The user requested Sub-Industry Sector data', [
+            'industry' => $request->industry,
+            'request_data' => $request->all()
+        ]);
+
+        try {
+            // Validate the request
+            $validated = $request->validate([
+                'industry' => 'required|string'
+            ]);
+
+            $client = new Client();
+            $apiUrl = config('api.base_url') . '/loadsubsector';
+
+            // Log the request being sent to the API
+            Log::info('Sending request to Sub-Industry Sector API', [
+                'url' => $apiUrl,
+                'payload' => ['industry' => $validated['industry']]
+            ]);
+
+            $response = $client->post($apiUrl, [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json'
+                ],
+                'json' => [
+                    'industry' => $validated['industry']
+                ]
+            ]);
+
+            $responseData = json_decode($response->getBody(), true);
+
+            Log::info('Sub-Industry Sector API response received', [
+                'url' => $apiUrl,
+                'industry' => $validated['industry'],
+                'response' => $responseData
+            ]);
+
+            if (isset($responseData['status']) && $responseData['status'] === 'success') {
+                // Return the data array directly
+                return response()->json($responseData['data'] ?? []);
+            }
+
+            Log::warning('Unexpected response format from Sub-Industry Sector API', [
+                'response' => $responseData
+            ]);
+
+            return response()->json([
+                'message' => $responseData['message'] ?? 'Failed to load sub-sectors'
+            ], 500);
+        } catch (\Exception $e) {
+            Log::error('Failed to load Sub-Industry Sector data: ' . $e->getMessage(), [
+                'url' => $apiUrl ?? null,
+                'industry' => $request->industry ?? null,
+                'exception' => $e,
+            ]);
+
+            return response()->json([
+                'message' => 'Failed to load sub-sectors: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     // Controller Method
-    public function loadSubSectorUSINGGET()
+    public function loadSubSector22()
     {
         Log::info('The user requested Sub-Sector data');
         $client = new Client();
@@ -562,7 +859,7 @@ class AuthenticationController extends Controller
     }
 
     // Controller Method
-    public function loadSubSector()
+    public function loadSubSector2()
     {
         Log::info('The user requested Sub-Sector data');
         $client = new Client();

@@ -12,8 +12,7 @@ Route::get('/register', [AuthenticationController::class, 'registerUser'])->name
 Route::post('/register', [AuthenticationController::class, 'storeRegisterUser'])->name('auth.register-submit');
 Route::get('/business/load-lga-lcda', [AuthenticationController::class, 'loadLGALCDA'])->name('business.load-lga-lcda');
 Route::get('/api/business/load-industry', [AuthenticationController::class, 'loadIndustry']);
-//Route::get('/api/business/load-subsector', [AuthenticationController::class, 'loadSubSector']);
-Route::post('/business/load-subsector', [AuthenticationController::class, 'loadSubSector']);
+Route::post('/api/business/load-subsector', [AuthenticationController::class, 'loadSubSector']);
 
 // OTP verification routes
 Route::get('/register/otp-verify', [AuthenticationController::class, 'verifyOTP'])->name('auth.user-otp-verify');
