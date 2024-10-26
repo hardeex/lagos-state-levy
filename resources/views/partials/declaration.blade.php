@@ -8,7 +8,9 @@
                 <div class="bg-red-50 border-l-4 border-red-500 rounded-lg p-4 shadow-sm">
                     <div class="flex items-center mb-2">
                         <svg class="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                            <path fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                clip-rule="evenodd" />
                         </svg>
                         <h3 class="text-red-800 font-medium">There were some errors with your submission</h3>
                     </div>
@@ -19,12 +21,14 @@
                     </ul>
                 </div>
             @endif
-        
+
             @if (session('success'))
                 <div class="bg-green-50 border-l-4 border-green-500 rounded-lg p-4 shadow-sm">
                     <div class="flex items-center">
                         <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                            <path fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                clip-rule="evenodd" />
                         </svg>
                         <p class="text-green-700 font-medium">{{ session('success') }}</p>
                     </div>
@@ -61,54 +65,82 @@
 
                 <div class="bg-gray-50 p-6 rounded-lg shadow mb-8">
                     <h2 class="text-2xl font-semibold mb-6 text-gray-700">Add Business Location</h2>
-                    <form id="addLocationForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <form action="{{ route('auth.declaration-submit') }}" method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        @csrf
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Location Type</label>
-                            <select id="locationType"
+                            <select name="locationType" id="locationType" 
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <option value="HEAD OFFICE">Head Office</option>
                                 <option value="BRANCH">Branch</option>
                             </select>
                         </div>
+                        
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Location/Branch Name</label>
-                            <input type="text" id="branchName"
+                            <input type="text" name="branchName" id="branchName"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 required>
                         </div>
+                        
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Location/Branch Address</label>
-                            <input type="text" id="branchAddress"
+                            <input type="text" name="branchAddress" id="branchAddress"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 required>
                         </div>
+                        
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">LGA/LCDA</label>
-                            <select id="lgaLcda"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="ALIMOSHO">Alimosho</option>
-                                <!-- Add more options as needed -->
+                            <select name="lga" id="llga" required
+                                class="peer w-full h-10 bg-gray-50 text-gray-800 border-b-2 border-gray-300 focus:outline-none focus:border-blue-600 transition-all">
+                                <option value="">Select LGA/LCDA</option>
+                                <!-- Options will be populated via JavaScript -->
                             </select>
                         </div>
+                        
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Contact Person</label>
-                            <input type="text" id="contactPerson"
+                            <input type="text" name="contactPerson" id="contactPerson"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 required>
                         </div>
+                        
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Designation of Contact
-                                Person</label>
-                            <input type="text" id="contactDesignation"
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Designation of Contact Person</label>
+                            <input type="text" name="designation" id="contactDesignation"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 required>
                         </div>
+                        
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Contact Phone Number</label>
-                            <input type="tel" id="contactPhone"
+                            <input type="tel" name="contactPhone" id="contactPhone"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 required>
                         </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Staff Count</label>
+                            <input type="number" name="staffcount" id="staffCount" min="0"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                required>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                            <input type="email" name="email" id="email"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                required>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                            <input type="password" name="password" id="password"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                required>
+                        </div>
+                    
                         <div class="md:col-span-2">
                             <button type="submit"
                                 class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
@@ -116,6 +148,7 @@
                             </button>
                         </div>
                     </form>
+                    
                 </div>
 
                 <div class="text-center">
@@ -168,7 +201,8 @@
                                     class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                             </div>
                             <div>
-                                <label for="editContactPhone" class="block text-sm font-medium text-gray-700">Phone</label>
+                                <label for="editContactPhone"
+                                    class="block text-sm font-medium text-gray-700">Phone</label>
                                 <input type="tel" id="editContactPhone"
                                     class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                             </div>
@@ -188,8 +222,294 @@
             </div>
         </div>
 
-
         <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const lgaSelect = document.getElementById('llga');
+
+                function loadLGALCDA() {
+                    lgaSelect.disabled = true; // Disable the dropdown while loading
+
+                    fetch('/business/load-lga-lcda', {
+                            method: 'GET',
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! status: ${response.status}`);
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            // Clear existing options except the first one
+                            while (lgaSelect.options.length > 1) {
+                                lgaSelect.remove(1);
+                            }
+
+                            // Populate options
+                            if (data && Array.isArray(data)) {
+                                data.forEach(item => {
+                                    // Use llgalcda instead of name
+                                    const option = new Option(item.llgalcda, item.id);
+                                    lgaSelect.add(option);
+                                });
+
+                                // If there's an old value, select it
+                                const oldValue = "{{ old('llga') }}";
+                                if (oldValue) {
+                                    lgaSelect.value = oldValue;
+                                }
+                            } else {
+                                console.warn('Unexpected data format received:', data);
+                                throw new Error('Invalid data format received');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error loading LGA/LCDA:', error);
+                            // Clear existing options except the first one
+                            while (lgaSelect.options.length > 1) {
+                                lgaSelect.remove(1);
+                            }
+                            // Add error option
+                            const errorOption = new Option('Error loading LGA/LCDA', '');
+                            lgaSelect.add(errorOption);
+                        })
+                        .finally(() => {
+                            lgaSelect.disabled = false; // Re-enable the dropdown
+                        });
+                }
+
+                // Load the LGA/LCDA data when the page loads
+                loadLGALCDA();
+            });
+        </script>
+
+
+        {{-- <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                let rowCount = 0;
+                const locations = [];
+                const form = document.getElementById('addLocationForm');
+                const submitAllBtn = document.getElementById('submitAll');
+
+                // Initialize CSRF token for all AJAX requests
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+                // Validation rules matching backend
+                function validateFormData(data) {
+                    const errors = [];
+
+                    // Required field validation
+                    if (!data.branchName) errors.push('Branch name is required');
+                    if (!data.branchAddress) errors.push('Branch address is required');
+                    if (!data.lga) errors.push('LGA/LCDA is required');
+                    if (!data.contactPerson) errors.push('Contact person is required');
+                    if (!data.designation) errors.push('Designation is required');
+
+                    // Phone validation - must start with + and have 10-15 digits
+                    if (!data.contactPhone) {
+                        errors.push('Contact phone is required');
+                    } else if (!/^\+\d{10,15}$/.test(data.contactPhone)) {
+                        errors.push('Phone number must start with + and have 10-15 digits');
+                    }
+
+                    // Email validation
+                    if (!data.email) {
+                        errors.push('Email is required');
+                    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
+                        errors.push('Please enter a valid email address');
+                    }
+
+                    // Password validation
+                    if (!data.password) {
+                        errors.push('Password is required');
+                    } else if (data.password.length < 6) {
+                        errors.push('Password must be at least 6 characters');
+                    }
+
+                    // Staff count validation
+                    if (!data.staffcount || isNaN(data.staffcount)) {
+                        errors.push('Staff count must be a valid number');
+                    }
+
+                    return errors;
+                }
+
+                form.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+
+                    const formData = {
+                        locationType: document.getElementById('locationType').value,
+                        branchName: document.getElementById('branchName').value,
+                        branchAddress: document.getElementById('branchAddress').value,
+                        lga: document.getElementById('llga').value,
+                        contactPerson: document.getElementById('contactPerson').value,
+                        designation: document.getElementById('contactDesignation').value,
+                        contactPhone: document.getElementById('contactPhone').value,
+                        email: document.getElementById('email').value,
+                        password: document.getElementById('password').value,
+                        staffcount: parseInt(document.getElementById('staffCount').value) || 0
+                    };
+
+                    // Validate form data
+                    const errors = validateFormData(formData);
+                    if (errors.length > 0) {
+                        alert(errors.join('\n'));
+                        return;
+                    }
+
+                    // Add to local array for table display
+                    locations.push(formData);
+                    createNewRow(formData, locations.length - 1);
+                    form.reset();
+                });
+
+                function createNewRow(data, index) {
+                    rowCount++;
+                    const row = document.createElement('tr');
+                    row.className = 'border-b border-gray-200 hover:bg-gray-100';
+                    row.innerHTML = `
+            <td class="py-3 px-6 text-left whitespace-nowrap">${rowCount}</td>
+            <td class="py-3 px-6 text-left whitespace-nowrap">${data.branchName}</td>
+            <td class="py-3 px-6 text-left">${data.branchAddress}</td>
+            <td class="py-3 px-6 text-left">${data.lga}</td>
+            <td class="py-3 px-6 text-left">${data.contactPerson}</td>
+            <td class="py-3 px-6 text-left">${data.contactPhone}</td>
+            <td class="py-3 px-6 text-center">
+                <div class="flex item-center justify-center">
+                    <button class="edit-btn transform hover:text-blue-500 hover:scale-110" data-row-index="${index}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="delete-btn transform hover:text-red-500 hover:scale-110 ml-4">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            </td>
+        `;
+                    document.getElementById('locationsList').appendChild(row);
+                }
+
+                // Submit all locations
+                submitAllBtn.addEventListener('click', async function() {
+                    if (locations.length === 0) {
+                        alert('Please add at least one business location.');
+                        return;
+                    }
+
+                    const submitButton = this;
+                    submitButton.disabled = true;
+                    submitButton.textContent = 'Submitting...';
+
+                    const submitPromises = locations.map(location =>
+                        fetch('/api/declaration', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken
+                            },
+                            body: JSON.stringify(location)
+                        }).then(response => response.json())
+                    );
+
+                    try {
+                        const results = await Promise.all(submitPromises);
+                        const failures = results.filter(result => result.status === 'error');
+
+                        if (failures.length > 0) {
+                            alert(
+                                `Failed to submit ${failures.length} locations. Please check the data and try again.`
+                            );
+                        } else {
+                            alert('All locations submitted successfully!');
+                            // Clear the table and locations array
+                            document.getElementById('locationsList').innerHTML = '';
+                            locations.length = 0;
+                            rowCount = 0;
+                        }
+                    } catch (error) {
+                        console.error('Error submitting locations:', error);
+                        alert('An error occurred while submitting the locations. Please try again.');
+                    } finally {
+                        submitButton.disabled = false;
+                        submitButton.textContent = 'Submit All Branches';
+                    }
+                });
+
+                // Handle delete and edit operations
+                document.getElementById('locationsList').addEventListener('click', function(e) {
+                    if (e.target.closest('.delete-btn')) {
+                        const row = e.target.closest('tr');
+                        const index = Array.from(row.parentNode.children).indexOf(row);
+                        locations.splice(index, 1);
+                        row.remove();
+                        updateSerialNumbers();
+                    } else if (e.target.closest('.edit-btn')) {
+                        const rowIndex = e.target.closest('.edit-btn').dataset.rowIndex;
+                        openEditModal(rowIndex);
+                    }
+                });
+
+                function updateSerialNumbers() {
+                    const rows = document.getElementById('locationsList').children;
+                    for (let i = 0; i < rows.length; i++) {
+                        rows[i].children[0].textContent = i + 1;
+                        rows[i].querySelector('.edit-btn').dataset.rowIndex = i;
+                    }
+                    rowCount = rows.length;
+                }
+
+                // Edit modal functionality
+                const editModal = document.getElementById('editModal');
+                const closeModalBtn = document.getElementById('closeModalBtn');
+                const saveEditBtn = document.getElementById('saveEditBtn');
+
+                function openEditModal(rowIndex) {
+                    const location = locations[rowIndex];
+                    document.getElementById('editRowIndex').value = rowIndex;
+                    document.getElementById('editBranchName').value = location.branchName;
+                    document.getElementById('editBranchAddress').value = location.branchAddress;
+                    document.getElementById('editLgaLcda').value = location.lga;
+                    document.getElementById('editContactPerson').value = location.contactPerson;
+                    document.getElementById('editContactPhone').value = location.contactPhone;
+                    editModal.classList.remove('hidden');
+                }
+
+                closeModalBtn.addEventListener('click', () => editModal.classList.add('hidden'));
+
+                saveEditBtn.addEventListener('click', function() {
+                    const rowIndex = parseInt(document.getElementById('editRowIndex').value);
+                    const updatedLocation = {
+                        ...locations[rowIndex],
+                        branchName: document.getElementById('editBranchName').value,
+                        branchAddress: document.getElementById('editBranchAddress').value,
+                        lga: document.getElementById('editLgaLcda').value,
+                        contactPerson: document.getElementById('editContactPerson').value,
+                        contactPhone: document.getElementById('editContactPhone').value
+                    };
+
+                    // Validate updated data
+                    const errors = validateFormData(updatedLocation);
+                    if (errors.length > 0) {
+                        alert(errors.join('\n'));
+                        return;
+                    }
+
+                    locations[rowIndex] = updatedLocation;
+                    const row = document.getElementById('locationsList').children[rowIndex];
+                    row.children[1].textContent = updatedLocation.branchName;
+                    row.children[2].textContent = updatedLocation.branchAddress;
+                    row.children[3].textContent = updatedLocation.lga;
+                    row.children[4].textContent = updatedLocation.contactPerson;
+                    row.children[5].textContent = updatedLocation.contactPhone;
+
+                    editModal.classList.add('hidden');
+                });
+            });
+        </script> --}}
+
+        {{-- <script>
             let rowCount = 0;
 
             document.getElementById('addLocationForm').addEventListener('submit', function(e) {
@@ -310,7 +630,7 @@
                 console.log('Submitting locations:', locations);
                 alert('All branches submitted successfully!');
             });
-        </script>
+        </script> --}}
     </div>
 
 @endsection

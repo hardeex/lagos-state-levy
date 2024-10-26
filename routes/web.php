@@ -26,10 +26,11 @@ Route::post('/api/login', [AuthenticationController::class, 'storeLoginUser'])->
 Route::get('/forgot-password', [AuthenticationController::class, 'forgotPassword'])->name('auth.forgot-password');
 Route::post('/api/forgot-password', [AuthenticationController::class, 'storeForgotPassword'])->name('auth.forgot-password-submit');
 Route::get('/change-password', [AuthenticationController::class, 'changePassword'])->name('auth.change-password');
-Route::post('/api/change-password', [AuthenticationController::class, 'storeChangePassword'])->name('auth.change-password-submit');
+Route::post('/api/change-password', [AuthenticationController::class, 'initiatePasswordReset'])->name('auth.change-password-submit');
 
 Route::get('/declaration', [AuthenticationController::class, 'declaration'])->name('auth.declaration');
 Route::post('/api/declaration', [AuthenticationController::class, 'storeDeclaration'])->name('auth.declaration-submit');
+
 Route::get('/billing/business', [AuthenticationController::class, 'billing'])->name('auth.billing');
 Route::get('/official-returns', [AuthenticationController::class, 'officialReturns'])->name('auth.official-returns');
 Route::get('/receipt', [AuthenticationController::class, 'receipt'])->name('auth.receipt');

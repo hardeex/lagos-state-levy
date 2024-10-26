@@ -190,7 +190,7 @@
                                 regulations in buildings. By participating, you help create a safer environment and reduce
                                 fire hazards in Lagos.
                             </p>
-                            <a href="#" class="text-green-600 hover:underline">Make Payment</a>
+                            <a href="{{ route('auth.login-user') }}" class="text-green-600 hover:underline">Make Payment</a>
                         </div>
 
 

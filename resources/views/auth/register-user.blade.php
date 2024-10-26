@@ -1,6 +1,8 @@
 @extends('base.base')
 @section('title', 'Register')
 @section('content')
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
     <div class="min-h-screen bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
         <div class="space-y-4 max-w-2xl mx-auto p-4">
             @if ($errors->any())
@@ -195,16 +197,7 @@
                                 @enderror
                             </div>
 
-                            <!-- LGA/LCDA -->
-                            {{-- <div class="relative group">
-                                <input type="text" name="llga" id="llga" required
-                                    class="peer w-full h-10 bg-gray-50 text-gray-800 border-b-2 border-gray-300 focus:outline-none focus:border-blue-600 transition-all"
-                                    placeholder="LGA/LCDA" value="{{ old('llga') }}">
-                                <label for="llga" class="label">LGA/LCDA</label>
-                                @error('llga')
-                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div> --}}
+
                             <!-- LGA/LCDA -->
                             <div class="relative group">
                                 <select name="llga" id="llga" required
@@ -324,12 +317,11 @@
                             </div> --}}
 
 
-                            <!-- Industry Sector Dropdown -->
+                            <!-- Industry Sector -->
                             <div class="relative group">
                                 <select name="lindustryone" id="lindustryone" required
                                     class="peer w-full h-10 bg-gray-50 text-gray-800 border-b-2 border-gray-300 focus:outline-none focus:border-blue-600 transition-all">
                                     <option value="">Select Industry Sector</option>
-                                    <!-- Options will be populated via JavaScript -->
                                 </select>
                                 <label for="lindustryone" class="label">Industry Sector</label>
                                 @error('lindustryone')
@@ -337,93 +329,22 @@
                                 @enderror
                             </div>
 
-                            {{-- <script>
-                                document.addEventListener('DOMContentLoaded', function() {
-                                    const industrySelect = document.getElementById('lindustryone');
 
-                                    function loadIndustrySector() {
-                                        industrySelect.disabled = true; // Disable the dropdown while loading
-
-                                        fetch('/api/business/load-industry', {
-                                                method: 'GET',
-                                                headers: {
-                                                    'Accept': 'application/json',
-                                                    'X-Requested-With': 'XMLHttpRequest'
-                                                }
-                                            })
-                                            .then(response => {
-                                                if (!response.ok) {
-                                                    throw new Error(`HTTP error! status: ${response.status}`);
-                                                }
-                                                return response.json();
-                                            })
-                                            .then(data => {
-                                                // Clear existing options except the first one
-                                                while (industrySelect.options.length > 1) {
-                                                    industrySelect.remove(1);
-                                                }
-
-                                                // Check if data exists and is an array
-                                                if (data && Array.isArray(data)) {
-                                                    // Sort industries alphabetically
-                                                    data.sort();
-
-                                                    // Populate options
-                                                    data.forEach(industryName => {
-                                                        // Use the industry name for both value and text
-                                                        const option = new Option(industryName, industryName);
-                                                        industrySelect.add(option);
-                                                    });
-
-                                                    // If there's an old value, select it
-                                                    const oldValue = "{{ old('lindustryone') }}";
-                                                    if (oldValue) {
-                                                        industrySelect.value = oldValue;
-                                                    }
-                                                } else {
-                                                    console.warn('Unexpected data format received:', data);
-                                                    throw new Error('Invalid data format received');
-                                                }
-                                            })
-                                            .catch(error => {
-                                                console.error('Error loading Industry Sectors:', error);
-                                                // Clear existing options except the first one
-                                                while (industrySelect.options.length > 1) {
-                                                    industrySelect.remove(1);
-                                                }
-                                                // Add error option
-                                                const errorOption = new Option('Error loading Industry Sectors', '');
-                                                industrySelect.add(errorOption);
-                                            })
-                                            .finally(() => {
-                                                industrySelect.disabled = false; // Re-enable the dropdown
-                                            });
-                                    }
-
-                                    // Add debugging to help troubleshoot
-                                    console.log('Industry sector script loaded');
-
-                                    // Load the Industry Sector data when the page loads
-                                    loadIndustrySector();
-                                });
-                            </script> --}}
                             <!-- Sub Industry Sector -->
                             <div class="relative group">
-                                <input type="text" name="lsubsectorone" id="lsubsectorone" required
-                                    class="peer w-full h-10 bg-gray-50 text-gray-800 border-b-2 border-gray-300 focus:outline-none focus:border-blue-600 transition-all"
-                                    placeholder="Sub Industry Sector" value="{{ old('lsubsectorone') }}">
+                                <select name="lsubsectorone" id="lsubsectorone" required
+                                    class="peer w-full h-10 bg-gray-50 text-gray-800 border-b-2 border-gray-300 focus:outline-none focus:border-blue-600 transition-all">
+                                    <option value="">Select Sub Industry Sector</option>
+                                </select>
                                 <label for="lsubsectorone" class="label">Sub Industry Sector</label>
                                 @error('lsubsectorone')
                                     <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
                             </div>
-
-
                             <script>
                                 document.addEventListener('DOMContentLoaded', function() {
                                     const industrySelect = document.getElementById('lindustryone');
-                                    const subSectorContainer = document.querySelector('[data-subsector-container]') ||
-                                        document.getElementById('lsubsectorone').parentElement;
+                                    const subSectorSelect = document.getElementById('lsubsectorone');
 
                                     // Function to load industry sectors
                                     function loadIndustrySector() {
@@ -478,21 +399,27 @@
                                     }
 
                                     // Function to load subsectors for selected industry
+                                    // Function to load subsectors for selected industry
                                     function loadSubSectors(industry) {
-                                        if (!industry) return;
-
-                                        // Show loading state
-                                        const currentSubsectorElement = document.getElementById('lsubsectorone');
-                                        if (currentSubsectorElement) {
-                                            currentSubsectorElement.disabled = true;
+                                        if (!industry) {
+                                            // Reset subsector select with just the default option
+                                            subSectorSelect.innerHTML = '<option value="">Select Sub Industry Sector</option>';
+                                            subSectorSelect.disabled = true;
+                                            return;
                                         }
+
+                                        subSectorSelect.disabled = true;
+
+                                        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content; // Optional chaining
 
                                         fetch('/api/business/load-subsector', {
                                                 method: 'POST',
                                                 headers: {
                                                     'Content-Type': 'application/json',
                                                     'Accept': 'application/json',
-                                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                                                    ...(csrfToken ? {
+                                                        'X-CSRF-TOKEN': csrfToken
+                                                    } : {}) // Only add header if token exists
                                                 },
                                                 body: JSON.stringify({
                                                     industry: industry
@@ -505,70 +432,47 @@
                                                 return response.json();
                                             })
                                             .then(data => {
-                                                if (Array.isArray(data)) {
-                                                    createSubsectorSelect(data);
+                                                console.log(data); // Log data for debugging
+
+                                                // Clear existing options
+                                                subSectorSelect.innerHTML = '<option value="">Select Sub Industry Sector</option>';
+
+                                                if (Array.isArray(data) && data.length > 0) {
+                                                    // Sort subsectors by label if they have a 'lsubsector' property
+                                                    data.sort((a, b) => (a.lsubsector || '').localeCompare(b.lsubsector || ''));
+
+                                                    // Add subsector options
+                                                    data.forEach(subsector => {
+                                                        const option = document.createElement('option');
+                                                        option.value = subsector.id; // Use the correct ID
+                                                        option.textContent = subsector.lsubsector; // Use the correct label
+                                                        subSectorSelect.appendChild(option);
+                                                    });
+
+                                                    // Restore old value if it exists
+                                                    const oldValue = "{{ old('lsubsectorone') }}";
+                                                    if (oldValue) {
+                                                        subSectorSelect.value = oldValue;
+                                                    }
                                                 } else {
-                                                    throw new Error('Invalid data format received');
+                                                    subSectorSelect.innerHTML = '<option value="">No subsectors available</option>';
                                                 }
                                             })
                                             .catch(error => {
                                                 console.error('Error loading subsectors:', error);
-                                                createSubsectorSelect([]);
+                                                subSectorSelect.innerHTML =
+                                                    '<option value="">Error loading Sub Industry Sectors</option>';
+                                            })
+                                            .finally(() => {
+                                                subSectorSelect.disabled = false;
                                             });
                                     }
 
-                                    // Function to create/update subsector select element
-                                    function createSubsectorSelect(subsectors) {
-                                        const oldSubsectorValue = document.getElementById('lsubsectorone').value;
-
-                                        // Create new select element
-                                        const select = document.createElement('select');
-                                        select.id = 'lsubsectorone';
-                                        select.name = 'lsubsectorone';
-                                        select.required = true;
-                                        select.className =
-                                            'peer w-full h-10 bg-gray-50 text-gray-800 border-b-2 border-gray-300 focus:outline-none focus:border-blue-600 transition-all';
-
-                                        // Add default option
-                                        const defaultOption = document.createElement('option');
-                                        defaultOption.value = '';
-                                        defaultOption.textContent = 'Select Sub Industry Sector';
-                                        select.appendChild(defaultOption);
-
-                                        // Add subsector options
-                                        if (subsectors.length > 0) {
-                                            subsectors
-                                                .sort((a, b) => (a.llabel || '').localeCompare(b.llabel || ''))
-                                                .forEach(subsector => {
-                                                    const option = document.createElement('option');
-                                                    option.value = subsector.id;
-                                                    option.textContent = subsector.llabel;
-                                                    select.appendChild(option);
-                                                });
-                                        }
-
-                                        // Replace existing element
-                                        const currentElement = document.getElementById('lsubsectorone');
-                                        const parent = currentElement.parentElement;
-                                        parent.replaceChild(select, currentElement);
-
-                                        // Restore old value if it exists
-                                        if (oldSubsectorValue) {
-                                            select.value = oldSubsectorValue;
-                                        }
-                                    }
 
                                     // Event listener for industry selection change
-                                    if (industrySelect) {
-                                        industrySelect.addEventListener('change', function() {
-                                            const selectedIndustry = this.value;
-                                            if (selectedIndustry) {
-                                                loadSubSectors(selectedIndustry);
-                                            } else {
-                                                createSubsectorSelect([]); // Reset subsector select with empty options
-                                            }
-                                        });
-                                    }
+                                    industrySelect.addEventListener('change', function() {
+                                        loadSubSectors(this.value);
+                                    });
 
                                     // Initialize
                                     loadIndustrySector();

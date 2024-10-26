@@ -40,15 +40,23 @@
 
             <form action="{{ route('auth.otp-verify-submit') }}" method="POST">
                 @csrf
-                <div class="mb-4">
+                {{-- <div class="mb-4">
                     <label for="business_email" class="block text-sm font-medium text-gray-700 mb-2">
                         Business Email
                     </label>
                     <input type="email" id="business_email" name="business_email"
                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         required value="{{ old('business_email') }}">
-                </div>
+                </div> --}}
 
+                <div class="mb-4">
+                    <label for="business_email" class="block text-sm font-medium text-gray-700 mb-2">
+                        Business Email
+                    </label>
+                    <input type="email" id="business_email" name="business_email"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required value="{{ old('business_email', $businessEmail) }}" readonly>
+                </div>
                 <div class="mb-4">
                     <label for="verification_method" class="block text-sm font-medium text-gray-700 mb-2">
                         Select Verification Method

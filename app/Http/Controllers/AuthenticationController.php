@@ -7,7 +7,7 @@ use ReflectionFunctionAbstract;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
 use GuzzleHttp\Exception\RequestException;
-
+use GuzzleHttp\Exception\ConnectException;
 
 class AuthenticationController extends Controller
 {
@@ -21,6 +21,10 @@ class AuthenticationController extends Controller
 
     public function storeRegisterUser(Request $request)
     {
+
+
+
+
         // Validate incoming request data
         $validatedData = $request->validate([
             'lphone' => ['required', 'string', 'regex:/^\+\d{10,15}$/'],
@@ -40,8 +44,19 @@ class AuthenticationController extends Controller
             'lsubsectorone' => ['required', 'string', 'max:255'],
         ]);
 
+        Log::info('Session store attempt', [
+            'email' => $validatedData['lemail']
+        ]);
+
         $client = new Client();
         $apiUrl = config('api.base_url') . '/registeremailphoneverify';
+
+        // Log the exact payload being sent
+        Log::info('API request payload', [
+            'url' => $apiUrl,
+            'data' => $validatedData
+        ]);
+
 
         try {
             $response = $client->post($apiUrl, [
@@ -60,6 +75,7 @@ class AuthenticationController extends Controller
                         'data' => $validatedData,
                         'response' => $responseData
                     ]);
+                    session(['business_email' => $validatedData['lemail']]);
                     return redirect()->route('auth.user-otp-verify')->with('success', $responseData['message']);
                 } else {
                     return redirect()->back()->withErrors(['error' => $responseData['message']]);
@@ -86,10 +102,10 @@ class AuthenticationController extends Controller
 
     public function verifyOTP()
     {
-
-
-        return view('auth.user-otp-verify');
+        $businessEmail = session('business_email');
+        return view('auth.user-otp-verify', compact('businessEmail'));
     }
+
     public function verifyOTPSubmit(Request $request)
     {
         Log::info('OTP verification method called');
@@ -100,6 +116,90 @@ class AuthenticationController extends Controller
             'otp' => ['required', 'string', 'size:6', 'regex:/^[0-9]+$/'],
             'business_email' => ['required', 'email'],
         ]);
+
+        Log::info('Session retrieve attempt', [
+            'email' => session('business_email')
+        ]);
+
+        // Retrieve the email from the session
+        $sessionEmail = session('business_email');
+
+        // Ensure the email from the request matches the session email
+        if ($validatedData['business_email'] !== $sessionEmail) {
+            return redirect()->back()->withErrors(['error' => 'Email mismatch. Please try again.'])->withInput();
+        }
+
+        $client = new Client();
+        $apiUrl = config('api.base_url') . '/changeotps';
+
+        try {
+            // Log the validated data
+            Log::info('Validated data:', $validatedData);
+
+            // Prepare the payload based on verification method
+            $payload = [
+                'business_email' => $sessionEmail // Use the session email
+            ];
+
+            // Set the appropriate OTP field based on verification method
+            if ($validatedData['verification_method'] === 'email') {
+                $payload['email_otp'] = $validatedData['otp'];
+                $payload['phone_otp'] = '000000'; // dummy value for unused method
+            } else {
+                $payload['phone_otp'] = $validatedData['otp'];
+                $payload['email_otp'] = '000000'; // dummy value for unused method
+            }
+
+            // Log the payload before making the API call
+            Log::info('Payload for API request:', $payload);
+
+            $response = $client->post($apiUrl, [
+                'headers' => ['Content-Type' => 'application/json'],
+                'json' => $payload,
+            ]);
+
+            // Log the API response
+            $responseData = json_decode($response->getBody(), true);
+            Log::info('API response received:', $responseData);
+
+            if (isset($responseData['status']) && $responseData['status'] === 'success') {
+                return redirect()->route('auth.login-user')
+                    ->with('success', 'Account verified successfully!');
+            }
+
+            // Log the error message if verification fails
+            Log::warning('Verification failed:', [
+                'error_message' => $responseData['message'] ?? 'Unknown error.',
+                'payload' => $payload
+            ]);
+
+            return redirect()->back()
+                ->withErrors(['error' => $responseData['message'] ?? 'Verification failed.'])
+                ->withInput();
+        } catch (RequestException $e) {
+            Log::error('OTP verification failed', [
+                'error' => $e->getMessage(),
+                'payload' => $payload,
+                'response' => $e->hasResponse() ? (string) $e->getResponse()->getBody() : null,
+            ]);
+
+            return redirect()->back()
+                ->withErrors(['error' => 'Failed to verify OTP. Please try again.'])
+                ->withInput();
+        }
+    }
+
+    public function verifyOTPSubmit22(Request $request)
+    {
+        Log::info('OTP verification method called');
+
+        // Validate the request
+        $validatedData = $request->validate([
+            'verification_method' => ['required', 'in:email,phone'],
+            'otp' => ['required', 'string', 'size:6', 'regex:/^[0-9]+$/'],
+            'business_email' => ['required', 'email'],
+        ]);
+
 
         $client = new Client();
         $apiUrl = config('api.base_url') . '/changeotps';
@@ -210,92 +310,6 @@ class AuthenticationController extends Controller
         return view('auth.login-user');
     }
 
-    public function storeLoginUserWITHOUTDECLARATION(Request $request)
-    {
-        Log::info('Incoming request data', ['request' => $request->all()]);
-
-        // Validate incoming request data
-        $validatedData = $request->validate([
-            'lemail' => ['required', 'email'],
-            'lpw' => ['required', 'string'],
-        ]);
-
-        $client = new Client();
-        $apiUrl = config('api.base_url') . '/bloginaction';
-
-        try {
-            // Change the payload to match the expected format
-            $payload = [
-                'email' => $validatedData['lemail'], // Correct key
-                'password' => $validatedData['lpw'],  // Correct key
-            ];
-
-            $response = $client->post($apiUrl, [
-                'headers' => [
-                    'Content-Type' => 'application/json',
-                ],
-                'json' => $payload, // Use the updated payload
-            ]);
-
-            $responseData = json_decode($response->getBody(), true);
-
-            if (isset($responseData['status'])) {
-                if ($responseData['status'] === 'success') {
-                    // Log the successful login attempt
-                    Log::info('Login successful', [
-                        'email' => $validatedData['lemail']
-                    ]);
-
-                    // Store any necessary session data
-                    if (isset($responseData['token'])) {
-                        session(['auth_token' => $responseData['token']]);
-                    }
-
-                    if (isset($responseData['user'])) {
-                        session(['user' => $responseData['user']]);
-                    }
-
-                    // Redirect to dashboard or home page after successful login
-                    return redirect()->route('auth.billing')
-                        ->with('success', $responseData['message'] ?? 'Login successful!');
-                } else {
-                    // Log failed login attempt
-                    Log::warning('Login failed', [
-                        'email' => $validatedData['lemail'],
-                        'message' => $responseData['message']
-                    ]);
-
-                    return redirect()->back()
-                        ->withErrors(['error' => $responseData['message'] ?? 'Invalid credentials.'])
-                        ->withInput($request->except('lpw'));
-                }
-            } else {
-                Log::error('Unexpected response from login API: ', ['response' => $responseData]);
-                return redirect()->back()
-                    ->withErrors(['error' => 'Unexpected response from the server.'])
-                    ->withInput($request->except('lpw'));
-            }
-        } catch (RequestException $e) {
-            Log::error('Login request failed: ' . $e->getMessage(), [
-                'request' => (string) $e->getRequest()->getBody(),
-                'response' => $e->hasResponse() ? (string) $e->getResponse()->getBody() : null,
-                'email' => $validatedData['lemail']
-            ]);
-
-            return redirect()->back()
-                ->withErrors(['error' => 'An error occurred while connecting to the server.'])
-                ->withInput($request->except('lpw'));
-        } catch (\Exception $e) {
-            Log::error('General login error occurred: ' . $e->getMessage(), [
-                'exception' => $e,
-                'email' => $validatedData['lemail']
-            ]);
-
-            return redirect()->back()
-                ->withErrors(['error' => 'An unexpected error occurred.'])
-                ->withInput($request->except('lpw'));
-        }
-    }
 
 
     public function storeLoginUser(Request $request)
@@ -507,6 +521,91 @@ class AuthenticationController extends Controller
         return view('auth.change-password');
     }
 
+    public function initiatePasswordReset(Request $request)
+    {
+        Log::info('Initiate password reset method is called');
+
+        try {
+            // Validate incoming request data
+            $validatedData = $request->validate([
+                'email' => ['required', 'email'],
+            ]);
+
+            // Prepare the payload for the API
+            $payload = [
+                'email' => $validatedData['email'],
+            ];
+
+            // Log the final payload to inspect the data being sent
+            Log::info('Final payload being sent to API', ['payload' => $payload]);
+
+            $client = new Client([
+                'timeout' => 30,
+                'connect_timeout' => 5,
+                'http_errors' => false,
+                'verify' => false
+            ]);
+
+            $apiUrl = config('api.base_url') . '/business/initiatepasswordreset';
+            Log::debug('Attempting API call to: ' . $apiUrl);
+
+            $response = $client->post($apiUrl, [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                ],
+                'json' => $payload
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            $responseBody = $response->getBody()->getContents();
+
+            // Log API response for debugging
+            Log::info('API Response', [
+                'statusCode' => $statusCode,
+                'body' => $responseBody
+            ]);
+
+            if ($statusCode === 200) {
+                $responseData = json_decode($responseBody, true);
+                Log::info('Password reset email sent successfully', ['data' => $responseData['data']]);
+                return redirect()->route('auth.login')
+                    ->with('success', 'Password reset email sent successfully! Please check your inbox.');
+            }
+
+            if ($statusCode === 404) {
+                $responseData = json_decode($responseBody, true);
+                Log::warning('Email not found', ['response' => $responseData]);
+                return redirect()->back()
+                    ->withErrors(['error' => $responseData['message'] ?? 'Email not found'])
+                    ->withInput();
+            }
+
+            if ($statusCode === 500) {
+                Log::error('Internal server error', ['response' => $responseBody]);
+                return redirect()->back()
+                    ->withErrors(['error' => 'Error sending password reset email. Please try again later.'])
+                    ->withInput();
+            }
+
+            // Handle other unexpected statuses
+            Log::error('Unexpected status code', ['status_code' => $statusCode, 'response' => $responseBody]);
+            return redirect()->back()
+                ->withErrors(['error' => 'An unexpected error occurred. Please try again later.'])
+                ->withInput();
+        } catch (\Exception $e) {
+            Log::error('Unexpected error', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->back()
+                ->withErrors(['error' => 'An unexpected error occurred. Please try again later.'])
+                ->withInput();
+        }
+    }
+
+
     public function storeChangePassword(Request $request)
     {
         // Validate incoming request data
@@ -618,46 +717,6 @@ class AuthenticationController extends Controller
         }
     }
 
-    // load industry options for registration form
-    // Controller Method
-    // public function loadIndustry()
-    // {
-    //     Log::info('The user requested Industry Sector data');
-    //     $client = new Client();
-    //     $apiUrl = config('api.base_url') . '/loadindustry';
-
-    //     try {
-    //         $response = $client->get($apiUrl, [
-    //             'headers' => [
-    //                 'Content-Type' => 'application/json',
-    //                 'Accept' => 'application/json'
-    //             ]
-    //         ]);
-
-    //         // Log the full response for debugging
-    //         Log::info('Industry Sector API response received', [
-    //             'url' => $apiUrl,
-    //             'response' => (string) $response->getBody(),
-    //         ]);
-
-    //         $responseData = json_decode($response->getBody(), true);
-
-    //         if (isset($responseData['status']) && $responseData['status'] === 'success') {
-    //             return response()->json($responseData['data'] ?? []);
-    //         }
-
-    //         Log::warning('Unexpected response format from Industry Sector API', [
-    //             'response' => $responseData
-    //         ]);
-    //         return response()->json([], 500);
-    //     } catch (\Exception $e) {
-    //         Log::error('Failed to load Industry Sector data: ' . $e->getMessage(), [
-    //             'url' => $apiUrl,
-    //             'exception' => $e,
-    //         ]);
-    //         return response()->json([], 500);
-    //     }
-    // }
 
     public function loadIndustry()
     {
@@ -696,62 +755,7 @@ class AuthenticationController extends Controller
             return response()->json([], 500);
         }
     }
-    // sub sector options for registration form
-    // public function loadSubSector(Request $request)
-    // {
-    //     Log::info('The user requested Sub-Industry Sector data', [
-    //         'industry' => $request->industry
-    //     ]);
 
-    //     // Validate the request
-    //     $validated = $request->validate([
-    //         'industry' => 'required|string'
-    //     ]);
-
-    //     $client = new Client();
-    //     $apiUrl = config('api.base_url') . '/loadsubsector';
-
-    //     try {
-    //         $response = $client->post($apiUrl, [
-    //             'headers' => [
-    //                 'Content-Type' => 'application/json',
-    //                 'Accept' => 'application/json'
-    //             ],
-    //             'json' => [
-    //                 'industry' => $validated['industry']
-    //             ]
-    //         ]);
-
-    //         // Log the full response for debugging
-    //         Log::info('Sub-Industry Sector API response received', [
-    //             'url' => $apiUrl,
-    //             'industry' => $validated['industry'],
-    //             'response' => (string) $response->getBody(),
-    //         ]);
-
-    //         $responseData = json_decode($response->getBody(), true);
-
-    //         if (isset($responseData['status']) && $responseData['status'] === 'success') {
-    //             return response()->json($responseData['data'] ?? []);
-    //         }
-
-    //         Log::warning('Unexpected response format from Sub-Industry Sector API', [
-    //             'response' => $responseData
-    //         ]);
-    //         return response()->json([
-    //             'message' => $responseData['message'] ?? 'Failed to load sub-sectors'
-    //         ], 500);
-    //     } catch (\Exception $e) {
-    //         Log::error('Failed to load Sub-Industry Sector data: ' . $e->getMessage(), [
-    //             'url' => $apiUrl,
-    //             'industry' => $validated['industry'],
-    //             'exception' => $e,
-    //         ]);
-    //         return response()->json([
-    //             'message' => 'Failed to load sub-sectors'
-    //         ], 500);
-    //     }
-    // }
 
     public function loadSubSector(Request $request)
     {
@@ -819,84 +823,6 @@ class AuthenticationController extends Controller
     }
 
     // Controller Method
-    public function loadSubSector22()
-    {
-        Log::info('The user requested Sub-Sector data');
-        $client = new Client();
-        $apiUrl = config('api.base_url') . '/loadsubsector';
-
-        try {
-            $response = $client->get($apiUrl, [
-                'headers' => [
-                    'Content-Type' => 'application/json',
-                    'Accept' => 'application/json'
-                ]
-            ]);
-
-            // Log the full response for debugging
-            Log::info('Sub-Sector API response received', [
-                'url' => $apiUrl,
-                'response' => (string) $response->getBody(),
-            ]);
-
-            $responseData = json_decode($response->getBody(), true);
-
-            if (isset($responseData['status']) && $responseData['status'] === 'success') {
-                return response()->json($responseData['data'] ?? []);
-            }
-
-            Log::warning('Unexpected response format from Sub-Sector API', [
-                'response' => $responseData
-            ]);
-            return response()->json([], 500);
-        } catch (\Exception $e) {
-            Log::error('Failed to load Sub-Sector data: ' . $e->getMessage(), [
-                'url' => $apiUrl,
-                'exception' => $e,
-            ]);
-            return response()->json([], 500);
-        }
-    }
-
-    // Controller Method
-    public function loadSubSector2()
-    {
-        Log::info('The user requested Sub-Sector data');
-        $client = new Client();
-        $apiUrl = config('api.base_url') . '/loadsubsector';
-
-        try {
-            $response = $client->post($apiUrl, [  // Changed from get to post
-                'headers' => [
-                    'Content-Type' => 'application/json',
-                    'Accept' => 'application/json'
-                ]
-            ]);
-
-            // Log the full response for debugging
-            Log::info('Sub-Sector API response received', [
-                'url' => $apiUrl,
-                'response' => (string) $response->getBody(),
-            ]);
-
-            $responseData = json_decode($response->getBody(), true);
-
-            if (isset($responseData['status']) && $responseData['status'] === 'success') {
-                return response()->json($responseData['data'] ?? []);
-            }
-
-            Log::warning('Unexpected response format from Sub-Sector API', [
-                'response' => $responseData
-            ]);
-            return response()->json([], 500);
-        } catch (\Exception $e) {
-            Log::error('Failed to load Sub-Sector data: ' . $e->getMessage(), [
-                'url' => $apiUrl,
-                'exception' => $e,
-            ]);
-            return response()->json([], 500);
-        }
-    }
 
     public function calendar()
     {
@@ -907,6 +833,390 @@ class AuthenticationController extends Controller
     {
         return view('auth.declaration');
     }
+
+    public function storeDeclaration(Request $request)
+    {
+        Log::info('Business declaration method is called');
+
+        try {
+            // Validate incoming request data
+            $validatedData = $request->validate([
+                'locationType' => ['required', 'string'],
+                'branchName' => ['required', 'string', 'max:255'],
+                'branchAddress' => ['required', 'string', 'max:255'],
+                'lga' => ['required', 'string', 'max:255'],
+                'contactPerson' => ['required', 'string', 'max:255'],
+                'designation' => ['required', 'string', 'max:255'],
+                'contactPhone' => ['required', 'string', 'regex:/^\+\d{10,15}$/'],
+                'staffcount' => ['required', 'integer'],
+                'email' => ['required', 'email'],
+                'password' => ['required', 'string', 'min:6']
+            ]);
+
+            // Construct payload as per API specifications
+            $payload = [
+                'locationType' => $validatedData['locationType'],
+                'branchName' => $validatedData['branchName'],
+                'branchAddress' => $validatedData['branchAddress'],
+                'lga' => $validatedData['lga'],
+                'contactPerson' => $validatedData['contactPerson'],
+                'designation' => $validatedData['designation'],
+                'contactPhone' => $validatedData['contactPhone'],
+                'staffcount' => (int)$validatedData['staffcount'],
+                'email' => $validatedData['email'],
+                'password' => $validatedData['password'],
+            ];
+
+            // Log the final payload
+            Log::info('Final payload being sent to API', ['payload' => $payload]);
+
+            $client = new Client([
+                'timeout' => 30,
+                'connect_timeout' => 5,
+                'http_errors' => false,
+                'verify' => false
+            ]);
+
+            $apiUrl = config('api.base_url') . '/business/businessaddbranch';
+            Log::debug('Attempting API call to: ' . $apiUrl);
+
+            $response = $client->post($apiUrl, [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                ],
+                'json' => $payload
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            $responseBody = $response->getBody()->getContents();
+
+            // Log API response
+            Log::info('API Response', [
+                'statusCode' => $statusCode,
+                'body' => $responseBody
+            ]);
+
+            // Decode the JSON response
+            $responseData = json_decode($responseBody, true);
+
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                Log::error('JSON decode error', [
+                    'error' => json_last_error_msg(),
+                    'raw_response' => $responseBody
+                ]);
+                throw new \RuntimeException('Invalid JSON response from API');
+            }
+
+            // Handle the response based on status code
+            switch ($statusCode) {
+                case 201:
+                    Log::info('Branch addition successful', ['response' => $responseData]);
+                    return redirect()->route('auth.declaration')
+                        ->with('success', 'Business location added successfully!');
+                case 422:
+                    Log::warning('Validation error from API', ['response' => $responseData]);
+                    return redirect()->route('auth.declaration')
+                        ->withErrors(['error' => $responseData['message'] ?? 'Validation failed'])
+                        ->withInput();
+                case 500:
+                    Log::error('Server error', [
+                        'status_code' => $statusCode,
+                        'response' => $responseBody
+                    ]);
+                    throw new \Exception("Server error occurred with status code: $statusCode");
+                default:
+                    $errorMessage = $responseData['message'] ?? 'Failed to add business location';
+                    Log::warning('Branch addition failed', [
+                        'response' => $responseData,
+                        'status_code' => $statusCode
+                    ]);
+                    return redirect()->route('auth.declaration')
+                        ->withErrors(['error' => $errorMessage])
+                        ->withInput();
+            }
+        } catch (\Exception $e) {
+            Log::error('Unexpected error', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->route('auth.declaration')
+                ->withErrors(['error' => 'An unexpected error occurred. Please try again later.'])
+                ->withInput();
+        }
+    }
+
+
+    public function deleteBranch(Request $request)
+    {
+        Log::info('Delete branch method is called');
+
+        try {
+            // Validate incoming request data
+            $validatedData = $request->validate([
+                'email' => ['required', 'email'],
+                'password' => ['required', 'string', 'min:6'],
+                'branchid' => ['required', 'integer'],
+            ]);
+
+            // Prepare the payload for the API
+            $payload = [
+                'email' => $validatedData['email'],
+                'password' => $validatedData['password'],
+                'branchid' => (int)$validatedData['branchid'],
+            ];
+
+            // Log the final payload to inspect the data being sent
+            Log::info('Final payload being sent to API', ['payload' => $payload]);
+
+            $client = new Client([
+                'timeout' => 30,
+                'connect_timeout' => 5,
+                'http_errors' => false,
+                'verify' => false
+            ]);
+
+            $apiUrl = config('api.base_url') . '/business/businessbranchdelete';
+            Log::debug('Attempting API call to: ' . $apiUrl);
+
+            $response = $client->delete($apiUrl, [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                ],
+                'json' => $payload
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            $responseBody = $response->getBody()->getContents();
+
+            // Log API response for debugging
+            Log::info('API Response', [
+                'statusCode' => $statusCode,
+                'body' => $responseBody
+            ]);
+
+            if ($statusCode === 401) {
+                $responseData = json_decode($responseBody, true);
+                Log::warning('Unauthorized access', ['response' => $responseData]);
+                return redirect()->back()
+                    ->withErrors(['error' => $responseData['message'] ?? 'Unauthorized access'])
+                    ->withInput();
+            }
+
+            if ($statusCode === 200) {
+                Log::info('Branch deletion successful', ['response' => json_decode($responseBody, true)]);
+                return redirect()->route('your.redirect.route')
+                    ->with('success', 'Branch deleted successfully!');
+            }
+
+            if ($statusCode === 422) {
+                $responseData = json_decode($responseBody, true);
+                Log::warning('Validation error from API', ['response' => $responseData]);
+                return redirect()->back()
+                    ->withErrors(['error' => $responseData['message'] ?? 'Validation failed'])
+                    ->withInput();
+            }
+
+            if ($statusCode >= 500) {
+                Log::error('Server error', [
+                    'status_code' => $statusCode,
+                    'response' => $responseBody
+                ]);
+                throw new \Exception("Server error occurred with status code: $statusCode");
+            }
+
+            $responseData = json_decode($responseBody, true);
+            $errorMessage = $responseData['message'] ?? 'Failed to delete branch';
+            Log::warning('Branch deletion failed', [
+                'response' => $responseData,
+                'status_code' => $statusCode
+            ]);
+
+            return redirect()->back()
+                ->withErrors(['error' => $errorMessage])
+                ->withInput();
+        } catch (\Exception $e) {
+            Log::error('Unexpected error', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->back()
+                ->withErrors(['error' => 'An unexpected error occurred. Please try again later.'])
+                ->withInput();
+        }
+    }
+
+
+    public function finalDeclaration(Request $request)
+    {
+        Log::info('Final declaration method is called');
+
+        try {
+            // Validate incoming request data
+            $validatedData = $request->validate([
+                'email' => ['required', 'email'],
+            ]);
+
+            // Prepare the payload for the API
+            $payload = [
+                'email' => $validatedData['email'],
+            ];
+
+            // Log the final payload to inspect the data being sent
+            Log::info('Final payload being sent to API', ['payload' => $payload]);
+
+            $client = new Client([
+                'timeout' => 30,
+                'connect_timeout' => 5,
+                'http_errors' => false,
+                'verify' => false
+            ]);
+
+            $apiUrl = config('api.base_url') . '/business/finaldeclearation';
+            Log::debug('Attempting API call to: ' . $apiUrl);
+
+            $response = $client->post($apiUrl, [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                ],
+                'json' => $payload
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            $responseBody = $response->getBody()->getContents();
+
+            // Log API response for debugging
+            Log::info('API Response', [
+                'statusCode' => $statusCode,
+                'body' => $responseBody
+            ]);
+
+            if ($statusCode === 200) {
+                Log::info('Declarations registered successfully', ['response' => json_decode($responseBody, true)]);
+                return redirect()->route('your.redirect.route')
+                    ->with('success', 'Declarations registered successfully!');
+            }
+
+            if ($statusCode === 404) {
+                $responseData = json_decode($responseBody, true);
+                Log::warning('Branches not found', ['response' => $responseData]);
+                return redirect()->back()
+                    ->withErrors(['error' => $responseData['message'] ?? 'Branches not found'])
+                    ->withInput();
+            }
+
+            // Handle other unexpected statuses
+            Log::error('Unexpected status code', ['status_code' => $statusCode, 'response' => $responseBody]);
+            return redirect()->back()
+                ->withErrors(['error' => 'An unexpected error occurred. Please try again later.'])
+                ->withInput();
+        } catch (\Exception $e) {
+            Log::error('Unexpected error', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->back()
+                ->withErrors(['error' => 'An unexpected error occurred. Please try again later.'])
+                ->withInput();
+        }
+    }
+
+
+    public function fetchBranchList(Request $request)
+    {
+        Log::info('Fetch branch list method is called');
+
+        try {
+            // Validate incoming request data
+            $validatedData = $request->validate([
+                'email' => ['required', 'email'],
+                'password' => ['required', 'string', 'min:6'],
+                'batch' => ['required', 'integer', 'min:1'], // Ensure batch is a positive integer
+            ]);
+
+            // Prepare the payload for the API
+            $payload = [
+                'email' => $validatedData['email'],
+                'password' => $validatedData['password'],
+                'batch' => (int)$validatedData['batch'],
+            ];
+
+            // Log the final payload to inspect the data being sent
+            Log::info('Final payload being sent to API', ['payload' => $payload]);
+
+            $client = new Client([
+                'timeout' => 30,
+                'connect_timeout' => 5,
+                'http_errors' => false,
+                'verify' => false
+            ]);
+
+            $apiUrl = config('api.base_url') . '/business/businessviewbranch';
+            Log::debug('Attempting API call to: ' . $apiUrl);
+
+            $response = $client->post($apiUrl, [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                ],
+                'json' => $payload
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            $responseBody = $response->getBody()->getContents();
+
+            // Log API response for debugging
+            Log::info('API Response', [
+                'statusCode' => $statusCode,
+                'body' => $responseBody
+            ]);
+
+            if ($statusCode === 200) {
+                $responseData = json_decode($responseBody, true);
+                Log::info('Branches retrieved successfully', ['data' => $responseData['data']]);
+                return view('your.view.name', ['branches' => $responseData['data']]);
+            }
+
+            if ($statusCode === 401) {
+                $responseData = json_decode($responseBody, true);
+                Log::warning('Unauthorized access', ['response' => $responseData]);
+                return redirect()->back()
+                    ->withErrors(['error' => $responseData['message'] ?? 'Unauthorized access'])
+                    ->withInput();
+            }
+
+            if ($statusCode === 422) {
+                $responseData = json_decode($responseBody, true);
+                Log::warning('Validation error from API', ['response' => $responseData]);
+                return redirect()->back()
+                    ->withErrors(['error' => $responseData['message'] ?? 'Validation failed'])
+                    ->withInput();
+            }
+
+            // Handle other unexpected statuses
+            Log::error('Unexpected status code', ['status_code' => $statusCode, 'response' => $responseBody]);
+            return redirect()->back()
+                ->withErrors(['error' => 'An unexpected error occurred. Please try again later.'])
+                ->withInput();
+        } catch (\Exception $e) {
+            Log::error('Unexpected error', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->back()
+                ->withErrors(['error' => 'An unexpected error occurred. Please try again later.'])
+                ->withInput();
+        }
+    }
+
+
+
 
     public function clearance()
     {
@@ -931,6 +1241,95 @@ class AuthenticationController extends Controller
     public function invoiceList()
     {
         return view('auth.invoice-list');
+    }
+
+    public function fetchInvoiceList(Request $request)
+    {
+        Log::info('Fetch invoice list method is called');
+
+        try {
+            // Validate incoming request data
+            $validatedData = $request->validate([
+                'email' => ['required', 'email'],
+                'password' => ['required', 'string', 'min:6'],
+            ]);
+
+            // Prepare the payload for the API
+            $payload = [
+                'email' => $validatedData['email'],
+                'password' => $validatedData['password'],
+            ];
+
+            // Log the final payload to inspect the data being sent
+            Log::info('Final payload being sent to API', ['payload' => $payload]);
+
+            $client = new Client([
+                'timeout' => 30,
+                'connect_timeout' => 5,
+                'http_errors' => false,
+                'verify' => false
+            ]);
+
+            $apiUrl = config('api.base_url') . '/business/business_invoicelist';
+            Log::debug('Attempting API call to: ' . $apiUrl);
+
+            $response = $client->post($apiUrl, [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                ],
+                'json' => $payload
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            $responseBody = $response->getBody()->getContents();
+
+            // Log API response for debugging
+            Log::info('API Response', [
+                'statusCode' => $statusCode,
+                'body' => $responseBody
+            ]);
+
+            if ($statusCode === 200) {
+                $responseData = json_decode($responseBody, true);
+                Log::info('Invoices retrieved successfully', ['data' => $responseData['data'], 'balance' => $responseData['balance']]);
+                return view('your.view.name', [
+                    'invoices' => $responseData['data'],
+                    'balance' => $responseData['balance']
+                ]);
+            }
+
+            if ($statusCode === 401) {
+                $responseData = json_decode($responseBody, true);
+                Log::warning('Unauthorized access', ['response' => $responseData]);
+                return redirect()->back()
+                    ->withErrors(['error' => $responseData['message'] ?? 'Unauthorized access'])
+                    ->withInput();
+            }
+
+            if ($statusCode === 422) {
+                $responseData = json_decode($responseBody, true);
+                Log::warning('Validation error from API', ['response' => $responseData]);
+                return redirect()->back()
+                    ->withErrors(['error' => $responseData['message'] ?? 'Validation failed'])
+                    ->withInput();
+            }
+
+            // Handle other unexpected statuses
+            Log::error('Unexpected status code', ['status_code' => $statusCode, 'response' => $responseBody]);
+            return redirect()->back()
+                ->withErrors(['error' => 'An unexpected error occurred. Please try again later.'])
+                ->withInput();
+        } catch (\Exception $e) {
+            Log::error('Unexpected error', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->back()
+                ->withErrors(['error' => 'An unexpected error occurred. Please try again later.'])
+                ->withInput();
+        }
     }
 
     public function receipt()
