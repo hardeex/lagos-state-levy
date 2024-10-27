@@ -33,6 +33,70 @@ class AuthenticationController extends Controller
         return view('auth.declaration', compact('branches'));
     }
 
+    // private function fetchBranches($batch = 1)
+    // {
+    //     try {
+    //         $email = Session::get('business_email');
+    //         $password = Session::get('business_password');
+
+    //         if (!$email || !$password) {
+    //             Log::warning('No stored credentials found for fetching branches');
+    //             return [];
+    //         }
+
+    //         $apiUrl = config('api.base_url') . '/business/businessviewbranch';
+
+    //         // Log the request payload for debugging
+    //         Log::info('Fetching branches with payload:', [
+    //             'email' => $email,
+    //             'batch' => $batch
+    //         ]);
+
+    //         $response = $this->client->post($apiUrl, [
+    //             'headers' => [
+    //                 'Content-Type' => 'application/json',
+    //                 'Accept' => 'application/json',
+    //             ],
+    //             'json' => [
+    //                 'email' => $email,
+    //                 'password' => $password,
+    //                 'batch' => $batch
+    //             ]
+    //         ]);
+
+    //         $statusCode = $response->getStatusCode();
+    //         $responseBody = json_decode($response->getBody()->getContents(), true);
+
+    //         // Log the complete response for debugging
+    //         Log::info('Branch API Response:', [
+    //             'status_code' => $statusCode,
+    //             'response' => $responseBody
+    //         ]);
+
+    //         if ($statusCode === 200 && isset($responseBody['data'])) {
+    //             // Transform the data if needed
+    //             $branches = $responseBody['data'];
+
+    //             // Log the processed branches
+    //             Log::info('Processed branch data:', ['branches' => $branches]);
+
+    //             return $branches;
+    //         }
+
+    //         Log::warning('Failed to fetch branches', [
+    //             'status_code' => $statusCode,
+    //             'response' => $responseBody
+    //         ]);
+    //         return [];
+    //     } catch (\Exception $e) {
+    //         Log::error('Error fetching branches', [
+    //             'message' => $e->getMessage(),
+    //             'trace' => $e->getTraceAsString()
+    //         ]);
+    //         return [];
+    //     }
+    // }
+
     private function fetchBranches($batch = 1)
     {
         try {
@@ -46,10 +110,11 @@ class AuthenticationController extends Controller
 
             $apiUrl = config('api.base_url') . '/business/businessviewbranch';
 
-            // Log the request payload for debugging
-            Log::info('Fetching branches with payload:', [
+            // Enhanced logging for request
+            Log::info('Fetching branches - Request:', [
                 'email' => $email,
-                'batch' => $batch
+                'batch' => $batch,
+                'url' => $apiUrl
             ]);
 
             $response = $this->client->post($apiUrl, [
@@ -67,18 +132,31 @@ class AuthenticationController extends Controller
             $statusCode = $response->getStatusCode();
             $responseBody = json_decode($response->getBody()->getContents(), true);
 
-            // Log the complete response for debugging
-            Log::info('Branch API Response:', [
+            // Enhanced response logging
+            Log::info('Branch API Raw Response:', [
                 'status_code' => $statusCode,
-                'response' => $responseBody
+                'response_structure' => array_keys($responseBody ?? []),
+                'response_type' => gettype($responseBody)
             ]);
 
-            if ($statusCode === 200 && isset($responseBody['data'])) {
-                // Transform the data if needed
-                $branches = $responseBody['data'];
+            if ($statusCode === 200) {
+                // Check both possible data structures
+                $branches = [];
+                if (isset($responseBody['data']) && is_array($responseBody['data'])) {
+                    $branches = $responseBody['data'];
+                } elseif (isset($responseBody['branches']) && is_array($responseBody['branches'])) {
+                    $branches = $responseBody['branches'];
+                }
 
                 // Log the processed branches
-                Log::info('Processed branch data:', ['branches' => $branches]);
+                Log::info('Processed branch data:', [
+                    'count' => count($branches),
+                    'sample_keys' => $branches ? array_keys(reset($branches)) : [],
+                    'first_branch' => $branches ? json_encode(reset($branches)) : 'no branches'
+                ]);
+
+                // Store branches in session for backup
+                Session::put('cached_branches', $branches);
 
                 return $branches;
             }
@@ -87,13 +165,110 @@ class AuthenticationController extends Controller
                 'status_code' => $statusCode,
                 'response' => $responseBody
             ]);
-            return [];
+            return Session::get('cached_branches', []);
         } catch (\Exception $e) {
             Log::error('Error fetching branches', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            return [];
+            return Session::get('cached_branches', []);
+        }
+    }
+
+
+    public function finalDeclaration(Request $request)
+    {
+        Log::info('Business final declaration method is called');
+
+        try {
+            // Get stored credentials
+            $email = Session::get('business_email');
+            $password = Session::get('business_password');
+
+            if (!$email || !$password) {
+                Log::warning('No stored credentials found for final declaration');
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Authentication required. Please log in again.'
+                ], 401);
+            }
+
+            // First fetch and verify branches
+            $branches = $this->fetchBranches();
+
+            // Log branch verification
+            Log::info('Verifying branches before final declaration:', [
+                'branch_count' => count($branches),
+                'cached_count' => count(Session::get('cached_branches', [])),
+                'email' => $email
+            ]);
+
+            if (empty($branches)) {
+                // Try to get from cache
+                $branches = Session::get('cached_branches', []);
+                if (empty($branches)) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'No branches found. Please add at least one branch before submitting.'
+                    ], 404);
+                }
+            }
+
+            // Proceed with final declaration
+            $apiUrl = config('api.base_url') . '/business/finaldeclearation';
+
+            $payload = [
+                'email' => $email,
+                'password' => $password,
+                'branches' => $branches  // adding the branches to the api request payload
+            ];
+
+            Log::info('Submitting final declaration:', [
+                'email' => $email,
+                'branch_count' => count($branches)
+            ]);
+
+            $response = $this->client->post($apiUrl, [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                ],
+                'json' => $payload
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            $responseBody = json_decode($response->getBody()->getContents(), true);
+
+            Log::info('Final declaration response:', [
+                'status_code' => $statusCode,
+                'response' => $responseBody
+            ]);
+
+            if ($statusCode === 200) {
+                // Clear cached branches after successful submission
+                Session::forget('cached_branches');
+
+                return response()->json([
+                    'status' => 'success',
+                    'message' => $responseBody['message'] ?? 'Declarations registered successfully!',
+                    'branch_count' => count($branches)
+                ]);
+            }
+
+            return response()->json([
+                'status' => 'error',
+                'message' => $responseBody['message'] ?? 'Failed to process declaration'
+            ], $statusCode);
+        } catch (\Exception $e) {
+            Log::error('Error in final declaration', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'An unexpected error occurred. Please try again later.'
+            ], 500);
         }
     }
 
@@ -1573,7 +1748,215 @@ class AuthenticationController extends Controller
     }
 
 
-    public function finalDeclaration(Request $request)
+    public function finalDeclaration2(Request $request)
+    {
+        Log::info('Business final declaration method is called');
+
+        try {
+            // Get stored credentials from session
+            $email = Session::get('business_email');
+            $password = Session::get('business_password');
+
+            if (!$email || !$password) {
+                Log::warning('No stored credentials found for final declaration');
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Authentication required. Please log in again.'
+                ], 401);
+            }
+
+            // First, let's get the branch list from the API
+            try {
+                $branchListUrl = config('api.base_url') . '/business/declarationList';
+                $branchListResponse = $this->client->post($branchListUrl, [
+                    'headers' => [
+                        'Content-Type' => 'application/json',
+                        'Accept' => 'application/json',
+                    ],
+                    'json' => [
+                        'email' => $email,
+                        'password' => $password
+                    ]
+                ]);
+
+                $branchList = json_decode($branchListResponse->getBody()->getContents(), true);
+
+                // Log the branch list response
+                Log::info('Branch list retrieved:', [
+                    'email' => $email,
+                    'branch_count' => count($branchList['data'] ?? [])
+                ]);
+
+                if (empty($branchList['data'])) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'No branches found for registration. Please add branches first.'
+                    ], 404);
+                }
+            } catch (\Exception $e) {
+                Log::error('Error fetching branch list', [
+                    'message' => $e->getMessage()
+                ]);
+                throw $e;
+            }
+
+            // Proceed with final declaration
+            $apiUrl = config('api.base_url') . '/business/finaldeclearation';
+
+            $payload = [
+                'email' => $email,
+                'password' => $password
+            ];
+
+            // Log the request payload for debugging
+            Log::info('Submitting final declaration with payload:', [
+                'email' => $email
+            ]);
+
+            $response = $this->client->post($apiUrl, [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                ],
+                'json' => $payload
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            $responseBody = json_decode($response->getBody()->getContents(), true);
+
+            // Log the complete response for debugging
+            Log::info('Final declaration API Response:', [
+                'status_code' => $statusCode,
+                'response' => $responseBody,
+                'branch_count' => count($branchList['data'] ?? [])
+            ]);
+
+            switch ($statusCode) {
+                case 200:
+                    return response()->json([
+                        'status' => 'success',
+                        'message' => $responseBody['message'] ?? 'Declarations registered successfully!',
+                        'branch_count' => count($branchList['data'] ?? [])
+                    ]);
+
+                case 404:
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'No branches found for registration. Please add branches first.'
+                    ]);
+
+                case 422:
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => $responseBody['message'] ?? 'Validation failed. Please check your credentials.'
+                    ]);
+
+                default:
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => $responseBody['message'] ?? 'Failed to process declaration'
+                    ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('Error in final declaration', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'An unexpected error occurred. Please try again later.'
+            ], 500);
+        }
+    }
+
+    // public function finalDeclaration(Request $request)
+    // {
+    //     Log::info('Business final declaration method is called');
+
+    //     try {
+    //         // Get stored credentials from session
+    //         $email = Session::get('business_email');
+    //         $password = Session::get('business_password');
+
+    //         if (!$email || !$password) {
+    //             Log::warning('No stored credentials found for final declaration');
+    //             return response()->json([
+    //                 'status' => 'error',
+    //                 'message' => 'Authentication required. Please log in again.'
+    //             ], 401);
+    //         }
+
+    //         $apiUrl = config('api.base_url') . '/business/finaldeclearation';
+
+    //         $payload = [
+    //             'email' => $email,
+    //             'password' => $password
+    //         ];
+
+    //         // Log the request payload for debugging
+    //         Log::info('Submitting final declaration with payload:', [
+    //             'email' => $email
+
+    //         ]);
+
+    //         $response = $this->client->post($apiUrl, [
+    //             'headers' => [
+    //                 'Content-Type' => 'application/json',
+    //                 'Accept' => 'application/json',
+    //             ],
+    //             'json' => $payload
+    //         ]);
+
+    //         $statusCode = $response->getStatusCode();
+    //         $responseBody = json_decode($response->getBody()->getContents(), true);
+
+    //         // Log the complete response for debugging
+    //         Log::info('Final declaration API Response:', [
+    //             'status_code' => $statusCode,
+    //             'response' => $responseBody
+    //         ]);
+
+    //         switch ($statusCode) {
+    //             case 200:
+    //                 return response()->json([
+    //                     'status' => 'success',
+    //                     'message' => $responseBody['message'] ?? 'Declarations registered successfully!'
+    //                 ]);
+
+    //             case 404:
+    //                 return response()->json([
+    //                     'status' => 'error',
+    //                     'message' => 'No branches found for registration. Please add branches first.'
+    //                 ]);
+
+    //             case 422:
+    //                 return response()->json([
+    //                     'status' => 'error',
+    //                     'message' => $responseBody['message'] ?? 'Validation failed. Please check your credentials.'
+    //                 ]);
+
+    //             default:
+    //                 return response()->json([
+    //                     'status' => 'error',
+    //                     'message' => $responseBody['message'] ?? 'Failed to process declaration'
+    //                 ]);
+    //         }
+    //     } catch (\Exception $e) {
+    //         Log::error('Error in final declaration', [
+    //             'message' => $e->getMessage(),
+    //             'trace' => $e->getTraceAsString()
+    //         ]);
+
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => 'An unexpected error occurred. Please try again later.'
+    //         ], 500);
+    //     }
+    // }
+
+
+    public function finalDeclaration22(Request $request)
     {
         Log::info('Final declaration method is called');
 

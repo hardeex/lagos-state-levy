@@ -1,7 +1,7 @@
 @extends('base.base')
 @section('title', 'Declaration')
 @section('content')
-
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <div class="bg-gray-100">
         <div class="space-y-4 max-w-2xl mx-auto p-4">
             @if ($errors->any())
@@ -411,6 +411,85 @@
                         class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
                         Submit All Branches
                     </button>
+
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const submitAllButton = document.getElementById('submitAll');
+
+                            if (submitAllButton) {
+                                submitAllButton.addEventListener('click', async function(e) {
+                                    e.preventDefault();
+
+                                    // Show confirmation dialog
+                                    if (!confirm(
+                                            'Are you sure you want to submit all branches? This action cannot be undone.'
+                                        )) {
+                                        return;
+                                    }
+
+                                    // Disable the button and show loading state
+                                    this.disabled = true;
+                                    const originalText = this.innerHTML;
+                                    this.innerHTML =
+                                        '<span class="inline-flex items-center">Processing... <svg class="animate-spin ml-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></span>';
+
+                                    try {
+                                        // Get CSRF token from meta tag
+                                        const csrfToken = document.querySelector('meta[name="csrf-token"]')
+                                            ?.getAttribute('content');
+
+                                        if (!csrfToken) {
+                                            throw new Error('CSRF token not found');
+                                        }
+
+                                        // Make the API call
+                                        const response = await fetch('/final-declaration', {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                'X-CSRF-TOKEN': csrfToken,
+                                                'Accept': 'application/json'
+                                            },
+                                            body: JSON.stringify({})
+                                        });
+
+                                        const data = await response.json();
+
+                                        if (!response.ok) {
+                                            throw new Error(data.message || 'Server error occurred');
+                                        }
+
+                                        if (data.status === 'success') {
+                                            // Show success message
+                                            alert(data.message || 'Declaration submitted successfully!');
+                                            // Redirect to billing page
+                                            window.location.href = '/billing/business';
+                                        } else {
+                                            throw new Error(data.message || 'Submission failed');
+                                        }
+
+                                    } catch (error) {
+                                        console.error('Error during submission:', error);
+                                        alert(error.message || 'An unexpected error occurred. Please try again.');
+
+                                        // Reset button state
+                                        this.disabled = false;
+                                        this.innerHTML = originalText;
+
+                                    } finally {
+                                        // If for some reason we haven't redirected (in case of error),
+                                        // ensure the button is re-enabled
+                                        if (!document.hidden) {
+                                            this.disabled = false;
+                                            this.innerHTML = originalText;
+                                        }
+                                    }
+                                });
+                            }
+                        });
+
+                   
+                    </script>
                 </div>
             </div>
         </div>
