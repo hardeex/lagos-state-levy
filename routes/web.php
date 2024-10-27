@@ -30,6 +30,8 @@ Route::post('/api/change-password', [AuthenticationController::class, 'initiateP
 
 Route::get('/declaration', [AuthenticationController::class, 'declaration'])->name('auth.declaration');
 Route::post('/api/declaration', [AuthenticationController::class, 'storeDeclaration'])->name('auth.declaration-submit');
+Route::delete('/delete-branch', [AuthenticationController::class, 'deleteBranch'])->name('auth.delete-branch');
+
 
 Route::get('/view-branches', [AuthenticationController::class, 'viewBranchesForm'])->name('auth.viewBranches');
 Route::post('/api/view-branches', [AuthenticationController::class, 'viewBranches'])->name('auth.viewBranches-submit');

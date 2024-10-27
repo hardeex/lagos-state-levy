@@ -1396,10 +1396,82 @@ class AuthenticationController extends Controller
         }
     }
 
-
-
-
     public function deleteBranch(Request $request)
+    {
+        Log::info('Business branch deletion method is called');
+
+        try {
+            // Get stored credentials from session
+            $email = Session::get('business_email');
+            $password = Session::get('business_password');
+
+            if (!$email || !$password) {
+                Log::warning('No stored credentials found for deleting branch');
+                return redirect()->route('auth.declaration')
+                    ->withErrors(['error' => 'Authentication required. Please log in again.']);
+            }
+
+            // Validate that branch_id is provided and is an integer
+            $validatedData = $request->validate([
+                'branch_id' => ['required', 'integer']
+            ]);
+
+            $apiUrl = config('api.base_url') . '/business/businessbranchdelete'; // Updated endpoint
+
+            $payload = [
+                'email' => $email,
+                'password' => $password,
+                'branchid' => (int)$validatedData['branch_id']  // Cast to integer as per API spec
+            ];
+
+            // Log the request payload for debugging
+            Log::info('Deleting branch with payload:', [
+                'email' => $email,
+                'branchid' => $payload['branchid']
+            ]);
+
+            $response = $this->client->delete($apiUrl, [ // Changed to DELETE method
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                ],
+                'json' => $payload
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            $responseBody = json_decode($response->getBody()->getContents(), true);
+
+            // Log the complete response for debugging
+            Log::info('Branch deletion API Response:', [
+                'status_code' => $statusCode,
+                'response' => $responseBody
+            ]);
+
+            if ($statusCode === 200 && ($responseBody['status'] === 'success' || $responseBody['status'] === 'Success')) {
+                // Fetch updated branches after successful deletion
+                $branches = $this->fetchBranches();
+                return redirect()->route('auth.declaration')
+                    ->with('success', $responseBody['message'] ?? 'Business branch deleted successfully!')
+                    ->with('branches', $branches);
+            }
+
+            // Handle error cases
+            return redirect()->route('auth.declaration')
+                ->withErrors(['error' => $responseBody['message'] ?? 'Failed to delete business branch']);
+        } catch (\Exception $e) {
+            Log::error('Error deleting branch', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->route('auth.declaration')
+                ->withErrors(['error' => 'An unexpected error occurred. Please try again later.']);
+        }
+    }
+
+
+
+    public function deleteBranch2(Request $request)
     {
         Log::info('Delete branch method is called');
 
