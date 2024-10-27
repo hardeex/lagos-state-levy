@@ -8,15 +8,186 @@ use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\ConnectException;
+use Illuminate\Support\Facades\Session;
 
 class AuthenticationController extends Controller
 {
+
+    private $client;
+
+    public function __construct()
+    {
+        $this->client = new Client([
+            'timeout' => 30,
+            'connect_timeout' => 5,
+            'http_errors' => false,
+            'verify' => false
+        ]);
+    }
+
+
+    public function declaration()
+    {
+        // Fetch branches before displaying the page
+        $branches = $this->fetchBranches();
+        return view('auth.declaration', compact('branches'));
+    }
+
+    private function fetchBranches($batch = 1)
+    {
+        try {
+            $email = Session::get('business_email');
+            $password = Session::get('business_password');
+
+            if (!$email || !$password) {
+                Log::warning('No stored credentials found for fetching branches');
+                return [];
+            }
+
+            $apiUrl = config('api.base_url') . '/business/businessviewbranch';
+
+            // Log the request payload for debugging
+            Log::info('Fetching branches with payload:', [
+                'email' => $email,
+                'batch' => $batch
+            ]);
+
+            $response = $this->client->post($apiUrl, [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                ],
+                'json' => [
+                    'email' => $email,
+                    'password' => $password,
+                    'batch' => $batch
+                ]
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            $responseBody = json_decode($response->getBody()->getContents(), true);
+
+            // Log the complete response for debugging
+            Log::info('Branch API Response:', [
+                'status_code' => $statusCode,
+                'response' => $responseBody
+            ]);
+
+            if ($statusCode === 200 && isset($responseBody['data'])) {
+                // Transform the data if needed
+                $branches = $responseBody['data'];
+
+                // Log the processed branches
+                Log::info('Processed branch data:', ['branches' => $branches]);
+
+                return $branches;
+            }
+
+            Log::warning('Failed to fetch branches', [
+                'status_code' => $statusCode,
+                'response' => $responseBody
+            ]);
+            return [];
+        } catch (\Exception $e) {
+            Log::error('Error fetching branches', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return [];
+        }
+    }
+
+
+    public function storeDeclaration(Request $request)
+    {
+        Log::info('Business declaration method is called');
+
+        try {
+            $validatedData = $request->validate([
+                'locationType' => ['required', 'string'],
+                'branchName' => ['required', 'string', 'max:255'],
+                'branchAddress' => ['required', 'string', 'max:255'],
+                'lga' => ['required', 'string', 'max:255'],
+                'contactPerson' => ['required', 'string', 'max:255'],
+                'designation' => ['required', 'string', 'max:255'],
+                'contactPhone' => ['required', 'string'],
+                'staffcount' => ['required', 'integer'],
+                'email' => ['required', 'email'],
+                'password' => ['required', 'string', 'min:6']
+            ]);
+
+            $payload = [
+                'locationType' => ucwords(strtolower($validatedData['locationType'])),
+                'branchName' => $validatedData['branchName'],
+                'branchAddress' => $validatedData['branchAddress'],
+                'lga' => $validatedData['lga'],
+                'contactPerson' => $validatedData['contactPerson'],
+                'designation' => $validatedData['designation'],
+                'contactPhone' => $validatedData['contactPhone'],
+                'staffcount' => (string)$validatedData['staffcount'],
+                'email' => $validatedData['email'],
+                'password' => $validatedData['password']
+            ];
+
+            // Store credentials in session for future branch fetching
+            Session::put('business_email', $validatedData['email']);
+            Session::put('business_password', $validatedData['password']);
+
+            $apiUrl = config('api.base_url') . '/business/businessaddbranch';
+
+            $response = $this->client->post($apiUrl, [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                ],
+                'json' => $payload
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            $responseBody = json_decode($response->getBody()->getContents(), true);
+
+            switch ($statusCode) {
+                case 200:
+                case 201:
+                    // Fetch updated branches after successful addition
+                    $branches = $this->fetchBranches();
+                    return redirect()->route('auth.declaration')
+                        ->with('success', 'Business location added successfully!')
+                        ->with('branches', $branches);
+
+                case 422:
+                    return redirect()->route('auth.declaration')
+                        ->withErrors(['error' => $responseBody['message'] ?? 'Validation failed'])
+                        ->withInput();
+
+                case 500:
+                    return redirect()->route('auth.declaration')
+                        ->withErrors(['error' => 'Unable to process your request at this time. Please try again later.'])
+                        ->withInput();
+
+                default:
+                    return redirect()->route('auth.declaration')
+                        ->withErrors(['error' => $responseBody['message'] ?? 'Failed to add business location'])
+                        ->withInput();
+            }
+        } catch (\Exception $e) {
+            Log::error('Unexpected error', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->route('auth.declaration')
+                ->withErrors(['error' => 'An unexpected error occurred. Please try again later.'])
+                ->withInput();
+        }
+    }
+
+
+
     public function registerUser()
     {
         return view('auth.register-user');
     }
-
-
 
 
     public function storeRegisterUser(Request $request)
@@ -893,12 +1064,116 @@ class AuthenticationController extends Controller
         return view('auth.calendar');
     }
 
-    public function declaration()
+    public function declaration2()
     {
         return view('auth.declaration');
     }
 
-    public function storeDeclaration(Request $request)
+    // Controller method
+    public function storeDeclaration2(Request $request)
+    {
+        Log::info('Business declaration method is called');
+
+        try {
+            // Validate incoming request data
+            $validatedData = $request->validate([
+                'locationType' => ['required', 'string'],
+                'branchName' => ['required', 'string', 'max:255'],
+                'branchAddress' => ['required', 'string', 'max:255'],
+                'lga' => ['required', 'string', 'max:255'],
+                'contactPerson' => ['required', 'string', 'max:255'],
+                'designation' => ['required', 'string', 'max:255'],
+                'contactPhone' => ['required', 'string'],
+                'staffcount' => ['required', 'integer'],
+                'email' => ['required', 'email'],
+                'password' => ['required', 'string', 'min:6']
+            ]);
+
+            $payload = [
+                'locationType' => ucwords(strtolower($validatedData['locationType'])),
+                'branchName' => $validatedData['branchName'],
+                'branchAddress' => $validatedData['branchAddress'],
+                'lga' => $validatedData['lga'],
+                'contactPerson' => $validatedData['contactPerson'],
+                'designation' => $validatedData['designation'],
+                'contactPhone' => $validatedData['contactPhone'],
+                'staffcount' => (string)$validatedData['staffcount'],
+                'email' => $validatedData['email'],
+                'password' => $validatedData['password']
+            ];
+
+            $client = new Client([
+                'timeout' => 30,
+                'connect_timeout' => 5,
+                'http_errors' => false,
+                'verify' => false
+            ]);
+
+            $apiUrl = config('api.base_url') . '/business/businessaddbranch';
+            $response = $client->post($apiUrl, [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                ],
+                'json' => $payload
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            $responseBody = json_decode($response->getBody()->getContents(), true);
+
+            if ($statusCode === 200 || $statusCode === 201) {
+                // Fetch updated list of branches
+                $branchesResponse = $this->fetchBranches($validatedData['email'], $validatedData['password']);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Business location added successfully!',
+                    'branches' => $branchesResponse['data'] ?? []
+                ]);
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => $responseBody['message'] ?? 'Failed to add business location'
+            ], $statusCode);
+        } catch (\Exception $e) {
+            Log::error('Unexpected error', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'An unexpected error occurred. Please try again later.'
+            ], 500);
+        }
+    }
+
+    private function fetchBranches2($email, $password, $batch = 1)
+    {
+        $client = new Client([
+            'timeout' => 30,
+            'connect_timeout' => 5,
+            'http_errors' => false,
+            'verify' => false
+        ]);
+
+        $response = $client->post(config('api.base_url') . '/business/businessviewbranch', [
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ],
+            'json' => [
+                'email' => $email,
+                'password' => $password,
+                'batch' => $batch
+            ]
+        ]);
+
+        return json_decode($response->getBody()->getContents(), true);
+    }
+
+    public function storeDeclaration44(Request $request)
     {
         Log::info('Business declaration method is called');
 
@@ -926,7 +1201,7 @@ class AuthenticationController extends Controller
                 'contactPerson' => $validatedData['contactPerson'],
                 'designation' => $validatedData['designation'],
                 'contactPhone' => $validatedData['contactPhone'],
-                'staffcount' => (string)$validatedData['staffcount'], 
+                'staffcount' => (string)$validatedData['staffcount'],
                 'email' => $validatedData['email'],
                 'password' => $validatedData['password']
             ];
@@ -977,6 +1252,8 @@ class AuthenticationController extends Controller
                 case 200: // Added 200 as a success case
                 case 201:
                     Log::info('Branch addition successful', ['response' => $responseData]);
+                    // Fetch branches after successfully adding a new one
+
                     return redirect()->route('auth.declaration')
                         ->with('success', 'Business location added successfully!');
                 case 422:
@@ -1016,37 +1293,29 @@ class AuthenticationController extends Controller
     }
 
 
-    public function storeDeclaration22(Request $request)
+    public function viewBranchesForm()
     {
-        Log::info('Business declaration method is called');
+        return view('auth.view');
+    }
+
+
+    public function viewBranches(Request $request)
+    {
+        Log::info('View branches method is called');
 
         try {
             // Validate incoming request data
             $validatedData = $request->validate([
-                'locationType' => ['required', 'string'],
-                'branchName' => ['required', 'string', 'max:255'],
-                'branchAddress' => ['required', 'string', 'max:255'],
-                'lga' => ['required', 'string', 'max:255'],
-                'contactPerson' => ['required', 'string', 'max:255'],
-                'designation' => ['required', 'string', 'max:255'],
-                'contactPhone' => ['required', 'string'],
-                'staffcount' => ['required', 'integer'],
                 'email' => ['required', 'email'],
-                'password' => ['required', 'string', 'min:6']
+                'password' => ['required', 'string', 'min:6'],
+                'batch' => ['required', 'integer']
             ]);
 
-            // Construct payload as per API specifications
+            // Construct payload to match API specifications
             $payload = [
-                'locationType' => $validatedData['locationType'],
-                'branchName' => $validatedData['branchName'],
-                'branchAddress' => $validatedData['branchAddress'],
-                'lga' => $validatedData['lga'],
-                'contactPerson' => $validatedData['contactPerson'],
-                'designation' => $validatedData['designation'],
-                'contactPhone' => $validatedData['contactPhone'],
-                'staffcount' => (int)$validatedData['staffcount'],
                 'email' => $validatedData['email'],
                 'password' => $validatedData['password'],
+                'batch' => $validatedData['batch']
             ];
 
             // Log the final payload
@@ -1059,7 +1328,7 @@ class AuthenticationController extends Controller
                 'verify' => false
             ]);
 
-            $apiUrl = config('api.base_url') . '/business/businessaddbranch';
+            $apiUrl = config('api.base_url') . '/business/businessviewbranch';
             Log::debug('Attempting API call to: ' . $apiUrl);
 
             $response = $client->post($apiUrl, [
@@ -1092,28 +1361,26 @@ class AuthenticationController extends Controller
 
             // Handle the response based on status code
             switch ($statusCode) {
-                case 201:
-                    Log::info('Branch addition successful', ['response' => $responseData]);
-                    return redirect()->route('auth.declaration')
-                        ->with('success', 'Business location added successfully!');
+                case 200:
+                    Log::info('Branches retrieved successfully', ['response' => $responseData]);
+                    return view('auth.view', ['branches' => $responseData['data']]); // Update the view path as necessary
+                case 401:
+                    Log::warning('Unauthorized access', ['response' => $responseData]);
+                    return redirect()->route('auth.login')
+                        ->withErrors(['error' => 'Invalid email or password'])
+                        ->withInput();
                 case 422:
                     Log::warning('Validation error from API', ['response' => $responseData]);
-                    return redirect()->route('auth.declaration')
+                    return redirect()->route('auth.viewBranches')
                         ->withErrors(['error' => $responseData['message'] ?? 'Validation failed'])
                         ->withInput();
-                case 500:
-                    Log::error('Server error', [
-                        'status_code' => $statusCode,
-                        'response' => $responseBody
-                    ]);
-                    throw new \Exception("Server error occurred with status code: $statusCode");
                 default:
-                    $errorMessage = $responseData['message'] ?? 'Failed to add business location';
-                    Log::warning('Branch addition failed', [
+                    $errorMessage = $responseData['message'] ?? 'Failed to retrieve branches';
+                    Log::warning('Branch retrieval failed', [
                         'response' => $responseData,
                         'status_code' => $statusCode
                     ]);
-                    return redirect()->route('auth.declaration')
+                    return redirect()->route('auth.viewBranches')
                         ->withErrors(['error' => $errorMessage])
                         ->withInput();
             }
@@ -1123,11 +1390,13 @@ class AuthenticationController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
 
-            return redirect()->route('auth.declaration')
+            return redirect()->route('auth.viewBranches')
                 ->withErrors(['error' => 'An unexpected error occurred. Please try again later.'])
                 ->withInput();
         }
     }
+
+
 
 
     public function deleteBranch(Request $request)

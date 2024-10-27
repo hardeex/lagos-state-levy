@@ -63,33 +63,112 @@
                     </div>
                 </div>
 
+                <!---- start of test display-->
+
+                <!-- Add this section above your existing form in the declaration.blade.php -->
+                <div class="bg-gray-50 p-6 rounded-lg shadow mb-8">
+                    <h2 class="text-2xl font-semibold mb-6 text-gray-700">Business Locations</h2>
+
+                    @if (session('success'))
+                        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4"
+                            role="alert">
+                            <span class="block sm:inline">{{ session('success') }}</span>
+                        </div>
+                    @endif
+
+                    @if ($errors->any())
+                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
+                            role="alert">
+                            @foreach ($errors->all() as $error)
+                                <span class="block sm:inline">{{ $error }}</span>
+                            @endforeach
+                        </div>
+                    @endif
+
+                    @if (isset($branches) && count($branches) > 0)
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full bg-white">
+                                <thead class="bg-gray-100">
+                                    <tr>
+                                        <th
+                                            class="px-6 py-3 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                            Location Type</th>
+                                        <th
+                                            class="px-6 py-3 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                            Branch Name</th>
+                                        <th
+                                            class="px-6 py-3 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                            Address</th>
+                                        <th
+                                            class="px-6 py-3 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                            LGA</th>
+                                        <th
+                                            class="px-6 py-3 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                            Contact Person</th>
+                                        <th
+                                            class="px-6 py-3 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                            Staff Count</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white">
+                                    @foreach ($branches as $branch)
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
+                                                {{ $branch['ltype'] ?? ($branch['locationType'] ?? 'N/A') }}
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
+                                                {{ $branch['lbranchname'] ?? ($branch['branchName'] ?? 'N/A') }}
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
+                                                {{ $branch['lbranchaddress'] ?? ($branch['branchAddress'] ?? 'N/A') }}
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
+                                                {{ $branch['llga'] ?? ($branch['lga'] ?? 'N/A') }}
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
+                                                {{ $branch['lcontactperson'] ?? ($branch['contactPerson'] ?? 'N/A') }}
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
+                                                {{ $branch['lstaffcount'] ?? ($branch['staffcount'] ?? 'N/A') }}
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @else
+                        <div class="text-gray-500 text-center py-4">No business locations found.</div>
+                    @endif
+                </div>
+                <!-- End of the test display-->
                 <div class="bg-gray-50 p-6 rounded-lg shadow mb-8">
                     <h2 class="text-2xl font-semibold mb-6 text-gray-700">Add Business Location</h2>
-                    <form action="{{ route('auth.declaration-submit') }}" method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <form action="{{ route('auth.declaration-submit') }}" method="POST"
+                        class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         @csrf
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Location Type</label>
-                            <select name="locationType" id="locationType" 
+                            <select name="locationType" id="locationType"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <option value="HEAD OFFICE">Head Office</option>
                                 <option value="BRANCH">Branch</option>
                             </select>
                         </div>
-                        
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Location/Branch Name</label>
                             <input type="text" name="branchName" id="branchName"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 required>
                         </div>
-                        
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Location/Branch Address</label>
                             <input type="text" name="branchAddress" id="branchAddress"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 required>
                         </div>
-                        
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">LGA/LCDA</label>
                             <select name="lga" id="llga" required
@@ -98,49 +177,50 @@
                                 <!-- Options will be populated via JavaScript -->
                             </select>
                         </div>
-                        
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Contact Person</label>
                             <input type="text" name="contactPerson" id="contactPerson"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 required>
                         </div>
-                        
+
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Designation of Contact Person</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Designation of Contact
+                                Person</label>
                             <input type="text" name="designation" id="contactDesignation"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 required>
                         </div>
-                        
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Contact Phone Number</label>
                             <input type="tel" name="contactPhone" id="contactPhone"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 required>
                         </div>
-                        
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Staff Count</label>
                             <input type="number" name="staffcount" id="staffCount" min="0"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 required>
                         </div>
-                        
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
                             <input type="email" name="email" id="email"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 required>
                         </div>
-                        
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
                             <input type="password" name="password" id="password"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 required>
                         </div>
-                    
+
                         <div class="md:col-span-2">
                             <button type="submit"
                                 class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
@@ -148,7 +228,7 @@
                             </button>
                         </div>
                     </form>
-                    
+
                 </div>
 
                 <div class="text-center">
@@ -161,8 +241,8 @@
         </div>
 
         <!-- Edit Modal -->
-        <div id="editModal" class="fixed z-10 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog"
-            aria-modal="true">
+        <div id="editModal" class="fixed z-10 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title"
+            role="dialog" aria-modal="true">
             <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
