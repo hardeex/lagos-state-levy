@@ -22,9 +22,6 @@ class AuthenticationController extends Controller
     public function storeRegisterUser(Request $request)
     {
 
-
-
-
         // Validate incoming request data
         $validatedData = $request->validate([
             'lphone' => ['required', 'string', 'regex:/^\+\d{10,15}$/'],
@@ -105,6 +102,73 @@ class AuthenticationController extends Controller
         $businessEmail = session('business_email');
         return view('auth.user-otp-verify', compact('businessEmail'));
     }
+
+
+    public function verifyOTPSubmitNOSESSION(Request $request)
+    {
+        Log::info('OTP verification method called');
+
+        // Simple validation
+        $validatedData = $request->validate([
+            'verification_method' => ['required', 'in:email,phone'],
+            'otp' => ['required', 'string', 'size:6', 'regex:/^[0-9]+$/'],
+            'business_email' => ['required', 'email'],
+        ]);
+
+        $client = new Client();
+        $apiUrl = config('api.base_url') . '/changeotps';
+
+        // Prepare the payload
+        $payload = [
+            'business_email' => $validatedData['business_email'],
+            'email_otp' => $validatedData['verification_method'] === 'email' ? $validatedData['otp'] : '000000',
+            'phone_otp' => $validatedData['verification_method'] === 'phone' ? $validatedData['otp'] : '000000',
+        ];
+
+        // Log the payload
+        Log::info('Payload for API request:', $payload);
+
+        try {
+            $response = $client->post($apiUrl, [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json'
+                ],
+                'json' => $payload,
+            ]);
+
+            $responseData = json_decode($response->getBody(), true);
+            Log::info('API response received:', $responseData);
+
+            if (isset($responseData['status']) && $responseData['status'] === 'success') {
+                return redirect()->route('auth.login-user')
+                    ->with('success', 'Account verified successfully!');
+            }
+
+            return redirect()->back()
+                ->withErrors(['error' => $responseData['message'] ?? 'Verification failed.'])
+                ->withInput();
+        } catch (RequestException $e) {
+            Log::error('OTP verification failed', [
+                'error' => $e->getMessage(),
+                'payload' => $payload,
+                'response' => $e->hasResponse() ? (string) $e->getResponse()->getBody() : null,
+            ]);
+
+            $errorMessage = 'Failed to verify OTP. Please try again.';
+
+            // If we have a response, try to get the error message
+            if ($e->hasResponse()) {
+                $responseBody = json_decode($e->getResponse()->getBody(), true);
+                $errorMessage = $responseBody['message'] ?? $errorMessage;
+            }
+
+            return redirect()->back()
+                ->withErrors(['error' => $errorMessage])
+                ->withInput();
+        }
+    }
+
 
     public function verifyOTPSubmit(Request $request)
     {
@@ -189,7 +253,7 @@ class AuthenticationController extends Controller
         }
     }
 
-    public function verifyOTPSubmit22(Request $request)
+    public function verifyOTPSubmitORIGINAL(Request $request)
     {
         Log::info('OTP verification method called');
 
@@ -847,7 +911,125 @@ class AuthenticationController extends Controller
                 'lga' => ['required', 'string', 'max:255'],
                 'contactPerson' => ['required', 'string', 'max:255'],
                 'designation' => ['required', 'string', 'max:255'],
-                'contactPhone' => ['required', 'string', 'regex:/^\+\d{10,15}$/'],
+                'contactPhone' => ['required', 'string'],
+                'staffcount' => ['required', 'integer'],
+                'email' => ['required', 'email'],
+                'password' => ['required', 'string', 'min:6']
+            ]);
+
+            // Construct payload to match API specifications exactly
+            $payload = [
+                'locationType' => ucwords(strtolower($validatedData['locationType'])), // Proper case: "Head Office"
+                'branchName' => $validatedData['branchName'],
+                'branchAddress' => $validatedData['branchAddress'],
+                'lga' => $validatedData['lga'],
+                'contactPerson' => $validatedData['contactPerson'],
+                'designation' => $validatedData['designation'],
+                'contactPhone' => $validatedData['contactPhone'],
+                'staffcount' => (string)$validatedData['staffcount'], 
+                'email' => $validatedData['email'],
+                'password' => $validatedData['password']
+            ];
+
+            // Log the final payload
+            Log::info('Final payload being sent to API', ['payload' => $payload]);
+
+            $client = new Client([
+                'timeout' => 30,
+                'connect_timeout' => 5,
+                'http_errors' => false,
+                'verify' => false
+            ]);
+
+            $apiUrl = config('api.base_url') . '/business/businessaddbranch';
+            Log::debug('Attempting API call to: ' . $apiUrl);
+
+            $response = $client->post($apiUrl, [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                ],
+                'json' => $payload
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            $responseBody = $response->getBody()->getContents();
+
+            // Log API response
+            Log::info('API Response', [
+                'statusCode' => $statusCode,
+                'body' => $responseBody
+            ]);
+
+            // Decode the JSON response
+            $responseData = json_decode($responseBody, true);
+
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                Log::error('JSON decode error', [
+                    'error' => json_last_error_msg(),
+                    'raw_response' => $responseBody
+                ]);
+                throw new \RuntimeException('Invalid JSON response from API');
+            }
+
+            // Handle the response based on status code
+            switch ($statusCode) {
+                case 200: // Added 200 as a success case
+                case 201:
+                    Log::info('Branch addition successful', ['response' => $responseData]);
+                    return redirect()->route('auth.declaration')
+                        ->with('success', 'Business location added successfully!');
+                case 422:
+                    Log::warning('Validation error from API', ['response' => $responseData]);
+                    return redirect()->route('auth.declaration')
+                        ->withErrors(['error' => $responseData['message'] ?? 'Validation failed'])
+                        ->withInput();
+                case 500:
+                    Log::error('Server error', [
+                        'status_code' => $statusCode,
+                        'response' => $responseBody
+                    ]);
+                    // Return a more user-friendly message for 500 errors
+                    return redirect()->route('auth.declaration')
+                        ->withErrors(['error' => 'Unable to process your request at this time. Please try again later.'])
+                        ->withInput();
+                default:
+                    $errorMessage = $responseData['message'] ?? 'Failed to add business location';
+                    Log::warning('Branch addition failed', [
+                        'response' => $responseData,
+                        'status_code' => $statusCode
+                    ]);
+                    return redirect()->route('auth.declaration')
+                        ->withErrors(['error' => $errorMessage])
+                        ->withInput();
+            }
+        } catch (\Exception $e) {
+            Log::error('Unexpected error', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->route('auth.declaration')
+                ->withErrors(['error' => 'An unexpected error occurred. Please try again later.'])
+                ->withInput();
+        }
+    }
+
+
+    public function storeDeclaration22(Request $request)
+    {
+        Log::info('Business declaration method is called');
+
+        try {
+            // Validate incoming request data
+            $validatedData = $request->validate([
+                'locationType' => ['required', 'string'],
+                'branchName' => ['required', 'string', 'max:255'],
+                'branchAddress' => ['required', 'string', 'max:255'],
+                'lga' => ['required', 'string', 'max:255'],
+                'contactPerson' => ['required', 'string', 'max:255'],
+                'designation' => ['required', 'string', 'max:255'],
+                'contactPhone' => ['required', 'string'],
                 'staffcount' => ['required', 'integer'],
                 'email' => ['required', 'email'],
                 'password' => ['required', 'string', 'min:6']

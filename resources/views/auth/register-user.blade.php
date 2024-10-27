@@ -55,7 +55,7 @@
                     </div>
                 @endif
                 <h2 class="text-2xl font-semibold text-center mb-4">Enter Tax ID</h2>
-                <input type="text" id="taxIdInput" placeholder="Tax ID"
+                <input type="text" id="taxIdInput" placeholder="TAX123456"
                     class="w-full h-10 border border-gray-300 rounded-md p-2 mb-4">
                 <div class="flex justify-between mb-4">
                     <button id="submitTaxId" class="bg-blue-600 text-white rounded-md px-4 py-2">Submit</button>
