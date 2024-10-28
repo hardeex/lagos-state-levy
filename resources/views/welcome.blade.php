@@ -184,13 +184,14 @@
                     <h2 class="text-3xl font-bold text-center mb-12">Our Services</h2>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                         <div class="bg-white p-6 rounded-lg shadow-md">
-                            <h3 class="text-xl font-semibold mb-4">Fire Safety Levy</h3>
+                            <h3 class="text-xl font-semibold mb-4">Obtain Company Clearance and Fire Certificate for
+                                Building</h3>
                             <p class="text-gray-600 mb-4">
-                                The Fire Safety Levy is a vital program designed to ensure compliance with fire safety
-                                regulations in buildings. By participating, you help create a safer environment and reduce
-                                fire hazards in Lagos.
+                                Improve your expertise with our training programs in Lagos, designed to empower individuals
+                                and organizations.
                             </p>
-                            <a href="{{ route('auth.login-user') }}" class="text-green-600 hover:underline">Make Payment</a>
+                            <a href="{{ route('auth.register-user') }}" class="text-green-600 hover:underline">Apply
+                                Now...</a>
                         </div>
 
 
@@ -210,16 +211,18 @@
                                 Now...</a>
                         </div>
 
+
+
                         <div class="bg-white p-6 rounded-lg shadow-md">
-                            <h3 class="text-xl font-semibold mb-4">Obtain Company Clearance and Fire Certificate for
-                                Building</h3>
+                            <h3 class="text-xl font-semibold mb-4">Fire Safety Levy</h3>
                             <p class="text-gray-600 mb-4">
-                                Improve your expertise with our training programs in Lagos, designed to empower individuals
-                                and organizations.
+                                The Fire Safety Levy is a vital program designed to ensure compliance with fire safety
+                                regulations in buildings. By participating, you help create a safer environment and reduce
+                                fire hazards in Lagos.
                             </p>
-                            <a href="{{ route('auth.register-user') }}" class="text-green-600 hover:underline">Apply
-                                Now...</a>
+                            <a href="#" class="text-green-600 hover:underline">Read More...</a>
                         </div>
+
 
 
                         <div class="bg-white p-6 rounded-lg shadow-md mt-4">
@@ -454,7 +457,7 @@
                 </section> --}}
 
                 <!-- FAQ Section -->
-                <section class="mb-12 bg-white p-6 rounded-lg shadow-md">
+                {{-- <section class="mb-12 bg-white p-6 rounded-lg shadow-md">
                     <h3 class="text-2xl font-semibold mb-6 text-blue-700">Frequently Asked Questions</h3>
                     <div class="space-y-4">
                         @foreach ([['What is a government levy?', 'A government levy is a tax imposed on specific goods, services, or transactions...'], ['How can I pay my levy?', 'You can pay your levy through various methods including online payments, bank transfers...'], ['What are the deadlines for levy payments?', 'Levy payment deadlines vary depending on the type of levy. Generally...']] as [$question, $answer])
@@ -475,7 +478,7 @@
                             View All FAQs
                         </a>
                     </div>
-                </section>
+                </section> --}}
 
                 @push('scripts')
                     <script>

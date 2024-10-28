@@ -409,8 +409,9 @@
                 <div class="text-center">
                     <button id="submitAll"
                         class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
-                        Submit All Branches
+                        Confirm Your Information and Submit All Branches
                     </button>
+
 
                     <script>
                         document.addEventListener('DOMContentLoaded', function() {
@@ -487,8 +488,6 @@
                                 });
                             }
                         });
-
-                   
                     </script>
                 </div>
             </div>

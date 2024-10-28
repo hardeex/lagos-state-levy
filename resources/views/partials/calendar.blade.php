@@ -5,7 +5,9 @@
             <div class="bg-red-50 border-l-4 border-red-500 rounded-lg p-4 shadow-sm">
                 <div class="flex items-center mb-2">
                     <svg class="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                        <path fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                            clip-rule="evenodd" />
                     </svg>
                     <h3 class="text-red-800 font-medium">There were some errors with your submission</h3>
                 </div>
@@ -16,12 +18,14 @@
                 </ul>
             </div>
         @endif
-    
+
         @if (session('success'))
             <div class="bg-green-50 border-l-4 border-green-500 rounded-lg p-4 shadow-sm">
                 <div class="flex items-center">
                     <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        <path fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clip-rule="evenodd" />
                     </svg>
                     <p class="text-green-700 font-medium">{{ session('success') }}</p>
                 </div>
@@ -52,6 +56,7 @@
                         <th class="px-4 py-2 text-left text-gray-700">Branch Name</th>
                         <th class="px-4 py-2 text-left text-gray-700">Visitation Code</th>
                         <th class="px-4 py-2 text-left text-gray-700">Visitation Date</th>
+                        <th class="px-4 py-2 text-left text-gray-700">Select Date</th>
                         <th class="px-4 py-2 text-left text-gray-700">Admin Comment</th>
                         <th class="px-4 py-2 text-left text-gray-700">Status</th>
                         <th class="px-4 py-2 text-left text-gray-700">Action</th>
@@ -62,72 +67,109 @@
                 </tbody>
             </table>
         </div>
-    </div>
 
-    <script>
-        const visitations = [{
-                id: 1,
-                branchName: "Yoga Campus",
-                visitationCode: 8,
-                visitationDate: "",
-                adminComment: "",
-                status: "NO"
-            },
-            {
-                id: 2,
-                branchName: "Alausa Campus",
-                visitationCode: 9,
-                visitationDate: "",
-                adminComment: "",
-                status: "NO"
-            },
-            {
-                id: 3,
-                branchName: "Agbado Ijaye",
-                visitationCode: 10,
-                visitationDate: "",
-                adminComment: "",
-                status: "NO"
-            },
-            {
-                id: 4,
-                branchName: "Ojokoro",
-                visitationCode: 11,
-                visitationDate: "",
-                adminComment: "",
-                status: "NO"
-            },
-            {
-                id: 5,
-                branchName: "Agege",
-                visitationCode: 12,
-                visitationDate: "",
-                adminComment: "",
-                status: "NO"
+        <script>
+            const visitations = [{
+                    id: 1,
+                    branchName: "Yoga Campus",
+                    visitationCode: 8,
+                    visitationDate: "",
+                    adminComment: "",
+                    status: "NO"
+                },
+                {
+                    id: 2,
+                    branchName: "Alausa Campus",
+                    visitationCode: 9,
+                    visitationDate: "",
+                    adminComment: "",
+                    status: "NO"
+                },
+                {
+                    id: 3,
+                    branchName: "Agbado Ijaye",
+                    visitationCode: 10,
+                    visitationDate: "",
+                    adminComment: "",
+                    status: "NO"
+                },
+                {
+                    id: 4,
+                    branchName: "Ojokoro",
+                    visitationCode: 11,
+                    visitationDate: "",
+                    adminComment: "",
+                    status: "NO"
+                },
+                {
+                    id: 5,
+                    branchName: "Agege",
+                    visitationCode: 12,
+                    visitationDate: "",
+                    adminComment: "",
+                    status: "NO"
+                }
+            ];
+
+            function getTodayDate() {
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const day = String(today.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
             }
-        ];
 
-        function populateTable() {
-            const tableBody = document.getElementById('visitations-body');
-            visitations.forEach(visit => {
-                const row = `
-                    <tr class="border-b hover:bg-gray-50">
-                        <td class="px-4 py-2">${visit.id}</td>
-                        <td class="px-4 py-2">${visit.branchName}</td>
-                        <td class="px-4 py-2">${visit.visitationCode}</td>
-                        <td class="px-4 py-2">${visit.visitationDate}</td>
-                        <td class="px-4 py-2">${visit.adminComment}</td>
-                        <td class="px-4 py-2"><span class="text-orange-500 font-bold">${visit.status}</span></td>
-                        <td class="px-4 py-2">
-                            <button class="bg-yellow-400 hover:bg-yellow-500 text-white font-bold py-1 px-2 rounded mr-1">details</button>
-                            <button class="bg-blue-400 hover:bg-blue-500 text-white font-bold py-1 px-2 rounded">re-schedule</button>
-                        </td>
-                    </tr>
-                `;
-                tableBody.innerHTML += row;
-            });
-        }
+            function updateDate(id, date) {
+                const visit = visitations.find(v => v.id === id);
+                if (visit) {
+                    // Check if selected date is not before today
+                    const selectedDate = new Date(date);
+                    const today = new Date(getTodayDate());
 
-        window.onload = populateTable;
-    </script>
-</div>
+                    if (selectedDate < today) {
+                        alert('Please select a future date');
+                        return;
+                    }
+
+                    visit.visitationDate = date;
+                    // Refresh the table to show the updated date
+                    document.getElementById('visitations-body').innerHTML = '';
+                    populateTable();
+                }
+            }
+
+            function populateTable() {
+                const tableBody = document.getElementById('visitations-body');
+                const today = getTodayDate();
+
+                visitations.forEach(visit => {
+                    const row = `
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="px-4 py-2">${visit.id}</td>
+                            <td class="px-4 py-2">${visit.branchName}</td>
+                            <td class="px-4 py-2">${visit.visitationCode}</td>
+                            <td class="px-4 py-2">${visit.visitationDate}</td>
+                            <td class="px-4 py-2">
+                                <input 
+                                    type="date" 
+                                    class="border rounded px-2 py-1"
+                                    value="${visit.visitationDate}"
+                                    min="${today}"
+                                    onchange="updateDate(${visit.id}, this.value)"
+                                >
+                            </td>
+                            <td class="px-4 py-2">${visit.adminComment}</td>
+                            <td class="px-4 py-2"><span class="text-orange-500 font-bold">${visit.status}</span></td>
+                            <td class="px-4 py-2">
+                                <button class="bg-yellow-400 hover:bg-yellow-500 text-white font-bold py-1 px-2 rounded mr-1">details</button>
+                                <button class="bg-blue-400 hover:bg-blue-500 text-white font-bold py-1 px-2 rounded">re-schedule</button>
+                            </td>
+                        </tr>
+                    `;
+                    tableBody.innerHTML += row;
+                });
+            }
+
+            window.onload = populateTable;
+        </script>
+    </div>

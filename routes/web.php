@@ -43,6 +43,7 @@ Route::get('/official-returns', [AuthenticationController::class, 'officialRetur
 Route::get('/receipt', [AuthenticationController::class, 'receipt'])->name('auth.receipt');
 Route::get('/upload-receipt', [AuthenticationController::class, 'uploadReceipt'])->name('auth.upload-receipt');
 Route::get('/invoice-list', [AuthenticationController::class, 'invoiceList'])->name('auth.invoice-list');
+Route::get('/api/invoice-list', [AuthenticationController::class, 'storeInvoiceList'])->name('auth.generate-invoice');
 
 Route::get('/account-history', [AuthenticationController::class, 'accountHistory'])->name('auth.account-history');
 Route::get('/calendar', [AuthenticationController::class, 'calendar'])->name('auth.calendar');

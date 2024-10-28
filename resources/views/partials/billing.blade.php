@@ -5,7 +5,9 @@
             <div class="bg-red-50 border-l-4 border-red-500 rounded-lg p-4 shadow-sm">
                 <div class="flex items-center mb-2">
                     <svg class="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                        <path fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                            clip-rule="evenodd" />
                     </svg>
                     <h3 class="text-red-800 font-medium">There were some errors with your submission</h3>
                 </div>
@@ -16,12 +18,14 @@
                 </ul>
             </div>
         @endif
-    
+
         @if (session('success'))
             <div class="bg-green-50 border-l-4 border-green-500 rounded-lg p-4 shadow-sm">
                 <div class="flex items-center">
                     <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        <path fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clip-rule="evenodd" />
                     </svg>
                     <p class="text-green-700 font-medium">{{ session('success') }}</p>
                 </div>
@@ -62,46 +66,46 @@
         <div class="bg-white rounded-lg shadow-md p-6 text-center hover:shadow-lg transition duration-300">
             <a href="">
                 <i class="fas fa-credit-card text-4xl text-green-500 mb-4"></i>
-            <h3 class="text-xl font-semibold mb-2">Instant Online Payment</h3>
-            <p class="text-gray-600">Make quick and secure online payments for your bills.</p>
+                <h3 class="text-xl font-semibold mb-2">Instant Online Payment</h3>
+                <p class="text-gray-600">Make quick and secure online payments for your bills.</p>
             </a>
-            
+
         </div>
 
         <div class="bg-white rounded-lg shadow-md p-6 text-center hover:shadow-lg transition duration-300">
             <a href="#">
-                  <i class="fas fa-university text-4xl text-purple-500 mb-4"></i>
-            <h3 class="text-xl font-semibold mb-2">Goto Bank-Offline Payment</h3>
-            <p class="text-gray-600">Generate payment slips for offline bank transactions.</p>
+                <i class="fas fa-university text-4xl text-purple-500 mb-4"></i>
+                <h3 class="text-xl font-semibold mb-2">Goto Bank-Offline Payment</h3>
+                <p class="text-gray-600">Generate payment slips for offline bank transactions.</p>
             </a>
-          
+
         </div>
 
         <div class="bg-white rounded-lg shadow-md p-6 text-center hover:shadow-lg transition duration-300">
-            <a href="{{route('auth.upload-receipt')}}">
-                 <i class="fas fa-upload text-4xl text-orange-500 mb-4"></i>
-            <h3 class="text-xl font-semibold mb-2">Upload Receipt</h3>
-            <p class="text-gray-600">Upload and manage your payment receipts easily.</p>
+            <a href="{{ route('auth.upload-receipt') }}">
+                <i class="fas fa-upload text-4xl text-orange-500 mb-4"></i>
+                <h3 class="text-xl font-semibold mb-2">Upload Receipt</h3>
+                <p class="text-gray-600">Upload and manage your payment receipts easily.</p>
             </a>
-           
+
         </div>
 
         <div class="bg-white rounded-lg shadow-md p-6 text-center hover:shadow-lg transition duration-300">
             <a href="">
-                 <i class="fas fa-history text-4xl text-indigo-500 mb-4"></i>
-            <h3 class="text-xl font-semibold mb-2">Account History</h3>
-            <p class="text-gray-600">View your complete account and transaction history.</p>
+                <i class="fas fa-history text-4xl text-indigo-500 mb-4"></i>
+                <h3 class="text-xl font-semibold mb-2">Account History</h3>
+                <p class="text-gray-600">View your complete account and transaction history.</p>
             </a>
-           
+
         </div>
 
         <div class="bg-white rounded-lg shadow-md p-6 text-center hover:shadow-lg transition duration-300">
-            <a href="#">
-                 <i class="fas fa-file-alt text-4xl text-red-500 mb-4"></i>
-            <h3 class="text-xl font-semibold mb-2">Invoices/Bills</h3>
-            <p class="text-gray-600">Access and download your invoices and bills.</p>
+            <a href="{{ route('auth.generate-invoice') }}">
+                <i class="fas fa-file-alt text-4xl text-red-500 mb-4"></i>
+                <h3 class="text-xl font-semibold mb-2">Invoices/Bills</h3>
+                <p class="text-gray-600">Access and download your invoices and bills.</p>
             </a>
-           
+
         </div>
     </div>
 </div>
