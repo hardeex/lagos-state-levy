@@ -3,6 +3,36 @@
 @section('content')
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <div class="bg-gray-100">
+
+        <div class="space-y-4 max-w-2xl mx-auto p-4">
+            @if (session('error'))
+                <div class="bg-red-50 border-l-4 border-red-500 rounded-lg p-4 shadow-sm">
+                    <div class="flex items-center mb-2">
+                        <svg class="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        <h3 class="text-red-800 font-medium">Error</h3>
+                    </div>
+                    <p class="text-red-700">{{ session('error') }}</p>
+                </div>
+            @endif
+
+            @if (session('success'))
+                <div class="bg-green-50 border-l-4 border-green-500 rounded-lg p-4 shadow-sm">
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        <p class="text-green-700 font-medium">{{ session('success') }}</p>
+                    </div>
+                </div>
+            @endif
+        </div>
+
         <div class="space-y-4 max-w-2xl mx-auto p-4">
             @if ($errors->any())
                 <div class="bg-red-50 border-l-4 border-red-500 rounded-lg p-4 shadow-sm">
@@ -90,6 +120,10 @@
                                     <tr>
                                         <th
                                             class="px-6 py-3 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                            S/N
+                                        </th>
+                                        <th
+                                            class="px-6 py-3 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
                                             Location Type
                                         </th>
                                         <th
@@ -119,8 +153,11 @@
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white" id="tableBody">
-                                    @foreach ($branches as $branch)
+                                    @foreach ($branches as $index => $branch)
                                         <tr class="table-row">
+                                            <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
+                                                {{ $loop->iteration }} <!-- S/N -->
+                                            </td>
                                             <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
                                                 {{ $branch['ltype'] ?? ($branch['locationType'] ?? 'N/A') }}
                                             </td>
@@ -161,24 +198,7 @@
                                                                 d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                         </svg>
                                                     </a>
-                                                    {{-- <form action="{{ route('auth.delete-branch') }}" method="POST"
-                                                        class="inline-block"
-                                                        onsubmit="return confirm('Are you sure you want to delete this branch?');">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="text-red-600 hover:text-red-900"
-                                                            title="Delete">
-                                                            <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                                                viewBox="0 0 24 24">
-                                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                                    stroke-width="2"
-                                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                            </svg>
-                                                        </button>
-                                                    </form> --}}
-
-                                                    <form action="{{ route('auth.delete-branch') }}" method="POST"
-                                                        class="inline-block"
+                                                    <form action="#" method="POST" class="inline-block"
                                                         onsubmit="return confirm('Are you sure you want to delete this branch?');">
                                                         @csrf
                                                         @method('DELETE')
@@ -330,6 +350,273 @@
                             </select>
                         </div>
 
+                        {{-- <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Building Type</label>
+                            <select name="buildingType" id="buildingType"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">Select Building Type</option>
+                            </select>
+                        </div> --}}
+
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                const industrySelect = document.getElementById('lindustryone');
+                                const subSectorSelect = document.getElementById('lsubsectorone');
+                                const buildingTypeSelect = document.getElementById('buildingType');
+
+                                console.log('Building Type Integration Initialized', {
+                                    industrySelectExists: !!industrySelect,
+                                    subSectorSelectExists: !!subSectorSelect,
+                                    buildingTypeSelectExists: !!buildingTypeSelect
+                                });
+
+                                // Function to load building types
+                                function loadBuildingTypes() {
+                                    const industry = industrySelect.value;
+                                    const subsector = subSectorSelect.value;
+
+                                    console.log('Attempting to load building types', {
+                                        industry,
+                                        subsector,
+                                        hasIndustry: !!industry,
+                                        hasSubsector: !!subsector
+                                    });
+
+                                    if (!industry || !subsector) {
+                                        console.log('Missing industry or subsector - cannot load building types');
+                                        buildingTypeSelect.innerHTML = '<option value="">Select Building Type</option>';
+                                        buildingTypeSelect.disabled = true;
+                                        return;
+                                    }
+
+                                    buildingTypeSelect.disabled = true;
+
+                                    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+                                    console.log('CSRF Token exists:', !!csrfToken);
+
+                                    // Get stored credentials if available
+                                    const storedCredentials = sessionStorage.getItem('userCredentials');
+                                    let credentials = {};
+
+                                    try {
+                                        credentials = storedCredentials ? JSON.parse(storedCredentials) : {};
+                                        console.log('Retrieved stored credentials:', !!credentials);
+                                    } catch (e) {
+                                        console.error('Error parsing stored credentials:', e);
+                                    }
+
+                                    const payload = {
+                                        email: credentials.email || document.querySelector('input[name="lemail"]')?.value,
+                                        password: credentials.password || document.querySelector('input[name="lpw"]')?.value,
+                                        lindustry: industry,
+                                        lsubsector: subsector
+                                    };
+
+                                    console.log('Sending building types request with payload:', {
+                                        hasEmail: !!payload.email,
+                                        hasPassword: !!payload.password,
+                                        industry: payload.lindustry,
+                                        subsector: payload.lsubsector
+                                    });
+
+                                    fetch('/api/business/building-types', {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                'Accept': 'application/json',
+                                                'X-Requested-With': 'XMLHttpRequest',
+                                                ...(csrfToken ? {
+                                                    'X-CSRF-TOKEN': csrfToken
+                                                } : {})
+                                            },
+                                            body: JSON.stringify(payload)
+                                        })
+                                        .then(response => {
+                                            console.log('Building types response status:', response.status);
+                                            if (!response.ok) {
+                                                throw new Error(`HTTP error! status: ${response.status}`);
+                                            }
+                                            return response.json();
+                                        })
+                                        .then(data => {
+                                            console.log('Building types API response:', data);
+
+                                            buildingTypeSelect.innerHTML = '<option value="">Select Building Type</option>';
+
+                                            if (Array.isArray(data) && data.length > 0) {
+                                                data.sort((a, b) => a.localeCompare(b));
+
+                                                data.forEach(buildingType => {
+                                                    const option = document.createElement('option');
+                                                    option.value = buildingType;
+                                                    option.textContent = buildingType;
+                                                    buildingTypeSelect.appendChild(option);
+                                                });
+
+                                                const oldValue = buildingTypeSelect.getAttribute('data-old-value') ||
+                                                    "{{ old('buildingType') }}";
+                                                if (oldValue) {
+                                                    buildingTypeSelect.value = oldValue;
+                                                }
+                                            } else {
+                                                console.log('No building types received from API');
+                                                buildingTypeSelect.innerHTML =
+                                                    '<option value="">No building types available</option>';
+                                            }
+                                        })
+                                        .catch(error => {
+                                            console.error('Error loading building types:', error);
+                                            buildingTypeSelect.innerHTML = '<option value="">Error loading Building Types</option>';
+                                        })
+                                        .finally(() => {
+                                            buildingTypeSelect.disabled = false;
+                                            console.log('Building types loading completed');
+                                        });
+                                }
+
+                                // Event listeners
+                                if (subSectorSelect) {
+                                    subSectorSelect.addEventListener('change', function() {
+                                        console.log('Subsector changed:', this.value);
+                                        loadBuildingTypes();
+                                    });
+                                }
+
+                                if (industrySelect) {
+                                    industrySelect.addEventListener('change', function() {
+                                        console.log('Industry changed:', this.value);
+                                        // Wait for subsectors to load before loading building types
+                                        setTimeout(loadBuildingTypes, 1000);
+                                    });
+                                }
+
+                                // Initialize if values are pre-selected
+                                if (industrySelect?.value && subSectorSelect?.value) {
+                                    console.log('Initial values present, loading building types');
+                                    loadBuildingTypes();
+                                }
+                            });
+                        </script>
+                        {{-- <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                const industrySelect = document.getElementById('lindustryone');
+                                const subSectorSelect = document.getElementById('lsubsectorone');
+                                const locationTypeSelect = document.getElementById('locationType');
+                                const buildingTypeSelect = document.getElementById('buildingType');
+
+                                // Add building type select next to location type
+                                const buildingTypeHtml = `
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Building Type</label>
+            <select name="buildingType" id="buildingType"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="">Select Building Type</option>
+            </select>
+        </div>
+    `;
+
+                                // Insert building type select after location type
+                                locationTypeSelect.closest('div').insertAdjacentHTML('afterend', buildingTypeHtml);
+
+                                // Function to load building types
+                                function loadBuildingTypes() {
+                                    const industry = industrySelect.value;
+                                    const subsector = subSectorSelect.value;
+
+                                    if (!industry || !subsector) {
+                                        buildingTypeSelect.innerHTML = '<option value="">Select Building Type</option>';
+                                        buildingTypeSelect.disabled = true;
+                                        return;
+                                    }
+
+                                    buildingTypeSelect.disabled = true;
+
+                                    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+
+                                    // Get user credentials from your authentication system
+                                    // Replace these with actual user credentials or token-based auth
+                                    const userCredentials = {
+                                        email: document.querySelector('input[name="email"]')?.value,
+                                        password: document.querySelector('input[name="password"]')?.value
+                                    };
+
+                                    fetch('/api/business/building-types', {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                'Accept': 'application/json',
+                                                ...(csrfToken ? {
+                                                    'X-CSRF-TOKEN': csrfToken
+                                                } : {})
+                                            },
+                                            body: JSON.stringify({
+                                                email: userCredentials.email,
+                                                password: userCredentials.password,
+                                                lindustry: industry,
+                                                lsubsector: subsector
+                                            })
+                                        })
+                                        .then(response => {
+                                            if (!response.ok) {
+                                                throw new Error(`HTTP error! status: ${response.status}`);
+                                            }
+                                            return response.json();
+                                        })
+                                        .then(data => {
+                                            console.log('Building types data:', data); // For debugging
+
+                                            // Clear existing options
+                                            buildingTypeSelect.innerHTML = '<option value="">Select Building Type</option>';
+
+                                            if (Array.isArray(data) && data.length > 0) {
+                                                // Sort building types alphabetically
+                                                data.sort((a, b) => a.localeCompare(b));
+
+                                                // Add building type options
+                                                data.forEach(buildingType => {
+                                                    const option = document.createElement('option');
+                                                    option.value = buildingType;
+                                                    option.textContent = buildingType;
+                                                    buildingTypeSelect.appendChild(option);
+                                                });
+
+                                                // Restore old value if it exists
+                                                const oldValue = buildingTypeSelect.getAttribute('data-old-value') ||
+                                                    "{{ old('buildingType') }}";
+                                                if (oldValue) {
+                                                    buildingTypeSelect.value = oldValue;
+                                                }
+                                            } else {
+                                                buildingTypeSelect.innerHTML =
+                                                    '<option value="">No building types available</option>';
+                                            }
+                                        })
+                                        .catch(error => {
+                                            console.error('Error loading building types:', error);
+                                            buildingTypeSelect.innerHTML = '<option value="">Error loading Building Types</option>';
+                                        })
+                                        .finally(() => {
+                                            buildingTypeSelect.disabled = false;
+                                        });
+                                }
+
+                                // Event listeners
+                                subSectorSelect.addEventListener('change', loadBuildingTypes);
+
+                                // Also load building types when industry changes (after subsectors are loaded)
+                                industrySelect.addEventListener('change', function() {
+                                    // The existing loadSubSectors will be called first
+                                    // After subsectors are loaded, we should load building types
+                                    setTimeout(loadBuildingTypes, 500); // Give time for subsectors to load
+                                });
+
+                                // Initialize if values are pre-selected
+                                if (industrySelect.value && subSectorSelect.value) {
+                                    loadBuildingTypes();
+                                }
+                            });
+                        </script> --}}
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Location/Branch Name</label>
                             <input type="text" name="branchName" id="branchName"
@@ -382,7 +669,7 @@
                                 required>
                         </div>
 
-                        <div>
+                        {{-- <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
                             <input type="email" name="email" id="email"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -394,7 +681,21 @@
                             <input type="password" name="password" id="password"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 required>
+                        </div> --}}
+
+                        {{-- <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                            <input type="email" name="email" id="email"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                value="{{ session('business_email') }}" readonly required>
                         </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                            <input type="password" name="password" id="password"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                value="{{ session('business_password') }}" readonly required>
+                        </div> --}}
 
                         <div class="md:col-span-2">
                             <button type="submit"

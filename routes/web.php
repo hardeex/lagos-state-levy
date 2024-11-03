@@ -19,19 +19,22 @@ Route::get('/register/otp-verify', [AuthenticationController::class, 'verifyOTP'
 Route::post('/api/verify-otp', [AuthenticationController::class, 'verifyOTPSubmit'])->name('auth.otp-verify-submit');
 Route::post('/api/resend-otp', [AuthenticationController::class, 'resendOTP'])->name('auth.resend-otp');
 
-// user login routes
+// user authentication routes
 Route::get('/login', [AuthenticationController::class, 'loginUser'])->name('auth.login-user');
 Route::post('/api/login', [AuthenticationController::class, 'storeLoginUser'])->name('auth.login-submit');
+Route::get('/user-logout', [AuthenticationController::class, 'logoutUser'])->name('auth.logout-user');
 
 Route::get('/forgot-password', [AuthenticationController::class, 'forgotPassword'])->name('auth.forgot-password');
 Route::post('/api/forgot-password', [AuthenticationController::class, 'storeForgotPassword'])->name('auth.forgot-password-submit');
 Route::get('/change-password', [AuthenticationController::class, 'changePassword'])->name('auth.change-password');
 Route::post('/api/change-password', [AuthenticationController::class, 'initiatePasswordReset'])->name('auth.change-password-submit');
 
+// declaration routes
 Route::get('/declaration', [AuthenticationController::class, 'declaration'])->name('auth.declaration');
 Route::post('/api/declaration', [AuthenticationController::class, 'storeDeclaration'])->name('auth.declaration-submit');
 Route::delete('/delete-branch', [AuthenticationController::class, 'deleteBranch'])->name('auth.delete-branch');
 Route::post('/final-declaration', [AuthenticationController::class, 'finalDeclaration'])->name('auth.final-declaration');
+Route::post('/business/building-types', [AuthenticationController::class, 'getBuildingTypes']);
 
 
 Route::get('/view-branches', [AuthenticationController::class, 'viewBranchesForm'])->name('auth.viewBranches');
@@ -63,3 +66,4 @@ Route::get('/', [GeneralController::class, 'home'])->name('welcome');
 Route::get('/contact', [GeneralController::class, 'contact'])->name('user.contact');
 Route::post('/contact-send-message', [GeneralController::class, 'sendMessage'])->name('user.send-message');
 Route::get('/training', [GeneralController::class, 'training'])->name('user.training');
+Route::get('/consultant-carde', [GeneralController::class, 'carde'])->name('user.carde');

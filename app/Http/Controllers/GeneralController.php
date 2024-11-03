@@ -24,13 +24,13 @@ class GeneralController extends Controller
                 'icon' => '<i class="fas fa-file-alt"></i>',
                 'iconColor' => 'text-green-500',
             ],
-            [
-                'title' => 'FAQs',
-                'description' => 'Find answers to commonly asked questions about government levies.',
-                'url' => route('welcome'),
-                'icon' => '<i class="fas fa-question-circle"></i>',
-                'iconColor' => 'text-yellow-500',
-            ],
+            // [
+            //     'title' => 'FAQs',
+            //     'description' => 'Find answers to commonly asked questions about government levies.',
+            //     'url' => route('welcome'),
+            //     'icon' => '<i class="fas fa-question-circle"></i>',
+            //     'iconColor' => 'text-yellow-500',
+            // ],
             [
                 'title' => 'Contact Support',
                 'description' => 'Get in touch with our support team for personalized assistance.',
@@ -52,5 +52,10 @@ class GeneralController extends Controller
     public function training()
     {
         return view('user.training');
+    }
+
+    public function carde()
+    {
+        return view('user.carde');
     }
 }

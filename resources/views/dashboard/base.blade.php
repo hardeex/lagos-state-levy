@@ -6,10 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title') </title>
     {{-- <script src="https://cdn.tailwindcss.com"></script> --}}
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @else
+        <link href="https://cdn.tailwindcss.com" rel="stylesheet">
+    @endif
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
     <!--- for chart-->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs" defer></script>
+
     <style>
         @keyframes fadeIn {
             from {
@@ -95,7 +101,7 @@
         <!--- SIDEBAR-->
         @yield('sidebar')
 
-       
+
 
 
         <!-- Content area -->
@@ -118,25 +124,32 @@
                             <i class="fas fa-search"></i>
                         </button>
                     </div>
-                    <div class="flex items-center hidden sm:inline">
-                        <button class="flex items-center text-gray-500 hover:text-gray-600">
-                            <i class="fas fa-user-circle text-2xl mr-2"></i>
-                            {{-- <span>
-                                @if (Auth::guard('partner')->check())
-                                    <span>{{ Auth::guard('partner')->user()->fullname }}</span>
-                                @else
-                                    <span>{{ Auth::guard('web')->user()->username }}</span>
-                                @endif
-                            </span> --}}
-                        </button>
+                    <div class="relative" x-data="{ open: false }">
+                        <div class="flex items-center hidden sm:inline">
+                            <button @click="open = !open" class="flex items-center text-gray-500 hover:text-gray-600">
+                                <i class="fas fa-user-circle text-2xl mr-2"></i>
+                                <span>Account</span>
+                            </button>
+                        </div>
+
+                        <div x-show="open" @click.away="open = false"
+                            class="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-md z-50">
+                            <form action="{{ url('/user-logout') }}" method="POST">
+                                @csrf
+                                <button type="submit"
+                                    class="block px-4 py-2 text-gray-700 hover:bg-gray-100 w-full text-left">Logout</button>
+                            </form>
+                        </div>
                     </div>
+
+
                 </div>
             </header>
 
 
             <!-- Main content -->
             @yield('content')
-         
+
         </div>
     </div>
 

@@ -1,10 +1,10 @@
 @extends('dashboard.base')
 @Section('title', 'Declaration')
 
-
+{{-- 
 @section('sidebar')
     @include('dashboard.sidebar')
-@endsection
+@endsection --}}
 
 
 @section('content')

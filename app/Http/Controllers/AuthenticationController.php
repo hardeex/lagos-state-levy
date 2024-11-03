@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Log;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\ConnectException;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Auth;
 
 class AuthenticationController extends Controller
 {
@@ -26,28 +27,38 @@ class AuthenticationController extends Controller
     }
 
 
+
+
+
     public function declaration()
     {
-        // Fetch branches before displaying the page
-        $branches = $this->fetchBranches();
+        // Fetch branches from the session if they exist, otherwise call fetchBranches
+        $branches = session()->get('branches', $this->fetchBranches());
         return view('auth.declaration', compact('branches'));
     }
-
 
 
     private function fetchBranches($batch = 1)
     {
         try {
+            // Retrieve credentials from the session
             $email = Session::get('business_email');
             $password = Session::get('business_password');
+            $batch = 1;
+
+            // Log current session data for debugging
+            Log::info('Fetching branches - Current session data:', [
+                'email' => $email,
+                'password' => $password,
+                'session_data' => Session::all() // Log the entire session for more context
+            ]);
 
             if (!$email || !$password) {
                 Log::warning('No stored credentials found for fetching branches');
-                return [];
+                return Session::get('cached_branches', []); // Return cached branches
             }
 
             $apiUrl = config('api.base_url') . '/business/businessviewbranch';
-            // Enhanced logging for request
             Log::info('Fetching branches - Request:', [
                 'email' => $email,
                 'batch' => $batch,
@@ -69,7 +80,6 @@ class AuthenticationController extends Controller
             $statusCode = $response->getStatusCode();
             $responseBody = json_decode($response->getBody()->getContents(), true);
 
-            // Enhanced response logging
             Log::info('Branch API Raw Response:', [
                 'status_code' => $statusCode,
                 'response_structure' => array_keys($responseBody ?? []),
@@ -77,15 +87,15 @@ class AuthenticationController extends Controller
             ]);
 
             if ($statusCode === 200) {
-                // Check both possible data structures
                 $branches = [];
+
+                // Check for the correct response structure
                 if (isset($responseBody['data']) && is_array($responseBody['data'])) {
                     $branches = $responseBody['data'];
                 } elseif (isset($responseBody['branches']) && is_array($responseBody['branches'])) {
                     $branches = $responseBody['branches'];
                 }
 
-                // Log the processed branches
                 Log::info('Processed branch data:', [
                     'count' => count($branches),
                     'sample_keys' => $branches ? array_keys(reset($branches)) : [],
@@ -102,13 +112,13 @@ class AuthenticationController extends Controller
                 'status_code' => $statusCode,
                 'response' => $responseBody
             ]);
-            return Session::get('cached_branches', []);
+            return Session::get('cached_branches', []); // Return cached branches in case of failure
         } catch (\Exception $e) {
             Log::error('Error fetching branches', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            return Session::get('cached_branches', []);
+            return Session::get('cached_branches', []); // Return cached branches in case of error
         }
     }
 
@@ -185,6 +195,9 @@ class AuthenticationController extends Controller
                 // Clear cached branches after successful submission
                 Session::forget('cached_branches');
 
+                // Set session variable to indicate declaration completed
+                Session::put('declaration_completed', true);
+
                 return response()->json([
                     'status' => 'success',
                     'message' => $responseBody['message'] ?? 'Declarations registered successfully!',
@@ -212,7 +225,10 @@ class AuthenticationController extends Controller
 
     public function storeDeclaration(Request $request)
     {
-        Log::info('Business declaration method is called');
+        Log::info('Business declaration method is called', [
+            'session_has_email' => Session::has('business_email'),
+            'session_has_password' => Session::has('business_password')
+        ]);
 
         try {
             $validatedData = $request->validate([
@@ -223,10 +239,20 @@ class AuthenticationController extends Controller
                 'contactPerson' => ['required', 'string', 'max:255'],
                 'designation' => ['required', 'string', 'max:255'],
                 'contactPhone' => ['required', 'string'],
-                'staffcount' => ['required', 'integer'],
-                'email' => ['required', 'email'],
-                'password' => ['required', 'string', 'min:6']
+                'staffcount' => ['required', 'integer']
             ]);
+
+            // Get stored credentials from session
+            $storedEmail = Session::get('business_email');
+            $storedPassword = Session::get('business_password');
+
+            if (!$storedEmail || !$storedPassword) {
+                Log::warning('No stored credentials found in session', [
+                    'session_data' => Session::all()
+                ]);
+                return redirect()->route('auth.login-user')
+                    ->withErrors(['error' => 'Session expired. Please login again.']);
+            }
 
             $payload = [
                 'locationType' => ucwords(strtolower($validatedData['locationType'])),
@@ -237,16 +263,16 @@ class AuthenticationController extends Controller
                 'designation' => $validatedData['designation'],
                 'contactPhone' => $validatedData['contactPhone'],
                 'staffcount' => (string)$validatedData['staffcount'],
-                'email' => $validatedData['email'],
-                'password' => $validatedData['password']
+                'email' => $storedEmail,
+                'password' => $storedPassword
             ];
 
-            // Store credentials in session for future branch fetching
-            Session::put('business_email', $validatedData['email']);
-            Session::put('business_password', $validatedData['password']);
+            Log::info('Sending declaration request', [
+                'email' => $storedEmail,
+                'payload' => array_merge($payload, ['password' => '[REDACTED]'])
+            ]);
 
             $apiUrl = config('api.base_url') . '/business/businessaddbranch';
-
             $response = $this->client->post($apiUrl, [
                 'headers' => [
                     'Content-Type' => 'application/json',
@@ -258,36 +284,42 @@ class AuthenticationController extends Controller
             $statusCode = $response->getStatusCode();
             $responseBody = json_decode($response->getBody()->getContents(), true);
 
+            // Add this logging line
+            Log::info('API Response:', [
+                'status_code' => $statusCode,
+                'response_body' => $responseBody,
+            ]);
+
             switch ($statusCode) {
                 case 200:
                 case 201:
+                    // Clear sensitive session data after successful declaration
+                    Session::forget(['business_password']);
                     // Fetch updated branches after successful addition
                     $branches = $this->fetchBranches();
+
+                    // Add logging here to check the new branches
+                    Log::info('New branches after addition:', [
+                        'count' => count($branches),
+                    ]);
                     return redirect()->route('auth.declaration')
                         ->with('success', 'Business location added successfully!')
                         ->with('branches', $branches);
-
                 case 422:
                     return redirect()->route('auth.declaration')
                         ->withErrors(['error' => $responseBody['message'] ?? 'Validation failed'])
-                        ->withInput();
-
-                case 500:
-                    return redirect()->route('auth.declaration')
-                        ->withErrors(['error' => 'Unable to process your request at this time. Please try again later.'])
-                        ->withInput();
-
+                        ->withInput()
+                        ->with('branches', []); // Clear branches in case of an error
                 default:
                     return redirect()->route('auth.declaration')
                         ->withErrors(['error' => $responseBody['message'] ?? 'Failed to add business location'])
                         ->withInput();
             }
         } catch (\Exception $e) {
-            Log::error('Unexpected error', [
+            Log::error('Unexpected error in declaration', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-
             return redirect()->route('auth.declaration')
                 ->withErrors(['error' => 'An unexpected error occurred. Please try again later.'])
                 ->withInput();
@@ -307,12 +339,12 @@ class AuthenticationController extends Controller
 
         // Validate incoming request data
         $validatedData = $request->validate([
-            'lphone' => ['required', 'string', 'regex:/^\+\d{10,15}$/'],
+            'lphone' => ['required', 'string'],
             'lemail' => ['required', 'email'],
             'lpw' => ['required', 'string'],
             'lcpw' => ['required', 'string', 'same:lpw'],
-            'lregno' => ['required', 'string', 'regex:/^RC\d{6}$/'],
-            'ltaxid' => ['required', 'string', 'regex:/^TAX\d{6}$/'],
+            'lregno' => ['required', 'string',],
+            'ltaxid' => ['required', 'string',],
             'lbizname' => ['required', 'string', 'max:255'],
             'ladd' => ['required', 'string', 'max:255'],
             'llga' => ['required', 'string', 'max:255'],
@@ -521,10 +553,9 @@ class AuthenticationController extends Controller
     }
 
 
-
     public function storeLoginUser(Request $request)
     {
-        Log::info('Incoming request data', ['request' => $request->all()]);
+        Log::info('Incoming login request data', ['request' => $request->except('lpw')]);
 
         // Validate incoming request data
         $validatedData = $request->validate([
@@ -551,6 +582,16 @@ class AuthenticationController extends Controller
 
             $responseData = json_decode($response->getBody(), true);
 
+            // Store credentials in session before handling response
+            Session::put('business_email', $validatedData['lemail']);
+            Session::put('business_password', $validatedData['lpw']);
+
+            Log::info('Credentials stored in session', [
+                'email' => $validatedData['lemail'],
+                'session_has_email' => Session::has('business_email'),
+                'session_has_password' => Session::has('business_password')
+            ]);
+
             // Handle the response based on status codes and response data
             return $this->handleLoginResponse($responseData, $validatedData['lemail']);
         } catch (RequestException $e) {
@@ -560,7 +601,7 @@ class AuthenticationController extends Controller
             // Log the error with detailed information
             Log::error('Login request failed', [
                 'status_code' => $statusCode,
-                'request' => $payload,
+                'request' => array_merge($payload, ['password' => '[REDACTED]']),
                 'response' => $responseBody,
                 'email' => $validatedData['lemail']
             ]);
@@ -573,18 +614,22 @@ class AuthenticationController extends Controller
                         ->withInput($request->except('lpw'));
 
                 case 403:
-                    // Handle business declaration requirement
+                    // Store credentials before redirecting to declaration
                     if ($responseBody && $responseBody['message'] === 'Business declaration required!') {
+                        Session::put('business_email', $validatedData['lemail']);
+                        Session::put('business_password', $validatedData['lpw']);
+
+                        Log::info('Storing credentials before declaration redirect', [
+                            'email' => $validatedData['lemail'],
+                            'session_has_email' => Session::has('business_email'),
+                            'session_has_password' => Session::has('business_password')
+                        ]);
+
                         return redirect()->route('auth.declaration')
-                            ->withErrors(['error' => 'Please complete the business declaration process to access your account.']);
+                            ->with('info', 'Please complete the business declaration process to access your account.');
                     }
                     return redirect()->back()
                         ->withErrors(['error' => $responseBody['message'] ?? 'Access denied.'])
-                        ->withInput($request->except('lpw'));
-
-                case 422:
-                    return redirect()->back()
-                        ->withErrors(['error' => 'Please provide all required information.'])
                         ->withInput($request->except('lpw'));
 
                 default:
@@ -592,15 +637,6 @@ class AuthenticationController extends Controller
                         ->withErrors(['error' => 'An error occurred while connecting to the server.'])
                         ->withInput($request->except('lpw'));
             }
-        } catch (\Exception $e) {
-            Log::error('General login error occurred', [
-                'exception' => $e,
-                'email' => $validatedData['lemail']
-            ]);
-
-            return redirect()->back()
-                ->withErrors(['error' => 'An unexpected error occurred.'])
-                ->withInput($request->except('lpw'));
         }
     }
 
@@ -613,32 +649,70 @@ class AuthenticationController extends Controller
      */
     private function handleLoginResponse(array $responseData, string $email)
     {
+        Log::info('Processing login response', [
+            'email' => $email,
+            'status' => $responseData['status'] ?? 'unknown',
+            'has_token' => isset($responseData['token']),
+            'has_user' => isset($responseData['user'])
+        ]);
+
         if (!isset($responseData['status'])) {
-            Log::error('Unexpected response format from login API', ['response' => $responseData]);
+            Log::error('Unexpected response format from login API', [
+                'response' => array_keys($responseData)
+            ]);
             return redirect()->back()
                 ->withErrors(['error' => 'Unexpected response from the server.'])
                 ->withInput();
         }
 
         if ($responseData['status'] === 'success') {
-            Log::info('Login successful', ['email' => $email]);
-
-            // Store session data
+            // Store all necessary session data
             if (isset($responseData['token'])) {
-                session(['auth_token' => $responseData['token']]);
+                Session::put('auth_token', $responseData['token']);
             }
 
             if (isset($responseData['user'])) {
-                session(['user' => $responseData['user']]);
+                Session::put('user', $responseData['user']);
             }
 
-            // Store balance if provided
             if (isset($responseData['data']['balance'])) {
-                session(['balance' => $responseData['data']['balance']]);
+                Session::put('balance', $responseData['data']['balance']);
+            }
+
+            // Verify all required session data is present
+            Log::info('Session data after login', [
+                'has_auth_token' => Session::has('auth_token'),
+                'has_user_data' => Session::has('user'),
+                'has_balance' => Session::has('balance'),
+                'has_business_email' => Session::has('business_email'),
+                'has_business_password' => Session::has('business_password')
+            ]);
+
+            if (!Session::has('auth_token')) {
+                Log::warning('Auth token missing after successful login', [
+                    'email' => $email
+                ]);
+            }
+
+            if (!Session::has('user')) {
+                Log::warning('User data missing after successful login', [
+                    'email' => $email
+                ]);
             }
 
             return redirect()->route('auth.billing')
                 ->with('success', $responseData['message'] ?? 'Login successful!');
+        }
+
+        // If business declaration is required
+        if (isset($responseData['message']) && $responseData['message'] === 'Business declaration required!') {
+            Log::info('Redirecting to business declaration', [
+                'email' => $email,
+                'has_stored_credentials' => Session::has('business_email') && Session::has('business_password')
+            ]);
+
+            return redirect()->route('auth.declaration')
+                ->with('info', 'Please complete the business declaration process.');
         }
 
         // Handle error status
@@ -653,6 +727,17 @@ class AuthenticationController extends Controller
     }
 
 
+
+
+    public function logoutUser(Request $request)
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/');
+    }
+
     public function forgotPassword()
     {
         return view('auth.forgot-password');
@@ -666,7 +751,7 @@ class AuthenticationController extends Controller
         ]);
 
         $client = new Client();
-        $apiUrl = config('api.base_url') . '/forgot-password'; // en-point to be confirmed
+        $apiUrl = config('api.base_url') . '/forgot-password'; // end-point to be confirmed
 
         try {
             $response = $client->post($apiUrl, [
@@ -779,7 +864,7 @@ class AuthenticationController extends Controller
             if ($statusCode === 200) {
                 $responseData = json_decode($responseBody, true);
                 Log::info('Password reset email sent successfully', ['data' => $responseData['data']]);
-                return redirect()->route('auth.login')
+                return redirect()->route('auth.login-user')
                     ->with('success', 'Password reset email sent successfully! Please check your inbox.');
             }
 
@@ -1032,8 +1117,88 @@ class AuthenticationController extends Controller
         }
     }
 
-    // Controller Method
+    // building type
+    public function getBuildingTypes(Request $request)
+    {
+        Log::info('User requested Building Types data', [
+            'industry' => $request->lindustry,
+            'subsector' => $request->lsubsector,
+            'request_data' => $request->all()
+        ]);
 
+        try {
+            // Validate the request
+            $validated = $request->validate([
+                'email' => 'required|email',
+                'password' => 'required|string',
+                'lindustry' => 'required|string',
+                'lsubsector' => 'required|string'
+            ]);
+
+            $client = new Client();
+            $apiUrl = config('api.base_url') . '/business/buildingtype';
+
+            // Log the request being sent to the API
+            Log::info('Sending request to Building Types API', [
+                'url' => $apiUrl,
+                'payload' => [
+                    'industry' => $validated['lindustry'],
+                    'subsector' => $validated['lsubsector']
+                ]
+            ]);
+
+            $response = $client->post($apiUrl, [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json'
+                ],
+                'json' => [
+                    'email' => $validated['email'],
+                    'password' => $validated['password'],
+                    'lindustry' => $validated['lindustry'],
+                    'lsubsector' => $validated['lsubsector']
+                ]
+            ]);
+
+            $responseData = json_decode($response->getBody(), true);
+
+            Log::info('Building Types API response received', [
+                'url' => $apiUrl,
+                'industry' => $validated['lindustry'],
+                'subsector' => $validated['lsubsector'],
+                'response' => $responseData
+            ]);
+
+            if (isset($responseData['status']) && $responseData['status'] === 'success') {
+                return response()->json($responseData['data'] ?? []);
+            }
+
+            Log::warning('Unexpected response format from Building Types API', [
+                'response' => $responseData
+            ]);
+
+            return response()->json([
+                'message' => $responseData['message'] ?? 'Failed to load building types'
+            ], 500);
+        } catch (\Exception $e) {
+            Log::error('Failed to load Building Types data: ' . $e->getMessage(), [
+                'url' => $apiUrl ?? null,
+                'industry' => $request->lindustry ?? null,
+                'subsector' => $request->lsubsector ?? null,
+                'exception' => $e,
+            ]);
+
+            // Map specific status codes to appropriate responses
+            $statusCode = 500;
+            if ($e instanceof \GuzzleHttp\Exception\ClientException) {
+                $statusCode = $e->getResponse()->getStatusCode();
+            }
+
+            return response()->json([
+                'message' => 'Failed to load building types: ' . $e->getMessage()
+            ], $statusCode);
+        }
+    }
     public function calendar()
     {
         return view('auth.calendar');
@@ -1119,7 +1284,7 @@ class AuthenticationController extends Controller
                     return view('auth.view', ['branches' => $responseData['data']]); // Update the view path as necessary
                 case 401:
                     Log::warning('Unauthorized access', ['response' => $responseData]);
-                    return redirect()->route('auth.login')
+                    return redirect()->route('auth.login-user')
                         ->withErrors(['error' => 'Invalid email or password'])
                         ->withInput();
                 case 422:
@@ -1169,12 +1334,12 @@ class AuthenticationController extends Controller
                 'branch_id' => ['required', 'integer']
             ]);
 
-            $apiUrl = config('api.base_url') . '/business/businessbranchdelete'; // Updated endpoint
+            $apiUrl = config('api.base_url') . '/business/businessbranchdelete';
 
             $payload = [
                 'email' => $email,
                 'password' => $password,
-                'branchid' => (int)$validatedData['branch_id']  // Cast to integer as per API spec
+                'branchid' => (int)$validatedData['branch_id']
             ];
 
             // Log the request payload for debugging
@@ -1183,7 +1348,7 @@ class AuthenticationController extends Controller
                 'branchid' => $payload['branchid']
             ]);
 
-            $response = $this->client->delete($apiUrl, [ // Changed to DELETE method
+            $response = $this->client->delete($apiUrl, [
                 'headers' => [
                     'Content-Type' => 'application/json',
                     'Accept' => 'application/json',
@@ -1223,94 +1388,6 @@ class AuthenticationController extends Controller
     }
 
 
-    public function fetchBranchList(Request $request)
-    {
-        Log::info('Fetch branch list method is called');
-
-        try {
-            // Validate incoming request data
-            $validatedData = $request->validate([
-                'email' => ['required', 'email'],
-                'password' => ['required', 'string', 'min:6'],
-                'batch' => ['required', 'integer', 'min:1'], // Ensure batch is a positive integer
-            ]);
-
-            // Prepare the payload for the API
-            $payload = [
-                'email' => $validatedData['email'],
-                'password' => $validatedData['password'],
-                'batch' => (int)$validatedData['batch'],
-            ];
-
-            // Log the final payload to inspect the data being sent
-            Log::info('Final payload being sent to API', ['payload' => $payload]);
-
-            $client = new Client([
-                'timeout' => 30,
-                'connect_timeout' => 5,
-                'http_errors' => false,
-                'verify' => false
-            ]);
-
-            $apiUrl = config('api.base_url') . '/business/businessviewbranch';
-            Log::debug('Attempting API call to: ' . $apiUrl);
-
-            $response = $client->post($apiUrl, [
-                'headers' => [
-                    'Content-Type' => 'application/json',
-                    'Accept' => 'application/json',
-                ],
-                'json' => $payload
-            ]);
-
-            $statusCode = $response->getStatusCode();
-            $responseBody = $response->getBody()->getContents();
-
-            // Log API response for debugging
-            Log::info('API Response', [
-                'statusCode' => $statusCode,
-                'body' => $responseBody
-            ]);
-
-            if ($statusCode === 200) {
-                $responseData = json_decode($responseBody, true);
-                Log::info('Branches retrieved successfully', ['data' => $responseData['data']]);
-                return view('your.view.name', ['branches' => $responseData['data']]);
-            }
-
-            if ($statusCode === 401) {
-                $responseData = json_decode($responseBody, true);
-                Log::warning('Unauthorized access', ['response' => $responseData]);
-                return redirect()->back()
-                    ->withErrors(['error' => $responseData['message'] ?? 'Unauthorized access'])
-                    ->withInput();
-            }
-
-            if ($statusCode === 422) {
-                $responseData = json_decode($responseBody, true);
-                Log::warning('Validation error from API', ['response' => $responseData]);
-                return redirect()->back()
-                    ->withErrors(['error' => $responseData['message'] ?? 'Validation failed'])
-                    ->withInput();
-            }
-
-            // Handle other unexpected statuses
-            Log::error('Unexpected status code', ['status_code' => $statusCode, 'response' => $responseBody]);
-            return redirect()->back()
-                ->withErrors(['error' => 'An unexpected error occurred. Please try again later.'])
-                ->withInput();
-        } catch (\Exception $e) {
-            Log::error('Unexpected error', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return redirect()->back()
-                ->withErrors(['error' => 'An unexpected error occurred. Please try again later.'])
-                ->withInput();
-        }
-    }
-
 
 
 
@@ -1339,7 +1416,6 @@ class AuthenticationController extends Controller
         return view('auth.invoice-list');
     }
 
-    // In AuthenticationController.php
 
     public function storeInvoiceList(Request $request)
     {
@@ -1351,7 +1427,7 @@ class AuthenticationController extends Controller
             $password = Session::get('business_password');
 
             if (!$email || !$password) {
-                return redirect()->route('auth.login')
+                return redirect()->route('auth.login-user')
                     ->withErrors(['error' => 'Please login to access invoices']);
             }
 
@@ -1380,7 +1456,7 @@ class AuthenticationController extends Controller
                         ->with('balance', $responseBody['balance']);
 
                 case 401:
-                    return redirect()->route('auth.login')
+                    return redirect()->route('auth.login-user')
                         ->withErrors(['error' => 'Invalid credentials. Please login again.']);
 
                 case 422:
@@ -1514,8 +1590,15 @@ class AuthenticationController extends Controller
 
     public function dashboard()
     {
+        // Check if declaration has been completed
+        if (!Session::get('declaration_completed', false)) {
+            return redirect()->route('auth.declaration')->with('error', 'You must complete the final declaration before accessing the dashboard.');
+        }
+
         return view('auth.dashboard');
     }
+
+
 
     public function safetyConsultantLogin()
     {

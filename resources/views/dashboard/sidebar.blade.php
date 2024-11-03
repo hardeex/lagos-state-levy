@@ -84,7 +84,6 @@
 
                 <a href="{{ route('auth.upload-receipt') }}"
                     class="block py-2 px-4 text-sm hover:bg-blue-700 rounded">Receipt</a>
-
                 <a href="{{ route('auth.invoice-list') }}"
                     class="block py-2 px-4 text-sm hover:bg-blue-700 rounded">Invoice List</a>
 
