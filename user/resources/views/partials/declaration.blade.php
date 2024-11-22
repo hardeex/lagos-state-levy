@@ -538,8 +538,200 @@
                         Confirm Your Information and Submit All Branches
                     </button>
 
-
+                    <meta name="csrf-token" content="{{ csrf_token() }}">
                     <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const submitAllButton = document.getElementById('submitAll');
+
+                            // Get the session value for declaration completion
+                            const isDeclarationCompleted = {{ Session::get('declaration_completed', false) ? 'true' : 'false' }};
+
+                            // If declaration is completed, change button to redirect to dashboard
+                            if (isDeclarationCompleted) {
+                                submitAllButton.disabled = false; // Make button clickable
+                                submitAllButton.innerHTML =
+                                    'You have completed the declaration process, click here to go to the dashboard';
+
+                                // Add click event for redirection to the dashboard route
+                                submitAllButton.onclick = function() {
+                                    window.location.href = '{{ route('auth.dashboard') }}'; // Redirect to the dashboard
+                                };
+                            } else {
+                                // If declaration is not completed, add the normal behavior for submitting declaration
+                                submitAllButton.addEventListener('click', async function(e) {
+                                    e.preventDefault();
+
+                                    // Show confirmation dialog
+                                    if (!confirm(
+                                            'Are you sure you want to submit all branches? This action cannot be undone.'
+                                            )) {
+                                        return;
+                                    }
+
+                                    // Disable the button and show loading state
+                                    this.disabled = true;
+                                    const originalText = this.innerHTML;
+                                    this.innerHTML =
+                                        '<span class="inline-flex items-center">Processing... <svg class="animate-spin ml-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></span>';
+
+                                    try {
+                                        // Get CSRF token from meta tag
+                                        const csrfToken = document.querySelector('meta[name="csrf-token"]')
+                                            ?.getAttribute('content');
+
+                                        if (!csrfToken) {
+                                            throw new Error('CSRF token not found');
+                                        }
+
+                                        // Make the API call
+                                        const response = await fetch('/final-declaration', {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                'X-CSRF-TOKEN': csrfToken,
+                                                'Accept': 'application/json'
+                                            },
+                                            body: JSON.stringify({})
+                                        });
+
+                                        const data = await response.json();
+
+                                        if (!response.ok) {
+                                            throw new Error(data.message || 'Server error occurred');
+                                        }
+
+                                        if (data.status === 'success') {
+                                            // Show success message only if the declaration wasn't completed yet
+                                            alert(data.message || 'Declaration submitted successfully!');
+
+                                            // Update the session flag after successful submission
+                                            document.getElementById('submitAll').disabled = true; // Disable the button
+                                            submitAllButton.innerHTML =
+                                                'You have completed the declaration process, click here to go to the dashboard';
+
+                                            // Redirect to the next page (e.g., billing page)
+                                            window.location.href = '/accounting';
+                                        } else {
+                                            throw new Error(data.message || 'Submission failed');
+                                        }
+
+                                    } catch (error) {
+                                        console.error('Error during submission:', error);
+                                        alert(error.message || 'An unexpected error occurred. Please try again.');
+
+                                        // Reset button state
+                                        this.disabled = false;
+                                        this.innerHTML = originalText;
+
+                                    } finally {
+                                        // If for some reason we haven't redirected (in case of error),
+                                        // ensure the button is re-enabled
+                                        if (!document.hidden) {
+                                            this.disabled = false;
+                                            this.innerHTML = originalText;
+                                        }
+                                    }
+                                });
+                            }
+                        });
+                    </script>
+
+
+                    <!--- The script that track the delcration completion status without redirection afterwards--->
+                    {{-- <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const submitAllButton = document.getElementById('submitAll');
+
+                            // Get the session value for declaration completion
+                            const isDeclarationCompleted = {{ Session::get('declaration_completed', false) ? 'true' : 'false' }};
+
+                            // Disable the button if declaration is already completed
+                            if (isDeclarationCompleted) {
+                                submitAllButton.disabled = true;
+                                submitAllButton.innerHTML =
+                                    'Declaration Completed';
+                            }
+
+                            if (submitAllButton) {
+                                submitAllButton.addEventListener('click', async function(e) {
+                                    e.preventDefault();
+
+                                    // Show confirmation dialog
+                                    if (!confirm(
+                                            'Are you sure you want to submit all branches? This action cannot be undone.'
+                                        )) {
+                                        return;
+                                    }
+
+                                    // Disable the button and show loading state
+                                    this.disabled = true;
+                                    const originalText = this.innerHTML;
+                                    this.innerHTML =
+                                        '<span class="inline-flex items-center">Processing... <svg class="animate-spin ml-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></span>';
+
+                                    try {
+                                        // Get CSRF token from meta tag
+                                        const csrfToken = document.querySelector('meta[name="csrf-token"]')
+                                            ?.getAttribute('content');
+
+                                        if (!csrfToken) {
+                                            throw new Error('CSRF token not found');
+                                        }
+
+                                        // Make the API call
+                                        const response = await fetch('/final-declaration', {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                'X-CSRF-TOKEN': csrfToken,
+                                                'Accept': 'application/json'
+                                            },
+                                            body: JSON.stringify({})
+                                        });
+
+                                        const data = await response.json();
+
+                                        if (!response.ok) {
+                                            throw new Error(data.message || 'Server error occurred');
+                                        }
+
+                                        if (data.status === 'success') {
+                                            // Show success message
+                                            alert(data.message || 'Declaration submitted successfully!');
+
+                                            // Update the session flag after successful submission
+                                            // (This should ideally be done via a successful response from the backend)-- Validate from Mr. James and test again
+                                            document.getElementById('submitAll').disabled = true;
+
+                                            // Redirect to the next page (e.g., billing page)
+                                            window.location.href = '/accounting';
+                                        } else {
+                                            throw new Error(data.message || 'Submission failed');
+                                        }
+
+                                    } catch (error) {
+                                        console.error('Error during submission:', error);
+                                        alert(error.message || 'An unexpected error occurred. Please try again.');
+
+                                        // Reset button state
+                                        this.disabled = false;
+                                        this.innerHTML = originalText;
+
+                                    } finally {
+                                        // If for some reason we haven't redirected (in case of error),
+                                        // ensure the button is re-enabled
+                                        if (!document.hidden) {
+                                            this.disabled = false;
+                                            this.innerHTML = originalText;
+                                        }
+                                    }
+                                });
+                            }
+                        });
+                    </script> --}}
+
+                    <!--- The original code prior tracking the completed status-->
+                    {{-- <script>
                         document.addEventListener('DOMContentLoaded', function() {
                             const submitAllButton = document.getElementById('submitAll');
 
@@ -614,7 +806,7 @@
                                 });
                             }
                         });
-                    </script>
+                    </script> --}}
                 </div>
             </div>
         </div>
