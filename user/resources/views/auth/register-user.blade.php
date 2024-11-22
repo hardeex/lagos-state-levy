@@ -454,12 +454,21 @@
                                                     data.sort((a, b) => (a.lsubsector || '').localeCompare(b.lsubsector || ''));
 
                                                     // Add subsector options
+                                                    // data.forEach(subsector => {
+                                                    //     const option = document.createElement('option');
+                                                    //     option.value = subsector.id; 
+                                                    //     option.textContent = subsector.lsubsector; 
+                                                    //     subSectorSelect.appendChild(option);
+                                                    // });
+
+                                                    // Add subsector options
                                                     data.forEach(subsector => {
                                                         const option = document.createElement('option');
-                                                        option.value = subsector.id; // Use the correct ID for form submission
-                                                        option.textContent = subsector.lsubsector; // Display the name
+                                                        option.value = subsector.lsubsector; 
+                                                        option.textContent = subsector.lsubsector; 
                                                         subSectorSelect.appendChild(option);
                                                     });
+
 
                                                     // Restore old value if it exists
                                                     const oldValue = "{{ old('lsubsectorone') }}";
@@ -535,12 +544,12 @@
                         input.type = 'text';
                         icon.setAttribute('d',
                             'M2 10c0 4.42 4.03 8 8 8s8-3.58 8-8-4.03-8-8-8-8 3.58-8 8z'
-                            ); // open eye icon
+                        ); // open eye icon
                     } else {
                         input.type = 'password';
                         icon.setAttribute('d',
                             'M10 3C5.58 3 1.66 6.29 1 10c.66 3.71 4.58 7 9 7s8.34-3.29 9-7c-.66-3.71-4.58-7-9-7zM10 14a4 4 0 1 1 0-8 4 4 0 0 1 0 8z'
-                            ); // closed eye icon
+                        ); // closed eye icon
                     }
                 });
             };

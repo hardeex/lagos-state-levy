@@ -622,7 +622,7 @@ class AuthenticationController extends Controller
             Log::error('Request Exception occurred', [
                 'message' => $e->getMessage(),
                 'request' => (string) $e->getRequest()->getBody(),
-                'response' => $e->hasResponse() ? (string) $e->getResponse()->getBody() : null,
+                // 'response' => $e->hasResponse() ? (string) $e->getResponse()->getBody() : null,
                 'payload' => $validatedData,
             ]);
             return redirect()->back()->withErrors(['error' => 'There was an issue connecting to the server. Please try again later.']);
@@ -1698,10 +1698,379 @@ class AuthenticationController extends Controller
         return view('auth.calendar');
     }
 
-    public function declaration2()
+    public function visitationsList()
     {
-        return view('auth.declaration');
+        Log::info('Attempting to fetch visitation list');
+
+        // Retrieve the email and password from the session
+        $email = session('business_email');
+        $password = session('business_password');
+
+        // Check if email and password exist in session
+        if (!$email || !$password) {
+            return redirect()->route('auth.login')->withErrors(['error' => 'You must be logged in to access the visitation list.']);
+        }
+
+        $client = new Client();
+        $apiUrl = config('api.base_url') . '/business/visitationlist';
+
+        try {
+            $payload = [
+                'email' => $email,
+                'password' => $password,
+            ];
+
+            $response = $client->post($apiUrl, [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                ],
+                'json' => $payload,
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            $responseBody = $response->getBody()->getContents();
+
+            Log::info('API Response', [
+                'statusCode' => $statusCode,
+                'body' => $responseBody
+            ]);
+
+            // Decode the response
+            $responseData = json_decode($responseBody, true);
+
+            // Check the response status
+            if ($statusCode === 200 && isset($responseData['status']) && $responseData['status'] === 'success') {
+                Log::info('Visitation list fetched successfully', ['data' => $responseData['message']]);
+                return view('auth.visitation-list', ['message' => $responseData['message']]);
+            }
+
+            // Handle other error status codes
+            if ($statusCode === 401) {
+                Log::warning('Unauthorized access', ['response' => $responseData]);
+                return redirect()->route('auth.login')->withErrors(['error' => 'Unauthorized access. Please login again.']);
+            }
+
+            if ($statusCode === 422) {
+                Log::warning('Validation error from API', ['response' => $responseData]);
+                return redirect()->back()->withErrors(['error' => $responseData['message'] ?? 'Validation failed']);
+            }
+
+            // Handle other unexpected statuses
+            Log::error('Unexpected status code', ['status_code' => $statusCode, 'response' => $responseBody]);
+            return redirect()->back()->withErrors(['error' => 'An unexpected error occurred. Please try again later.']);
+        } catch (\Exception $e) {
+            Log::error('Unexpected error while fetching visitation list', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->back()->withErrors(['error' => 'An unexpected error occurred. Please try again later.']);
+        }
     }
+
+
+    public function scheduleVisitationDate(Request $request)
+    {
+        Log::info('Attempting to schedule visitation date');
+
+        // Retrieve credentials from the session
+        $email = session('business_email');
+        $password = session('business_password');
+
+        // Check if email and password exist in session
+        if (!$email || !$password) {
+            return redirect()->route('auth.login')->withErrors(['error' => 'You must be logged in to schedule a visitation.']);
+        }
+
+        // Validate the incoming request data
+        $validatedData = $request->validate([
+            'schedule_date' => ['required', 'date_format:d/m/Y'],
+            'branchid' => ['required', 'string'],
+        ]);
+
+        // Retrieve the branch ID and schedule date from the validated request data
+        $branchId = $validatedData['branchid'];
+        $scheduleDate = $validatedData['schedule_date'];
+
+        // Log the data we're going to send
+        Log::info('Scheduling visitation', [
+            'email' => $email,
+            'branchid' => $branchId,
+            'schedule_date' => $scheduleDate
+        ]);
+
+        // Prepare the payload for the API request
+        $payload = [
+            'email' => $email,
+            'password' => $password,
+            'branchid' => $branchId,
+            'schedule_date' => $scheduleDate,
+        ];
+
+        // Call the API to schedule the visitation
+        $client = new Client();
+        $apiUrl = config('api.base_url') . '/business/shedulevisitationdate';
+
+        try {
+            // Make the POST request to the API
+            $response = $client->post($apiUrl, [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                ],
+                'json' => $payload,
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            $responseBody = json_decode($response->getBody()->getContents(), true);
+
+            // Log the response from the API
+            Log::info('API Response for scheduling visitation', [
+                'statusCode' => $statusCode,
+                'response' => $responseBody
+            ]);
+
+            // Handle the response based on the status code
+            if ($statusCode === 200) {
+                // Success - Visitation scheduled successfully
+                return redirect()->route('auth.calendar')->with('success', 'Visitation scheduled successfully.');
+            }
+
+            // Handle unauthorized access
+            if ($statusCode === 401) {
+                return redirect()->route('auth.login')->withErrors(['error' => 'Unauthorized access. Please log in again.']);
+            }
+
+            // Handle validation errors from the API
+            if ($statusCode === 422) {
+                return redirect()->back()->withErrors(['error' => $responseBody['message'] ?? 'Validation failed']);
+            }
+
+            // Handle other unexpected statuses
+            Log::error('Unexpected error when scheduling visitation', [
+                'status_code' => $statusCode,
+                'response' => $responseBody
+            ]);
+            return redirect()->back()->withErrors(['error' => 'An unexpected error occurred. Please try again later.']);
+        } catch (\Exception $e) {
+            // Log any exception that occurs during the API request
+            Log::error('Unexpected error scheduling visitation', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->back()->withErrors(['error' => 'An unexpected error occurred. Please try again later.']);
+        }
+    }
+
+
+    public function uploadDocument(Request $request)
+    {
+        Log::info('Attempting to upload document');
+
+        // Validate incoming request data
+        $validatedData = $request->validate([
+            'docimage' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
+            'imgsource' => ['required', 'string'],
+            'author' => ['required', 'email'],
+            'bizemail' => ['required', 'email'],
+            'comment' => ['required', 'string'],
+            'docid' => ['required', 'string'],
+            'documenttype' => ['required', 'in:Financial,Technical'],
+            'password' => ['required', 'string'],
+        ]);
+
+        // Retrieve user credentials from the session
+        $email = session('business_email');
+        $password = session('business_password');
+
+        // Check if credentials exist in session
+        if (!$email || !$password) {
+            return redirect()->route('auth.login')->withErrors(['error' => 'You must be logged in to upload a document.']);
+        }
+
+        // Retrieve the uploaded file from the request
+        $file = $request->file('docimage');
+
+        // Prepare the file for upload
+        $filePath = $file->getRealPath();
+        $fileName = $file->getClientOriginalName();
+        $fileMimeType = $file->getMimeType();
+
+        // Prepare the payload for the API request
+        $payload = [
+            'imgsource' => $validatedData['imgsource'],
+            'author' => $validatedData['author'],
+            'bizemail' => $validatedData['bizemail'],
+            'comment' => $validatedData['comment'],
+            'docid' => $validatedData['docid'],
+            'documenttype' => $validatedData['documenttype'],
+            'password' => $validatedData['password'],
+        ];
+
+        // Create a new Guzzle HTTP client to make the API call
+        $client = new Client();
+        $apiUrl = config('api.base_url') . '/business/documentupload';
+
+        try {
+            // Make the POST request to the API with the file
+            $response = $client->post($apiUrl, [
+                'headers' => [
+                    'Accept' => 'application/json',
+                ],
+                'multipart' => [
+                    [
+                        'name' => 'docimage',
+                        'contents' => fopen($filePath, 'r'),
+                        'filename' => $fileName,
+                        'headers'  => [
+                            'Content-Type' => $fileMimeType
+                        ]
+                    ],
+                    [
+                        'name' => 'imgsource',
+                        'contents' => $payload['imgsource']
+                    ],
+                    [
+                        'name' => 'author',
+                        'contents' => $payload['author']
+                    ],
+                    [
+                        'name' => 'bizemail',
+                        'contents' => $payload['bizemail']
+                    ],
+                    [
+                        'name' => 'comment',
+                        'contents' => $payload['comment']
+                    ],
+                    [
+                        'name' => 'docid',
+                        'contents' => $payload['docid']
+                    ],
+                    [
+                        'name' => 'documenttype',
+                        'contents' => $payload['documenttype']
+                    ],
+                    [
+                        'name' => 'password',
+                        'contents' => $payload['password']
+                    ]
+                ]
+            ]);
+
+            // Get the response status code and body
+            $statusCode = $response->getStatusCode();
+            $responseBody = json_decode($response->getBody()->getContents(), true);
+
+            // Log the API response
+            Log::info('Document upload response', [
+                'status_code' => $statusCode,
+                'response' => $responseBody
+            ]);
+
+            // Handle the response based on status code
+            if ($statusCode === 200) {
+                // Document uploaded successfully
+                return redirect()->route('auth.document-list')->with('success', 'Document uploaded successfully.');
+            }
+
+            // Handle error from the API
+            Log::error('Document upload failed', [
+                'status_code' => $statusCode,
+                'response' => $responseBody
+            ]);
+            return redirect()->back()->withErrors(['error' => $responseBody['message'] ?? 'An unexpected error occurred.']);
+        } catch (\Exception $e) {
+            // Log any exception that occurs during the API request
+            Log::error('Unexpected error during document upload', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->back()->withErrors(['error' => 'An unexpected error occurred. Please try again later.']);
+        }
+    }
+
+
+    public function getDoc(Request $request)
+    {
+        Log::info('Attempting to fetch document');
+
+        // Retrieve user credentials from the session 
+        $email = session('business_email');
+        $password = session('business_password');
+
+        // Check if email and password exist in the session
+        if (!$email || !$password) {
+            return redirect()->route('auth.login')->withErrors(['error' => 'You must be logged in to fetch the document.']);
+        }
+
+        // Validate incoming request data (docid is required)
+        $validatedData = $request->validate([
+            'docid' => ['required', 'string'],
+        ]);
+
+        // Prepare the payload for the API request
+        $payload = [
+            'docid' => $validatedData['docid'],
+            'bizemail' => $email,
+            'password' => $password,
+        ];
+
+        // Create a new Guzzle HTTP client to make the API call
+        $client = new Client();
+        $apiUrl = config('api.base_url') . '/business/getdoc';
+
+        try {
+            // Make the POST request to the API
+            $response = $client->post($apiUrl, [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                ],
+                'json' => $payload,
+            ]);
+
+            // Get the response status code and body
+            $statusCode = $response->getStatusCode();
+            $responseBody = json_decode($response->getBody()->getContents(), true);
+
+            // Log the API response
+            Log::info('API Response for getdoc', [
+                'status_code' => $statusCode,
+                'response' => $responseBody
+            ]);
+
+            // Handle the response based on status code
+            if ($statusCode === 200) {
+                // Document fetched successfully
+                $document = $responseBody['data'] ?? null;
+                if ($document) {
+                    return view('auth.document-view', compact('document'))->with('success', 'Document fetched successfully.');
+                } else {
+                    return redirect()->back()->withErrors(['error' => 'Document not found.']);
+                }
+            }
+
+            // Handle error from the API
+            $errorMessage = $responseBody['message'] ?? 'An unexpected error occurred';
+            Log::error('Failed to fetch document', [
+                'status_code' => $statusCode,
+                'response' => $responseBody
+            ]);
+            return redirect()->back()->withErrors(['error' => $errorMessage]);
+        } catch (\Exception $e) {
+            // Log any exception that occurs during the API request
+            Log::error('Unexpected error while fetching document', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->back()->withErrors(['error' => 'An unexpected error occurred. Please try again later.']);
+        }
+    }
+
 
 
 
@@ -2121,68 +2490,17 @@ class AuthenticationController extends Controller
 
 
 
-    // In AuthenticationController.php
+    public function invoiceList()
+    {
+        $invoices = Session::get('invoices', []);
+        $balance = Session::get('balance', 0);
 
-    // public function storeInvoiceList(Request $request)
-    // {
-    //     Log::info('Business invoice list method is called');
+        print_r($invoices);
+        exit();
 
-    //     try {
-    //         // Get credentials from session
-    //         $email = Session::get('business_email');
-    //         $password = Session::get('business_password');
+        return view('auth.invoice-list', compact('invoices', 'balance'));
+    }
 
-    //         if (!$email || !$password) {
-    //             return redirect()->route('auth.login')
-    //                 ->withErrors(['error' => 'Please login to access invoices']);
-    //         }
-
-    //         $payload = [
-    //             'email' => $email,
-    //             'password' => $password
-    //         ];
-
-    //         $apiUrl = config('api.base_url') . '/business/business_invoicelist';
-
-    //         $response = $this->client->post($apiUrl, [
-    //             'headers' => [
-    //                 'Content-Type' => 'application/json',
-    //                 'Accept' => 'application/json',
-    //             ],
-    //             'json' => $payload
-    //         ]);
-
-    //         $statusCode = $response->getStatusCode();
-    //         $responseBody = json_decode($response->getBody()->getContents(), true);
-
-    //         switch ($statusCode) {
-    //             case 200:
-    //                 return redirect()->route('auth.invoice-list')
-    //                     ->with('invoices', $responseBody['data'])
-    //                     ->with('balance', $responseBody['balance']);
-
-    //             case 401:
-    //                 return redirect()->route('auth.login')
-    //                     ->withErrors(['error' => 'Invalid credentials. Please login again.']);
-
-    //             case 422:
-    //                 return redirect()->route('auth.invoice-list')
-    //                     ->withErrors(['error' => $responseBody['message'] ?? 'Validation failed']);
-
-    //             default:
-    //                 return redirect()->route('auth.invoice-list')
-    //                     ->withErrors(['error' => $responseBody['message'] ?? 'Failed to fetch invoices']);
-    //         }
-    //     } catch (\Exception $e) {
-    //         Log::error('Unexpected error in invoice list', [
-    //             'message' => $e->getMessage(),
-    //             'trace' => $e->getTraceAsString()
-    //         ]);
-
-    //         return redirect()->route('auth.invoice-list')
-    //             ->withErrors(['error' => 'An unexpected error occurred. Please try again later.']);
-    //     }
-    // }
 
     public function storeInvoiceList(Request $request)
     {
@@ -2279,219 +2597,31 @@ class AuthenticationController extends Controller
     }
 
 
-    public function invoiceList()
-    {
-        $invoices = Session::get('invoices', []);
-        $balance = Session::get('balance', 0);
-
-        return view('auth.invoice-list', compact('invoices', 'balance'));
-    }
-
-    // public function fetchInvoiceList(Request $request)
-    // {
-    //     Log::info('Fetch invoice list method is called');
-
-    //     try {
-    //         // Validate incoming request data
-    //         $validatedData = $request->validate([
-    //             'email' => ['required', 'email'],
-    //             'password' => ['required', 'string', 'min:6'],
-    //         ]);
-
-    //         // Prepare the payload for the API
-    //         $payload = [
-    //             'email' => $validatedData['email'],
-    //             'password' => $validatedData['password'],
-    //         ];
-
-    //         // Log the final payload to inspect the data being sent
-    //         Log::info('Final payload being sent to API', ['payload' => $payload]);
-
-    //         $client = new Client([
-    //             'timeout' => 30,
-    //             'connect_timeout' => 5,
-    //             'http_errors' => false,
-    //             'verify' => false
-    //         ]);
-
-    //         $apiUrl = config('api.base_url') . '/business/business_invoicelist';
-    //         Log::debug('Attempting API call to: ' . $apiUrl);
-
-    //         $response = $client->post($apiUrl, [
-    //             'headers' => [
-    //                 'Content-Type' => 'application/json',
-    //                 'Accept' => 'application/json',
-    //             ],
-    //             'json' => $payload
-    //         ]);
-
-    //         $statusCode = $response->getStatusCode();
-    //         $responseBody = $response->getBody()->getContents();
-
-    //         // Log API response for debugging
-    //         Log::info('API Response', [
-    //             'statusCode' => $statusCode,
-    //             'body' => $responseBody
-    //         ]);
-
-    //         if ($statusCode === 200) {
-    //             $responseData = json_decode($responseBody, true);
-    //             Log::info('Invoices retrieved successfully', ['data' => $responseData['data'], 'balance' => $responseData['balance']]);
-    //             return view('auth.invoice', [
-    //                 'invoices' => $responseData['data'],
-    //                 'balance' => $responseData['balance']
-    //             ]);
-    //         }
-
-    //         if ($statusCode === 401) {
-    //             $responseData = json_decode($responseBody, true);
-    //             Log::warning('Unauthorized access', ['response' => $responseData]);
-    //             return redirect()->back()
-    //                 ->withErrors(['error' => $responseData['message'] ?? 'Unauthorized access'])
-    //                 ->withInput();
-    //         }
-
-    //         if ($statusCode === 422) {
-    //             $responseData = json_decode($responseBody, true);
-    //             Log::warning('Validation error from API', ['response' => $responseData]);
-    //             return redirect()->back()
-    //                 ->withErrors(['error' => $responseData['message'] ?? 'Validation failed'])
-    //                 ->withInput();
-    //         }
-
-    //         // Handle other unexpected statuses
-    //         Log::error('Unexpected status code', ['status_code' => $statusCode, 'response' => $responseBody]);
-    //         return redirect()->back()
-    //             ->withErrors(['error' => 'An unexpected error occurred. Please try again later.'])
-    //             ->withInput();
-    //     } catch (\Exception $e) {
-    //         Log::error('Unexpected error', [
-    //             'message' => $e->getMessage(),
-    //             'trace' => $e->getTraceAsString()
-    //         ]);
-
-    //         return redirect()->back()
-    //             ->withErrors(['error' => 'An unexpected error occurred. Please try again later.'])
-    //             ->withInput();
-    //     }
-    // }
-
-
-    public function fetchInvoiceList(Request $request)
-    {
-        Log::info('Fetch invoice list method is called');
-
-        try {
-            // Validate incoming request data
-            $validatedData = $request->validate([
-                'email' => ['required', 'email'],
-                'password' => ['required', 'string', 'min:6'],
-            ]);
-
-            // Prepare the payload for the API
-            $payload = [
-                'email' => $validatedData['email'],
-                'password' => $validatedData['password'],
-            ];
-
-            // Log the final payload to inspect the data being sent
-            Log::info('Final payload being sent to API', ['payload' => $payload]);
-
-            $client = new Client([
-                'timeout' => 30,
-                'connect_timeout' => 5,
-                'http_errors' => false,
-                'verify' => false
-            ]);
-
-            $apiUrl = config('api.base_url') . '/business/business_invoicelist';
-            Log::debug('Attempting API call to: ' . $apiUrl);
-
-            $response = $client->post($apiUrl, [
-                'headers' => [
-                    'Content-Type' => 'application/json',
-                    'Accept' => 'application/json',
-                ],
-                'json' => $payload
-            ]);
-
-            $statusCode = $response->getStatusCode();
-            $responseBody = $response->getBody()->getContents();
-
-            // Log API response for debugging
-            Log::info('API Response', [
-                'statusCode' => $statusCode,
-                'body' => $responseBody
-            ]);
-
-            if ($statusCode === 200) {
-                $responseData = json_decode($responseBody, true);
-                Log::info('Invoices retrieved successfully', ['data' => $responseData['data'], 'balance' => $responseData['balance']]);
-
-                // Store invoice data in session to be accessed later
-                session(['invoices_data' => $responseData['data']]);
-
-                return view('auth.invoice', [
-                    'invoices' => $responseData['data'],
-                    'balance' => $responseData['balance']
-                ]);
-            }
-
-            if ($statusCode === 401) {
-                $responseData = json_decode($responseBody, true);
-                Log::warning('Unauthorized access', ['response' => $responseData]);
-                return redirect()->back()
-                    ->withErrors(['error' => $responseData['message'] ?? 'Unauthorized access'])
-                    ->withInput();
-            }
-
-            if ($statusCode === 422) {
-                $responseData = json_decode($responseBody, true);
-                Log::warning('Validation error from API', ['response' => $responseData]);
-                return redirect()->back()
-                    ->withErrors(['error' => $responseData['message'] ?? 'Validation failed'])
-                    ->withInput();
-            }
-
-            // Handle other unexpected statuses
-            Log::error('Unexpected status code', ['status_code' => $statusCode, 'response' => $responseBody]);
-            return redirect()->back()
-                ->withErrors(['error' => 'An unexpected error occurred. Please try again later.'])
-                ->withInput();
-        } catch (\Exception $e) {
-            Log::error('Unexpected error', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return redirect()->back()
-                ->withErrors(['error' => 'An unexpected error occurred. Please try again later.'])
-                ->withInput();
-        }
-    }
-
-
     public function viewInvoice($invoiceId)
     {
-        Log::info("Viewing invoice with ID: {$invoiceId}");
+        // Fetch the invoices from the session
+        $invoices = Session::get('invoices', []);
 
-        // Retrieve all invoices from the session
-        $invoices = session('invoices_data');
+        // Print out the invoices array to verify that it's being retrieved correctly
+        // print_r($invoices); 
+        // exit(); 
 
-        if (!$invoices) {
-            return redirect()->route('auth.invoice-list')->withErrors(['error' => 'No invoice data available.']);
-        }
-
-        // Find the invoice by ID
+        // Find the invoice with the provided id
         $invoice = collect($invoices)->firstWhere('id', $invoiceId);
 
+        // Print the found invoice to verify if it's being retrieved correctly
+        //print_r($invoice); 
+        //exit(); 
+
+        // If invoice is not found
         if (!$invoice) {
-            return redirect()->route('auth.invoice-list')->withErrors(['error' => 'Invoice not found.']);
+            return redirect()->route('auth.invoice-list')->with('error', 'Invoice not found');
         }
 
-        // Return the invoice view with the selected invoice data
+        // Pass the invoice data to the view
         return view('auth.invoice-view', compact('invoice'));
     }
+
 
 
     public function payInvoice(Request $request)
@@ -2510,7 +2640,7 @@ class AuthenticationController extends Controller
 
             // Check if email and password exist in session
             if (!$email || !$password) {
-                return redirect()->route('login')->withErrors(['error' => 'You must be logged in to make a payment.']);
+                return redirect()->route('auth.login')->withErrors(['error' => 'You must be logged in to make a payment.']);
             }
 
             // Prepare the payload for the API
@@ -2594,6 +2724,143 @@ class AuthenticationController extends Controller
                 ->withInput();
         }
     }
+
+
+
+
+    // public function viewInvoice33($invoiceId)
+    // {
+
+
+    //     // Get the invoices from session
+    //     $invoices = Session::get('invoices', []);
+    //     $inv = [];
+
+    //     foreach ($invoices as $invoice) {
+    //         if ($invoice['id'] == $invoiceId) {
+    //             $inv = $invoice;
+    //         }
+    //     }
+
+    //     print_r($inv);
+    //     exit();
+
+    //     // print_r($invoices);
+    //     // exit();
+    //     // Find the specific invoice by its ID
+    //     $invoice = collect($invoices)->firstWhere('id', $inv);
+
+    //     // Check if the invoice exists
+    //     // if (!$invoice) {
+    //     //     return redirect()->route('auth.invoice-list')->withErrors(['error' => 'Invoice not found']);
+    //     // }
+
+    //     // Return the invoice-view with the selected invoice data
+    //     return view('auth.invoice-view', compact('inv'));
+    // }
+
+
+
+
+
+
+    public function fetchInvoiceList(Request $request)
+    {
+        Log::info('Fetch invoice list method is called');
+
+        try {
+            // Validate incoming request data
+            $validatedData = $request->validate([
+                'email' => ['required', 'email'],
+                'password' => ['required', 'string', 'min:6'],
+            ]);
+
+            // Prepare the payload for the API
+            $payload = [
+                'email' => $validatedData['email'],
+                'password' => $validatedData['password'],
+            ];
+
+            // Log the final payload to inspect the data being sent
+            Log::info('Final payload being sent to API', ['payload' => $payload]);
+
+            $client = new Client([
+                'timeout' => 30,
+                'connect_timeout' => 5,
+                'http_errors' => false,
+                'verify' => false
+            ]);
+
+            $apiUrl = config('api.base_url') . '/business/business_invoicelist';
+            Log::debug('Attempting API call to: ' . $apiUrl);
+
+            $response = $client->post($apiUrl, [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                ],
+                'json' => $payload
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            $responseBody = $response->getBody()->getContents();
+
+            // Log API response for debugging
+            Log::info('API Response', [
+                'statusCode' => $statusCode,
+                'body' => $responseBody
+            ]);
+
+            if ($statusCode === 200) {
+                $responseData = json_decode($responseBody, true);
+                Log::info('Invoices retrieved successfully', ['data' => $responseData['data'], 'balance' => $responseData['balance']]);
+
+                // Dump the responseData to inspect its structure
+                //dd($responseData);
+                // Store invoice data in session to be accessed later
+                session(['invoices_data' => $responseData['data']]);
+
+                return view('auth.invoice', [
+                    'invoices' => $responseData['data'],
+                    'balance' => $responseData['balance']
+                ]);
+            }
+
+            if ($statusCode === 401) {
+                $responseData = json_decode($responseBody, true);
+                Log::warning('Unauthorized access', ['response' => $responseData]);
+                return redirect()->back()
+                    ->withErrors(['error' => $responseData['message'] ?? 'Unauthorized access'])
+                    ->withInput();
+            }
+
+            if ($statusCode === 422) {
+                $responseData = json_decode($responseBody, true);
+                Log::warning('Validation error from API', ['response' => $responseData]);
+                return redirect()->back()
+                    ->withErrors(['error' => $responseData['message'] ?? 'Validation failed'])
+                    ->withInput();
+            }
+
+            // Handle other unexpected statuses
+            Log::error('Unexpected status code', ['status_code' => $statusCode, 'response' => $responseBody]);
+            return redirect()->back()
+                ->withErrors(['error' => 'An unexpected error occurred. Please try again later.'])
+                ->withInput();
+        } catch (\Exception $e) {
+            Log::error('Unexpected error', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->back()
+                ->withErrors(['error' => 'An unexpected error occurred. Please try again later.'])
+                ->withInput();
+        }
+    }
+
+
+
 
 
     public function receipt()
