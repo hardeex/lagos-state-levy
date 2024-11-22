@@ -144,7 +144,7 @@
         </div>
 
         <div class="bg-white rounded-lg shadow-md p-6 text-center hover:shadow-lg transition duration-300">
-            <a href="">
+            <a href="{{ route('auth.account-history') }}">
                 <i class="fas fa-history text-4xl text-indigo-500 mb-4"></i>
                 <h3 class="text-xl font-semibold mb-2">Account History</h3>
                 <p class="text-gray-600">View your complete account and transaction history.</p>

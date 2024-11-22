@@ -161,7 +161,7 @@
                             <td class="px-4 py-2">${visit.adminComment}</td>
                             <td class="px-4 py-2"><span class="text-orange-500 font-bold">${visit.status}</span></td>
                             <td class="px-4 py-2">
-                                <button class="bg-yellow-400 hover:bg-yellow-500 text-white font-bold py-1 px-2 rounded mr-1">details</button>
+                              
                                 <button class="bg-blue-400 hover:bg-blue-500 text-white font-bold py-1 px-2 rounded">re-schedule</button>
                             </td>
                         </tr>

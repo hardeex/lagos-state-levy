@@ -74,7 +74,7 @@
         <!-- Quick Actions Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             <!-- Certificates -->
-            <a href="{{route('user.certtificate')}}"
+            <a href="{{ route('user.certtificate') }}"
                 class="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
                 <div class="p-6">
                     <div class="flex items-center mb-4">
@@ -127,7 +127,7 @@
             </a>
 
             <!-- Uploads -->
-            <a href="#"
+            <a href="{{ route('auth.upload-receipt') }}"
                 class="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
                 <div class="p-6">
                     <div class="flex items-center mb-4">

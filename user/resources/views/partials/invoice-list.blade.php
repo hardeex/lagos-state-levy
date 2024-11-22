@@ -85,11 +85,15 @@
                                         {{ $invoice['status'] ?? 'UNPAID' }}
                                     </span>
                                 </td>
-                                <td class="px-4 py-2">
+                                {{-- <td class="px-4 py-2">
                                     <button
                                         class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded text-sm">
                                         View
                                     </button>
+                                </td> --}}
+                                <td>
+                                    <a href="{{ route('invoice.view', ['invoiceId' => $invoice['id']]) }}"
+                                        class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded text-sm">View</a>
                                 </td>
                             </tr>
                         @endforeach
