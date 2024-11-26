@@ -47,7 +47,7 @@ Route::get('/receipt', [AuthenticationController::class, 'receipt'])->name('auth
 Route::get('/upload-receipt', [AuthenticationController::class, 'uploadReceipt'])->name('auth.upload-receipt');
 Route::get('/invoice-list', [AuthenticationController::class, 'invoiceList'])->name('auth.invoice-list');
 Route::get('/api/invoice-list', [AuthenticationController::class, 'storeInvoiceList'])->name('auth.generate-invoice');
-Route::get('/invoice/view/{invoiceId}', [AuthenticationController::class, 'viewInvoice'])->name('invoice.view');
+Route::get('/invoice/{invoiceId}', [AuthenticationController::class, 'viewInvoice'])->name('invoice.view');
 Route::post('/invoice/pay', [AuthenticationController::class, 'payInvoice'])->name('auth.invoice-pay');
 
 

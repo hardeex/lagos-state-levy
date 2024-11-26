@@ -564,7 +564,7 @@
                                     // Show confirmation dialog
                                     if (!confirm(
                                             'Are you sure you want to submit all branches? This action cannot be undone.'
-                                            )) {
+                                        )) {
                                         return;
                                     }
 

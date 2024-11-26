@@ -35,7 +35,7 @@
     <div class="container mx-auto px-4 py-8">
         <header class="text-center mb-8">
             <h1 class="text-4xl font-bold text-gray-800 mb-2">My Bills/Invoices</h1>
-            <h2 class="text-2xl font-semibold text-gray-700 mb-4">UKE UNIVERSE</h2>
+            {{-- <h2 class="text-2xl font-semibold text-gray-700 mb-4">UKE UNIVERSE</h2> --}}
 
             <div class="text-lg text-gray-600">
                 Current Balance: ₦{{ number_format($balance ?? 0, 2) }}
@@ -60,59 +60,7 @@
 
 
 
-        <div class="bg-white shadow-md rounded-lg p-8">
-            <h2 class="text-2xl font-bold mb-6">Invoice Details</h2>
-
-            <div class="mb-4">
-                <strong>Invoice ID:</strong> {{ $invoice['linvoiceid'] ?? 'N/A' }}
-            </div>
-
-            <div class="mb-4">
-                <strong>Invoice To:</strong> {{ $invoice['linvoiceto'] ?? 'N/A' }}
-            </div>
-
-            <div class="mb-4">
-                <strong>Payment To:</strong> {{ $invoice['lpayto'] ?? 'N/A' }}
-            </div>
-
-            <div class="mb-4">
-                <strong>Description:</strong> {{ $invoice['ldescription'] ?? 'N/A' }}
-            </div>
-
-            <div class="mb-4">
-                <strong>Amount:</strong> ₦{{ number_format($invoice['lamount'] ?? 0, 2) }}
-            </div>
-
-            <div class="mb-4">
-                <strong>Payment Method:</strong> {{ $invoice['lpaymentmethod'] ?? 'N/A' }}
-            </div>
-
-            <div class="mb-4">
-                <strong>Payment Status:</strong>
-                <span
-                    class="bg-{{ $invoice['lpaystatus'] == 'PAID' ? 'green' : 'red' }}-500 text-white px-2 py-1 rounded text-sm">
-                    {{ $invoice['lpaystatus'] ?? 'N/A' }}
-                </span>
-            </div>
-
-            <div class="mb-4">
-                <strong>Comment:</strong> {{ $invoice['lcomment'] ?? 'N/A' }}
-            </div>
-
-            <div class="mb-4">
-                <strong>Created At:</strong> {{ \Carbon\Carbon::parse($invoice['created_at'])->format('d/m/Y H:i') }}
-            </div>
-
-            <div class="mb-4">
-                <strong>Updated At:</strong> {{ \Carbon\Carbon::parse($invoice['updated_at'])->format('d/m/Y H:i') }}
-            </div>
-
-            <a href="#" class="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded text-sm">
-                Back to Invoice List
-            </a>
-        </div>
-
-        {{-- @if (count($invoices) > 0)
+        @if (count($invoices) > 0)
             <div class="bg-white shadow-md rounded-lg overflow-hidden">
                 <table class="w-full">
                     <thead class="bg-gray-200">
@@ -137,12 +85,21 @@
                                         {{ $invoice['status'] ?? 'UNPAID' }}
                                     </span>
                                 </td>
-                                <a href="{{ route('invoice.view', ['invoiceId' => $invoice['id']]) }}"
-                                    class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded text-sm">View</a>
+                                <td class="px-4 py-2">
+                                    <a href="#"
+                                        class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded text-sm">
+                                        View
+                                    </a>
 
-                                {
+                                  
+                                    
+
+
+
+                                </td>
                             </tr>
                         @endforeach
+
                     </tbody>
                 </table>
             </div>
@@ -151,6 +108,6 @@
                 <i class="fas fa-file-invoice text-gray-400 text-5xl mb-4"></i>
                 <p class="text-gray-600">No invoices found</p>
             </div>
-        @endif --}}
+        @endif
 
     </div>

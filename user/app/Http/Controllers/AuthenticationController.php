@@ -573,6 +573,12 @@ class AuthenticationController extends Controller
         Session::put('selected_industry', $validatedData['lindustryone']);
         Session::put('selected_subsector', $validatedData['lsubsectorone']);
 
+        // Store the user data in the session
+        Session::put('business_email', $validatedData['lemail']);
+        Session::put('business_password', $validatedData['lpw']);
+        // Session::put('selected_industry', $validatedData['industry']);
+        // Session::put('selected_subsector', $validatedData['subsector']);
+
 
 
         // Log basic information to track user data, including industry and subsector
@@ -782,8 +788,6 @@ class AuthenticationController extends Controller
 
     public function storeLoginUser(Request $request)
     {
-
-
         Log::info('Incoming login request data', ['request' => $request->except('lpw')]);
 
         // Validate incoming request data
@@ -815,8 +819,6 @@ class AuthenticationController extends Controller
             Session::put('business_email', $validatedData['lemail']);
             Session::put('business_password', $validatedData['lpw']);
 
-
-
             // Log the credentials storage
             Log::info('Credentials stored in session', [
                 'email' => $validatedData['lemail'],
@@ -825,18 +827,25 @@ class AuthenticationController extends Controller
             ]);
 
             // Fetch business profile to get the industry and subsector
-            if (isset($responseData['data'])) {
-                $profile_data = $responseData['data'];
+            $profile_data = $this->getBusinessProfile();  // Call the method to fetch profile data
 
-                // Store the industry and subsector in the session
-                // Session::put('lindustry', $profile_data['lindustry']);
-                // Session::put('lsubsector', $profile_data['lsubsector']);
+            if ($profile_data) {
+                // Now that the profile data is retrieved and saved in session, we can echo the industry and subsector
+                // echo 'Email: ' . Session::get('business_email') . '<br>';
+                // echo 'Password: ' . Session::get('business_password') . '<br>';
+                // echo 'Industry: ' . Session::get('lindustry') . '<br>';
+                // echo 'Subsector: ' . Session::get('lsubsector') . '<br>';
 
+                //exit();
 
-                // Log::info('Industry and Subsector stored in session', [
-                //     'lindustry' => $profile_data['lindustry'],
-                //     'lsubsector' => $profile_data['lsubsector'],
-                // ]);
+                // Log the industry and subsector stored in session
+                Log::info('Industry and Subsector stored in session', [
+                    'lindustry' => Session::get('lindustry'),
+                    'lsubsector' => Session::get('lsubsector'),
+                ]);
+            } else {
+                // Handle error if profile is not retrieved successfully
+                Log::warning('Business profile could not be retrieved.');
             }
 
             // To prevent users having issues with the declaration, check if the required payload is available first
@@ -852,7 +861,6 @@ class AuthenticationController extends Controller
                 return redirect()->route('auth.login-user')
                     ->with('error', 'Your session has expired. Please log in again.');
             }
-
 
             // Handle the response based on status codes and response data
             return $this->handleLoginResponse($responseData, $validatedData['lemail']);
@@ -984,76 +992,6 @@ class AuthenticationController extends Controller
 
 
 
-    // public function getBusinessProfile()
-    // {
-    //     Log::info('Fetching business profile');
-
-    //     // Ensure the user is logged in or has a valid session
-    //     $email = Session::get('business_email');
-    //     $password = Session::get('business_password'); // Retrieve password from session
-
-    //     // If email or password is missing, log and return an error response
-    //     if (!$email || !$password) {
-    //         Log::warning('User not logged in or missing credentials');
-    //         return response()->json(['error' => 'User not logged in or missing credentials'], 401);
-    //     }
-
-    //     // Create the API client
-    //     $client = new Client();
-    //     $apiUrl = config('api.base_url') . '/business/profile';
-
-    //     // Prepare the payload to send to the API
-    //     $payload = [
-    //         'email' => $email,
-    //         'password' => $password
-    //     ];
-
-    //     // Prepare headers for the request
-    //     $headers = [
-    //         'Content-Type' => 'application/json',
-    //         'Accept' => 'application/json',
-    //     ];
-
-    //     try {
-    //         // Send the request to the API with the payload and headers
-    //         $response = $client->post($apiUrl, [
-    //             'headers' => $headers,
-    //             'json' => $payload // Send email and password in the JSON body
-    //         ]);
-
-    //         // Decode the response from the API
-    //         $responseData = json_decode($response->getBody(), true);
-
-    //         // Check if the response is valid
-    //         if (isset($responseData['status']) && $responseData['status'] === 'success') {
-    //             // Save the whole response in the profile_data variable
-    //             $profile_data = $responseData['data'];
-
-    //             // Save the industry and subsector in session separately
-    //             Session::put('lindustry', $profile_data['lindustry']);
-    //             Session::put('lsubsector', $profile_data['lsubsector']);
-
-    //             // Log the data being stored in session
-    //             Log::info('Saved profile data to session', [
-    //                 'lindustry' => $profile_data['lindustry'],
-    //                 'lsubsector' => $profile_data['lsubsector'],
-    //                 'Full profile data' => $profile_data
-    //             ]);
-
-    //             // Return the successful response
-    //             return response()->json($responseData, 200); // Return success data
-    //         } else {
-    //             Log::warning('Failed to retrieve business profile', ['response' => $responseData]);
-    //             return response()->json(['error' => 'Failed to retrieve business profile'], 500);
-    //         }
-    //     } catch (\Exception $e) {
-    //         // Log any errors or exceptions
-    //         Log::error('Error fetching business profile', ['exception' => $e->getMessage()]);
-    //         return response()->json(['error' => 'An error occurred while fetching the profile'], 500);
-    //     }
-    // }
-
-
 
     public function getBusinessProfile()
     {
@@ -1062,6 +1000,9 @@ class AuthenticationController extends Controller
         // Ensure the user is logged in or has a valid session
         $email = Session::get('business_email');
         $password = Session::get('business_password'); // Retrieve password from session
+
+
+
 
         // If email or password is missing, log and return an error response
         if (!$email || !$password) {
@@ -1104,6 +1045,9 @@ class AuthenticationController extends Controller
                 Session::put('lindustry', $profile_data['lindustry']);
                 Session::put('lsubsector', $profile_data['lsubsector']);
 
+                Session::get('selected_industry');
+                Session::get('selected_subsector');
+
                 // Log the data being stored in session
                 Log::info('Saved profile data to session', [
                     'lindustry' => $profile_data['lindustry'],
@@ -1113,6 +1057,86 @@ class AuthenticationController extends Controller
 
                 // Return the profile data
                 return $profile_data; // Return data directly, not a JsonResponse
+            } else {
+                Log::warning('Failed to retrieve business profile', ['response' => $responseData]);
+                return null; // Return null if API call failed
+            }
+        } catch (\Exception $e) {
+            // Log any errors or exceptions
+            Log::error('Error fetching business profile', ['exception' => $e->getMessage()]);
+            return null; // Return null if there's an error
+        }
+    }
+
+
+    public function getBusinessProfile2()
+    {
+        Log::info('Fetching business profile');
+
+        // Ensure the user is logged in or has a valid session
+        $email = Session::get('business_email');
+        $password = Session::get('business_password');
+        $industry = Session::get('selected_industry');  // Retrieve selected industry
+        $subsector = Session::get('selected_subsector'); // Retrieve selected subsector
+
+        // If email, password, or industry/subsector are missing, log and return an error response
+        if (!$email || !$password || !$industry || !$subsector) {
+            Log::warning('User not logged in or missing credentials');
+            //return null; 
+            return redirect()->route('auth.login-user')
+                ->withErrors(['error' => 'User not logged in or missing credentials.'])
+                ->withInput();
+        }
+
+        // Create the API client
+        $client = new Client();
+        $apiUrl = config('api.base_url') . '/business/profile';
+
+        // Prepare the payload to send to the API
+        $payload = [
+            'email' => $email,
+            'password' => $password,
+            'industry' => $industry,   // Include the industry
+            'subsector' => $subsector  // Include the subsector
+        ];
+
+        // Prepare headers for the request
+        $headers = [
+            'Content-Type' => 'application/json',
+            'Accept' => 'application/json',
+        ];
+
+        try {
+            // Send the request to the API with the payload and headers
+            $response = $client->post($apiUrl, [
+                'headers' => $headers,
+                'json' => $payload // Send the email, password, industry, and subsector in the JSON body
+            ]);
+
+            // Decode the response from the API
+            $responseData = json_decode($response->getBody(), true);
+
+            // Check if the response is valid
+            if (isset($responseData['status']) && $responseData['status'] === 'success') {
+                // Save the profile data to session
+                $profile_data = $responseData['data'];
+
+                // Log the profile data being stored in session
+                Log::info('Saved profile data to session', [
+                    'profile_data' => $profile_data
+                ]);
+
+                // Save industry and subsector in session (from API response)
+                Session::put('lindustry', $profile_data['lindustry']);
+                Session::put('lsubsector', $profile_data['lsubsector']);
+
+                // Optionally, log the industry and subsector separately if needed
+                Log::info('Saved business profile industry and subsector to session', [
+                    'lindustry' => $profile_data['lindustry'],
+                    'lsubsector' => $profile_data['lsubsector']
+                ]);
+
+                return $profile_data; // Return the profile data to be used further
             } else {
                 Log::warning('Failed to retrieve business profile', ['response' => $responseData]);
                 return null; // Return null if API call failed
@@ -2495,14 +2519,128 @@ class AuthenticationController extends Controller
         $invoices = Session::get('invoices', []);
         $balance = Session::get('balance', 0);
 
-        print_r($invoices);
-        exit();
+        // Log the session data to ensure it's there
+        Log::info('Invoices from session', ['invoices' => $invoices, 'balance' => $balance]);
+
+        // print_r($invoices);
+        // exit();
+
+        // If session data is empty, fetch and store the invoices
+        if (empty($invoices)) {
+            $this->storeInvoiceList(request());
+            // Fetch the invoices after storing to session
+            $invoices = Session::get('invoices', []);
+            $balance = Session::get('balance', 0);
+        }
+
 
         return view('auth.invoice-list', compact('invoices', 'balance'));
     }
 
 
     public function storeInvoiceList(Request $request)
+    {
+        Log::info('Business invoice list method is called');
+
+        try {
+            // Get credentials from session
+            $email = Session::get('business_email');
+            $password = Session::get('business_password');
+
+            if (!$email || !$password) {
+                return redirect()->route('auth.login')
+                    ->withErrors(['error' => 'Please login to access invoices']);
+            }
+
+            // Prepare payload
+            $payload = [
+                'email' => $email,
+                'password' => $password
+            ];
+
+            // API endpoint URL
+            $apiUrl = config('api.base_url') . '/business/business_invoicelist';
+
+            // Make the API request
+            $response = $this->client->post($apiUrl, [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                ],
+                'json' => $payload
+            ]);
+
+            // Get response status code and body
+            $statusCode = $response->getStatusCode();
+            $responseBody = json_decode($response->getBody()->getContents(), true);
+
+            // Check for different response statuses
+            if ($statusCode === 200) {
+                // Calculate accumulated sum of the invoice amounts
+                $invoices = $responseBody['data'] ?? [];
+                $totalBalance = 0;
+
+                // Sum up the 'lamount' for each invoice
+                foreach ($invoices as $invoice) {
+                    $totalBalance += $invoice['lamount'] ?? 0;
+                }
+
+                // Store invoices and total balance in the session
+                Session::put('invoices', $invoices);
+                Session::put('balance', $totalBalance);
+
+                // Redirect to invoice list
+                return redirect()->route('auth.invoice-list')
+                    ->with('invoices', $invoices)
+                    ->with('balance', $totalBalance);
+            }
+
+            // Handle various error statuses
+            $errorMessage = $responseBody['message'] ?? 'Unexpected error occurred';
+
+            switch ($statusCode) {
+                case 401:
+                    // Handle invalid credentials
+                    Log::warning('Invalid credentials for invoice list', [
+                        'email' => $email
+                    ]);
+                    return redirect()->route('auth.login')
+                        ->withErrors(['error' => 'Invalid credentials. Please login again.']);
+
+                case 422:
+                    // Handle validation errors
+                    Log::warning('Validation failed for invoice list', [
+                        'response' => $responseBody
+                    ]);
+                    return redirect()->route('auth.invoice-list')
+                        ->withErrors(['error' => $responseBody['message'] ?? 'Validation failed']);
+
+                default:
+                    // Handle all other errors
+                    Log::error('Failed to fetch invoices', [
+                        'response' => $responseBody,
+                        'status_code' => $statusCode
+                    ]);
+                    return redirect()->route('auth.invoice-list')
+                        ->withErrors(['error' => $errorMessage]);
+            }
+        } catch (\Exception $e) {
+            // Catch any unexpected exceptions and log them
+            Log::error('Unexpected error in invoice list', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->route('auth.invoice-list')
+                ->withErrors(['error' => 'An unexpected error occurred. Please try again later.']);
+        }
+    }
+
+
+
+
+
+    public function storeInvoiceList22(Request $request)
     {
         Log::info('Business invoice list method is called');
 
@@ -2597,8 +2735,62 @@ class AuthenticationController extends Controller
     }
 
 
+    // public function viewInvoice($invoiceId)
+    // {
+
+
+    //     // Get the invoices from session
+    //     $invoices = Session::get('invoices', []);
+    //     $inv = [];
+
+    //     foreach ($invoices as $invoice) {
+    //         if ($invoice['id'] == $invoiceId) {
+    //             $inv = $invoice;
+    //         }
+    //     }
+
+    //     print_r($inv);
+    //     exit();
+
+    //     // print_r($invoices);
+    //     // exit();
+    //     // Find the specific invoice by its ID
+    //     $invoice = collect($invoices)->firstWhere('id', $inv);
+
+    //     // Check if the invoice exists
+    //     // if (!$invoice) {
+    //     //     return redirect()->route('auth.invoice-list')->withErrors(['error' => 'Invoice not found']);
+    //     // }
+
+    //     // Return the invoice-view with the selected invoice data
+    //     return view('auth.invoice-view', compact('inv'));
+    // }
+
+
     public function viewInvoice($invoiceId)
     {
+        // Get the invoices from session
+        $invoices = Session::get('invoices', []);
+        Log::info('Invoices from session in viewInvoice', ['invoices' => $invoices]);
+
+        // Search for the invoice by its ID
+        $invoice = collect($invoices)->firstWhere('linvoiceid', $invoiceId);
+
+        // Check if the invoice exists
+        if (!$invoice) {
+            return redirect()->route('auth.invoice-list')->withErrors(['error' => 'Invoice not found']);
+        }
+
+        // Return the invoice-view with the selected invoice data
+        return view('auth.invoice-view', compact('invoice'));
+    }
+
+
+
+    public function viewInvoice33($invoiceId)
+    {
+        //Log::info('Invoice view URL: ', ['url' => route('invoice.view', ['invoiceId' => $invoiceId['id']])]);
+
         // Fetch the invoices from the session
         $invoices = Session::get('invoices', []);
 
@@ -2615,7 +2807,7 @@ class AuthenticationController extends Controller
 
         // If invoice is not found
         if (!$invoice) {
-            return redirect()->route('auth.invoice-list')->with('error', 'Invoice not found');
+            return redirect()->back()->with('error', 'Invoice not found');
         }
 
         // Pass the invoice data to the view
@@ -2728,36 +2920,7 @@ class AuthenticationController extends Controller
 
 
 
-    // public function viewInvoice33($invoiceId)
-    // {
 
-
-    //     // Get the invoices from session
-    //     $invoices = Session::get('invoices', []);
-    //     $inv = [];
-
-    //     foreach ($invoices as $invoice) {
-    //         if ($invoice['id'] == $invoiceId) {
-    //             $inv = $invoice;
-    //         }
-    //     }
-
-    //     print_r($inv);
-    //     exit();
-
-    //     // print_r($invoices);
-    //     // exit();
-    //     // Find the specific invoice by its ID
-    //     $invoice = collect($invoices)->firstWhere('id', $inv);
-
-    //     // Check if the invoice exists
-    //     // if (!$invoice) {
-    //     //     return redirect()->route('auth.invoice-list')->withErrors(['error' => 'Invoice not found']);
-    //     // }
-
-    //     // Return the invoice-view with the selected invoice data
-    //     return view('auth.invoice-view', compact('inv'));
-    // }
 
 
 
