@@ -35,12 +35,8 @@ Route::delete('/delete-branch', [AuthenticationController::class, 'deleteBranch'
 Route::post('/final-declaration', [AuthenticationController::class, 'finalDeclaration'])->name('auth.final-declaration');
 Route::post('/api/business/building-types', [AuthenticationController::class, 'getBuildingTypes']);
 Route::get('/business/profile', [AuthenticationController::class, 'getBusinessProfile'])->name('business.profile');
-
-
 Route::get('/view-branches', [AuthenticationController::class, 'viewBranchesForm'])->name('auth.viewBranches');
 Route::post('/api/view-branches', [AuthenticationController::class, 'viewBranches'])->name('auth.viewBranches-submit');
-
-
 Route::get('/accounting', [AuthenticationController::class, 'billing'])->name('auth.billing');
 Route::get('/official-returns', [AuthenticationController::class, 'officialReturns'])->name('auth.official-returns');
 Route::get('/receipt', [AuthenticationController::class, 'receipt'])->name('auth.receipt');
@@ -49,11 +45,9 @@ Route::get('/invoice-list', [AuthenticationController::class, 'invoiceList'])->n
 Route::get('/api/invoice-list', [AuthenticationController::class, 'storeInvoiceList'])->name('auth.generate-invoice');
 Route::get('/invoice/{invoiceId}', [AuthenticationController::class, 'viewInvoice'])->name('invoice.view');
 Route::post('/invoice/pay', [AuthenticationController::class, 'payInvoice'])->name('auth.invoice-pay');
-
-
-
 Route::get('/account-history', [AuthenticationController::class, 'accountHistory'])->name('auth.account-history');
-Route::get('/visitation', [AuthenticationController::class, 'calendar'])->name('auth.calendar');
+Route::get('/visitation', [AuthenticationController::class, 'visitationsList'])->name('auth.calendar');
+Route::post('/business/schedule-visitation', [AuthenticationController::class, 'scheduleVisitationDate'])->name('business.schedule.visitation');
 Route::get('/clearance', [AuthenticationController::class, 'clearance'])->name('auth.clearance');
 
 
@@ -74,10 +68,13 @@ Route::get('/training', [GeneralController::class, 'training'])->name('user.trai
 Route::get('/consultant-carde', [GeneralController::class, 'carde'])->name('user.carde');
 
 
+
 // unconfirmed routes
 Route::get('/support', [GeneralController::class, 'support'])->name('user.support');
 Route::get('apply-for-certificate', [GeneralController::class, 'applyCertificate'])->name('user.certtificate');
-
+Route::get('/requirement', [GeneralController::class, 'requirements'])->name('user.requirement');
+Route::get('/consultancy/fee', [GeneralController::class, 'consultancyFee'])->name('user.consultancy-fee');
+Route::get('/consultancy-form', [GeneralController::class, 'consultancyForm'])->name('user.training-fee');
 
 
 // safety consultant routes

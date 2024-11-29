@@ -68,4 +68,19 @@ class GeneralController extends Controller
     {
         return view('auth.apply-certificate');
     }
+
+    public function requirements()
+    {
+        return view('auth.requirements');
+    }
+
+    public function consultancyFee()
+    {
+        return view('auth.consultancy-fee');
+    }
+
+    public function consultancyForm()
+    {
+        return view('auth.consultancy-form');
+    }
 }

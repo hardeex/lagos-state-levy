@@ -457,47 +457,204 @@
                 </section> --}}
 
                 <!-- FAQ Section -->
-                {{-- <section class="mb-12 bg-white p-6 rounded-lg shadow-md">
-                    <h3 class="text-2xl font-semibold mb-6 text-blue-700">Frequently Asked Questions</h3>
-                    <div class="space-y-4">
-                        @foreach ([['What is a government levy?', 'A government levy is a tax imposed on specific goods, services, or transactions...'], ['How can I pay my levy?', 'You can pay your levy through various methods including online payments, bank transfers...'], ['What are the deadlines for levy payments?', 'Levy payment deadlines vary depending on the type of levy. Generally...']] as [$question, $answer])
-                            <div class="border-b pb-4">
-                                <button
-                                    class="flex justify-between w-full text-left p-2 font-medium text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-lg focus:outline-none"
-                                    onclick="toggleAnswer(this)">
-                                    <span>{{ $question }}</span>
-                                    <span class="ml-2">&#x25BC;</span> <!-- Down arrow icon -->
-                                </button>
-                                <p class="hidden text-gray-600 mt-2">{{ $answer }}</p>
+                <section class="mt-12 bg-white p-8 rounded-lg shadow-md">
+                    <h3 class="text-3xl font-semibold mb-6 text-blue-600">Frequently Asked Questions</h3>
+                    <div class="space-y-4" x-data="{ activeAccordion: null }">
+                        <div class="border-b border-gray-200 pb-4">
+                            <button @click="activeAccordion = activeAccordion === 1 ? null : 1"
+                                class="flex justify-between items-center w-full p-3 transition-colors hover:bg-gray-100 rounded-md focus:outline-none">
+                                <span class="font-medium text-gray-700">What is a Fire Warden?</span>
+                                <svg :class="{ 'rotate-180': activeAccordion === 1 }"
+                                    class="w-5 h-5 transition-transform transform" xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                            <div x-show="activeAccordion === 1" x-transition:enter="transition ease-out duration-300"
+                                x-transition:enter-start="opacity-0 transform scale-95"
+                                x-transition:enter-end="opacity-100 transform scale-100"
+                                x-transition:leave="transition ease-in duration-300"
+                                x-transition:leave-start="opacity-100 transform scale-100"
+                                x-transition:leave-end="opacity-0 transform scale-95" class="mt-2 text-gray-600">
+                                A fire warden needs to effectively organize an evacuation from the building if there is a
+                                fire.
                             </div>
-                        @endforeach
-                    </div>
-                    <div class="mt-6">
-                        <a href="#"
-                            class="block w-full text-center py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200">
-                            View All FAQs
-                        </a>
-                    </div>
-                </section> --}}
+                        </div>
 
-                @push('scripts')
-                    <script>
-                        function toggleAnswer(button) {
-                            const answer = button.nextElementSibling;
-                            if (answer.classList.contains('hidden')) {
-                                answer.classList.remove('hidden');
-                                button.querySelector('span:last-child').innerHTML = '&#x25B2;'; // Up arrow icon
-                            } else {
-                                answer.classList.add('hidden');
-                                button.querySelector('span:last-child').innerHTML = '&#x25BC;'; // Down arrow icon
-                            }
+                        <div class="border-b border-gray-200 pb-4">
+                            <button @click="activeAccordion = activeAccordion === 2 ? null : 2"
+                                class="flex justify-between items-center w-full p-3 transition-colors hover:bg-gray-100 rounded-md focus:outline-none">
+                                <span class="font-medium text-gray-700">What are the Responsibilities of Fire
+                                    Wardens?</span>
+                                <svg :class="{ 'rotate-180': activeAccordion === 2 }"
+                                    class="w-5 h-5 transition-transform transform" xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                            <div x-show="activeAccordion === 2" x-transition:enter="transition ease-out duration-300"
+                                x-transition:enter-start="opacity-0 transform scale-95"
+                                x-transition:enter-end="opacity-100 transform scale-100"
+                                x-transition:leave="transition ease-in duration-300"
+                                x-transition:leave-start="opacity-100 transform scale-100"
+                                x-transition:leave-end="opacity-0 transform scale-95" class="mt-2 text-gray-600">
+                                The exact responsibilities of Fire Wardens varies from workplace to workplace. In general,
+                                the main duties of fire wardens are to:
+                                <ul class="list-disc list-inside mt-2">
+                                    <li>Perform risk assessments to identify fire hazards</li>
+                                    <li>Report and record all fire hazards</li>
+                                    <li>Ensure that all fire alarms and firefighting equipment are in good condition</li>
+                                    <li>Organize fire drills</li>
+                                    <li>Provide fire safety training for new employees</li>
+                                    <li>Provide fire safety refresher training for existing employees</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="border-b border-gray-200 pb-4">
+                            <button @click="activeAccordion = activeAccordion === 3 ? null : 3"
+                                class="flex justify-between items-center w-full p-3 transition-colors hover:bg-gray-100 rounded-md focus:outline-none">
+                                <span class="font-medium text-gray-700">How Many Fire Wardens Does Your Workplace
+                                    Need?</span>
+                                <svg :class="{ 'rotate-180': activeAccordion === 3 }"
+                                    class="w-5 h-5 transition-transform transform" xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                            <div x-show="activeAccordion === 3" x-transition:enter="transition ease-out duration-300"
+                                x-transition:enter-start="opacity-0 transform scale-95"
+                                x-transition:enter-end="opacity-100 transform scale-100"
+                                x-transition:leave="transition ease-in duration-300"
+                                x-transition:leave-start="opacity-100 transform scale-100"
+                                x-transition:leave-end="opacity-0 transform scale-95" class="mt-2 text-gray-600">
+                                <p>Considerations for calculating fire warden numbers:</p>
+                                <ul class="list-disc list-inside mt-2">
+                                    <li>Size of premises: one fire warden per floor at a minimum</li>
+                                    <li>Presence of highly flammable materials</li>
+                                    <li>Nature of work that may impede evacuation</li>
+                                </ul>
+                                <p class="mt-2">Number of fire wardens by risk level:</p>
+                                <ul class="list-disc list-inside mt-2">
+                                    <li>Low-risk: one trained fire warden for 20 occupants</li>
+                                    <li>Medium-risk: one trained fire warden for every 15 occupants</li>
+                                    <li>High-risk: one fire warden for every 8 occupants</li>
+                                </ul>
+                                <p class="mt-2">A business must assess its risk level.</p>
+                            </div>
+                        </div>
+
+                        <div class="border-b border-gray-200 pb-4">
+                            <button @click="activeAccordion = activeAccordion === 4 ? null : 4"
+                                class="flex justify-between items-center w-full p-3 transition-colors hover:bg-gray-100 rounded-md focus:outline-none">
+                                <span class="font-medium text-gray-700">What is a Lagos State Fire Levy?</span>
+                                <svg :class="{ 'rotate-180': activeAccordion === 4 }"
+                                    class="w-5 h-5 transition-transform transform" xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                            <div x-show="activeAccordion === 4" x-transition:enter="transition ease-out duration-300"
+                                x-transition:enter-start="opacity-0 transform scale-95"
+                                x-transition:enter-end="opacity-100 transform scale-100"
+                                x-transition:leave="transition ease-in duration-300"
+                                x-transition:leave-start="opacity-100 transform scale-100"
+                                x-transition:leave-end="opacity-0 transform scale-95" class="mt-2 text-gray-600">
+                                A Lagos State fire levy is a tax or fee imposed on businesses to fund fire prevention,
+                                protection, and emergency services in Lagos State.
+                            </div>
+                        </div>
+
+                        <div class="border-b border-gray-200 pb-4">
+                            <button @click="activeAccordion = activeAccordion === 5 ? null : 5"
+                                class="flex justify-between items-center w-full p-3 transition-colors hover:bg-gray-100 rounded-md focus:outline-none">
+                                <span class="font-medium text-gray-700">Services Covered by Fire Levy</span>
+                                <svg :class="{ 'rotate-180': activeAccordion === 5 }"
+                                    class="w-5 h-5 transition-transform transform" xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                            <div x-show="activeAccordion === 5" x-transition:enter="transition ease-out duration-300"
+                                x-transition:enter-start="opacity-0 transform scale-95"
+                                x-transition:enter-end="opacity-100 transform scale-100"
+                                x-transition:leave="transition ease-in duration-300"
+                                x-transition:leave-start="opacity-100 transform scale-100"
+                                x-transition:leave-end="opacity-0 transform scale-95" class="mt-2 text-gray-600">
+                                The Lagos State Fire Levy covers:
+                                <ul class="list-disc list-inside mt-2">
+                                    <li>Fire prevention</li>
+                                    <li>Fire suppression</li>
+                                    <li>Emergency medical response</li>
+                                    <li>Rescue operations</li>
+                                    <li>Fire safety education</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="pb-4">
+                            <button @click="activeAccordion = activeAccordion === 6 ? null : 6"
+                                class="flex justify-between items-center w-full p-3 transition-colors hover:bg-gray-100 rounded-md focus:outline-none">
+                                <span class="font-medium text-gray-700">Fire Safety Clearance Certificate Procedure</span>
+                                <svg :class="{ 'rotate-180': activeAccordion === 6 }"
+                                    class="w-5 h-5 transition-transform transform" xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                            <div x-show="activeAccordion === 6" x-transition:enter="transition ease-out duration-300"
+                                x-transition:enter-start="opacity-0 transform scale-95"
+                                x-transition:enter-end="opacity-100 transform scale-100"
+                                x-transition:leave="transition ease-in duration-300"
+                                x-transition:leave-start="opacity-100 transform scale-100"
+                                x-transition:leave-end="opacity-0 transform scale-95" class="mt-2 text-gray-600">
+                                Steps to obtain Fire Safety Clearance Certificate:
+                                <ol class="list-decimal list-inside mt-2">
+                                    <li>Register your business online</li>
+                                    <li>Search for and pay required fees for your business sector</li>
+                                    <li>List all business branches in Lagos</li>
+                                    <li>Pay required fees through the portal</li>
+                                    <li>If required, visit accredited consultants for safety equipment certification</li>
+                                    <li>Gather and upload required documents and certificates</li>
+                                    <li>Request facility visitation</li>
+                                    <li>Fire Levy certificate will be approved alongside the fire safety certificate after
+                                        inspection</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+
+
+                <script>
+                    function toggleAnswer(button) {
+                        const answer = button.nextElementSibling;
+                        if (answer.classList.contains('hidden')) {
+                            answer.classList.remove('hidden');
+                            button.querySelector('span:last-child').innerHTML = '&#x25B2;'; // Up arrow icon
+                        } else {
+                            answer.classList.add('hidden');
+                            button.querySelector('span:last-child').innerHTML = '&#x25BC;'; // Down arrow icon
                         }
-                    </script>
-                @endpush
+                    }
+                </script>
 
 
                 <!-- Contact and Feedback -->
-                <section class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <section class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
                     <div class="bg-white p-6 rounded-lg shadow-md">
                         <h3 class="text-2xl font-semibold mb-4 text-blue-700">Contact Us</h3>
                         <p class="text-gray-700 mb-4">For any inquiries, please reach out to us:</p>

@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\RequestException;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Validator;
 
 class AuthenticationController extends Controller
 {
@@ -1722,6 +1724,78 @@ class AuthenticationController extends Controller
         return view('auth.calendar');
     }
 
+
+
+
+
+    // public function visitationsList()
+    // {
+    //     Log::info('Attempting to fetch visitation list');
+
+    //     // Retrieve the email and password from the session
+    //     $email = session('business_email');
+    //     $password = session('business_password');
+
+    //     // Check if email and password exist in session
+    //     if (!$email || !$password) {
+    //         return redirect()->route('auth.login')->withErrors(['error' => 'You must be logged in to access the visitation list.']);
+    //     }
+
+    //     $client = new Client();
+    //     $apiUrl = config('api.base_url') . '/business/visitationlist';
+
+    //     try {
+    //         $payload = [
+    //             'email' => $email,
+    //             'password' => $password,
+    //         ];
+
+    //         $response = $client->post($apiUrl, [
+    //             'headers' => [
+    //                 'Content-Type' => 'application/json',
+    //                 'Accept' => 'application/json',
+    //             ],
+    //             'json' => $payload,
+    //         ]);
+
+    //         $statusCode = $response->getStatusCode();
+    //         $responseBody = $response->getBody()->getContents();
+
+    //         Log::info('API Response', [
+    //             'statusCode' => $statusCode,
+    //             'body' => $responseBody
+    //         ]);
+
+    //         // Decode the response
+    //         $responseData = json_decode($responseBody, true);
+
+    //         // Check if the API response indicates unpaid invoices
+    //         if ($statusCode === 200 && isset($responseData['status']) && $responseData['status'] === 'error' && strpos($responseData['message'], 'unpaid invoices') !== false) {
+    //             // Redirect the user to the invoice list page with a user-friendly error message
+    //             Log::warning('Unpaid invoices detected', ['response' => $responseData]);
+    //             return redirect()->route('auth.invoice-list')->withErrors(['error' => 'You have unpaid invoices. Please clear them before you can access the visitation list.']);
+    //         }
+
+    //         // Handle success response (if there are no unpaid invoices)
+    //         if ($statusCode === 200 && isset($responseData['status']) && $responseData['status'] === 'success') {
+    //             Log::info('Visitation list fetched successfully', ['data' => $responseData['message']]);
+    //             return view('auth.calendar', ['message' => $responseData['message']]);
+    //         }
+
+    //         // Handle other unexpected statuses
+    //         Log::error('Unexpected status code', ['status_code' => $statusCode, 'response' => $responseBody]);
+    //         return redirect()->back()->withErrors(['error' => 'An unexpected error occurred. Please try again later.']);
+    //     } catch (\Exception $e) {
+    //         Log::error('Unexpected error while fetching visitation list', [
+    //             'message' => $e->getMessage(),
+    //             'trace' => $e->getTraceAsString()
+    //         ]);
+
+    //         return redirect()->back()->withErrors(['error' => 'An unexpected error occurred. Please try again later.']);
+    //     }
+    // }
+
+
     public function visitationsList()
     {
         Log::info('Attempting to fetch visitation list');
@@ -1744,6 +1818,7 @@ class AuthenticationController extends Controller
                 'password' => $password,
             ];
 
+            // Send the API request
             $response = $client->post($apiUrl, [
                 'headers' => [
                     'Content-Type' => 'application/json',
@@ -1763,21 +1838,18 @@ class AuthenticationController extends Controller
             // Decode the response
             $responseData = json_decode($responseBody, true);
 
-            // Check the response status
+            // Check if the response indicates unpaid invoices
+            if ($statusCode === 200 && isset($responseData['status']) && $responseData['status'] === 'error' && strpos($responseData['message'], 'unpaid invoices') !== false) {
+                // Redirect the user to the invoice list page with an error message
+                Log::warning('Unpaid invoices detected', ['response' => $responseData]);
+                return redirect()->route('auth.invoice-list')->withErrors(['error' => 'You have unpaid invoices. Please clear them before you can access the visitation list.']);
+            }
+
+            // If the response is successful, pass the data to the view
             if ($statusCode === 200 && isset($responseData['status']) && $responseData['status'] === 'success') {
                 Log::info('Visitation list fetched successfully', ['data' => $responseData['message']]);
-                return view('auth.visitation-list', ['message' => $responseData['message']]);
-            }
-
-            // Handle other error status codes
-            if ($statusCode === 401) {
-                Log::warning('Unauthorized access', ['response' => $responseData]);
-                return redirect()->route('auth.login')->withErrors(['error' => 'Unauthorized access. Please login again.']);
-            }
-
-            if ($statusCode === 422) {
-                Log::warning('Validation error from API', ['response' => $responseData]);
-                return redirect()->back()->withErrors(['error' => $responseData['message'] ?? 'Validation failed']);
+                // Pass the visitation data to the view
+                return view('auth.calendar', ['visitations' => $responseData['data']]);
             }
 
             // Handle other unexpected statuses
@@ -1798,7 +1870,7 @@ class AuthenticationController extends Controller
     {
         Log::info('Attempting to schedule visitation date');
 
-        // Retrieve credentials from the session
+        // Retrieve the email and password from the session
         $email = session('business_email');
         $password = session('business_password');
 
@@ -1807,37 +1879,53 @@ class AuthenticationController extends Controller
             return redirect()->route('auth.login')->withErrors(['error' => 'You must be logged in to schedule a visitation.']);
         }
 
-        // Validate the incoming request data
-        $validatedData = $request->validate([
-            'schedule_date' => ['required', 'date_format:d/m/Y'],
-            'branchid' => ['required', 'string'],
+        // Validate the request
+        $validator = Validator::make($request->all(), [
+            'branchid' => 'required|string',
+            'schedule_date' => [
+                'required',
+                'string',
+                'regex:/^\d{2}\/\d{2}\/\d{4}$/', // Validates d/m/Y format
+                function ($attribute, $value, $fail) {
+                    // Convert the date to a Carbon instance
+                    try {
+                        $scheduleDate = Carbon::createFromFormat('d/m/Y', $value);
+                        $minAllowedDate = Carbon::now()->addDays(7);
+
+                        // Check if the schedule date is at least 7 days from now
+                        if ($scheduleDate < $minAllowedDate) {
+                            $fail('Schedule date must be at least 7 days from the current date.');
+                        }
+                    } catch (\Exception $e) {
+                        $fail('Invalid date format. Use DD/MM/YYYY.');
+                    }
+                }
+            ]
+        ], [
+            'branchid.required' => 'Branch ID is required.',
+            'schedule_date.required' => 'Schedule date is required.',
+            'schedule_date.regex' => 'Schedule date must be in DD/MM/YYYY format.'
         ]);
 
-        // Retrieve the branch ID and schedule date from the validated request data
-        $branchId = $validatedData['branchid'];
-        $scheduleDate = $validatedData['schedule_date'];
+        // If validation fails, redirect back with errors
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
 
-        // Log the data we're going to send
-        Log::info('Scheduling visitation', [
-            'email' => $email,
-            'branchid' => $branchId,
-            'schedule_date' => $scheduleDate
-        ]);
-
-        // Prepare the payload for the API request
+        // Prepare the payload for the API
         $payload = [
             'email' => $email,
             'password' => $password,
-            'branchid' => $branchId,
-            'schedule_date' => $scheduleDate,
+            'branchid' => $request->input('branchid'),
+            'schedule_date' => $request->input('schedule_date')
         ];
 
-        // Call the API to schedule the visitation
         $client = new Client();
         $apiUrl = config('api.base_url') . '/business/shedulevisitationdate';
 
         try {
-            // Make the POST request to the API
             $response = $client->post($apiUrl, [
                 'headers' => [
                     'Content-Type' => 'application/json',
@@ -1847,44 +1935,52 @@ class AuthenticationController extends Controller
             ]);
 
             $statusCode = $response->getStatusCode();
-            $responseBody = json_decode($response->getBody()->getContents(), true);
+            $responseBody = $response->getBody()->getContents();
 
-            // Log the response from the API
-            Log::info('API Response for scheduling visitation', [
+            Log::info('API Response for Visitation Scheduling', [
                 'statusCode' => $statusCode,
-                'response' => $responseBody
+                'body' => $responseBody
             ]);
 
-            // Handle the response based on the status code
-            if ($statusCode === 200) {
-                // Success - Visitation scheduled successfully
-                return redirect()->route('auth.calendar')->with('success', 'Visitation scheduled successfully.');
+            // Decode the response
+            $responseData = json_decode($responseBody, true);
+
+            // Check the response status
+            if ($statusCode === 200 && isset($responseData['status']) && $responseData['status'] === 'success') {
+                Log::info('Visitation date scheduled successfully', ['message' => $responseData['message']]);
+
+                return redirect()->route('auth.calendar')
+                    ->with('success', $responseData['message'] ?? 'Visitation date scheduled successfully');
             }
 
-            // Handle unauthorized access
+            // Handle specific error scenarios
             if ($statusCode === 401) {
-                return redirect()->route('auth.login')->withErrors(['error' => 'Unauthorized access. Please log in again.']);
+                Log::warning('Unauthorized access', ['response' => $responseData]);
+                return redirect()->route('auth.login')
+                    ->withErrors(['error' => 'Unauthorized access. Please login again.']);
             }
 
-            // Handle validation errors from the API
             if ($statusCode === 422) {
-                return redirect()->back()->withErrors(['error' => $responseBody['message'] ?? 'Validation failed']);
+                Log::warning('Validation error from API', ['response' => $responseData]);
+                return redirect()->back()
+                    ->withErrors(['error' => $responseData['message'] ?? 'Validation failed'])
+                    ->withInput();
             }
 
             // Handle other unexpected statuses
-            Log::error('Unexpected error when scheduling visitation', [
-                'status_code' => $statusCode,
-                'response' => $responseBody
-            ]);
-            return redirect()->back()->withErrors(['error' => 'An unexpected error occurred. Please try again later.']);
+            Log::error('Unexpected status code', ['status_code' => $statusCode, 'response' => $responseBody]);
+            return redirect()->back()
+                ->withErrors(['error' => 'An unexpected error occurred. Please try again later.'])
+                ->withInput();
         } catch (\Exception $e) {
-            // Log any exception that occurs during the API request
-            Log::error('Unexpected error scheduling visitation', [
+            Log::error('Unexpected error while scheduling visitation', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
 
-            return redirect()->back()->withErrors(['error' => 'An unexpected error occurred. Please try again later.']);
+            return redirect()->back()
+                ->withErrors(['error' => 'An unexpected error occurred. Please try again later.'])
+                ->withInput();
         }
     }
 
@@ -2463,6 +2559,8 @@ class AuthenticationController extends Controller
             if ($statusCode === 200) {
                 $responseData = json_decode($responseBody, true);
 
+                // print_r($responseData);
+
                 // Save the retrieved account history data in the session
                 if (isset($responseData['data']) && is_array($responseData['data'])) {
                     Session::put('account_history', $responseData['data']);
@@ -2531,11 +2629,16 @@ class AuthenticationController extends Controller
             // Fetch the invoices after storing to session
             $invoices = Session::get('invoices', []);
             $balance = Session::get('balance', 0);
+
+            Log::info('Invoices stored in session', ['invoices' => $invoices]);
         }
 
+        // Regenerate the session to ensure data persists
+        session()->regenerate();
 
         return view('auth.invoice-list', compact('invoices', 'balance'));
     }
+
 
 
     public function storeInvoiceList(Request $request)
@@ -2637,6 +2740,51 @@ class AuthenticationController extends Controller
     }
 
 
+    public function viewInvoice($invoiceId)
+    {
+        // Log the current session state for debugging
+        Log::info('Attempting to view invoice', [
+            'invoice_id' => $invoiceId,
+            'session_invoices' => Session::get('invoices')
+        ]);
+
+        // Retrieve invoices from session
+        $invoices = Session::get('invoices', []);
+
+        // If invoices are empty, attempt to reload them
+        if (empty($invoices)) {
+            Log::warning('Invoice list is empty in session. Attempting to reload.');
+
+            // Call storeInvoiceList to repopulate session
+            $this->storeInvoiceList(request());
+
+            // Retrieve invoices again after reloading
+            $invoices = Session::get('invoices', []);
+        }
+
+        // Find the specific invoice
+        $invoice = collect($invoices)->firstWhere('linvoiceid', $invoiceId);
+
+        // Log the found invoice details
+        Log::info('Invoice lookup result', [
+            'invoice_id' => $invoiceId,
+            'invoice_found' => !is_null($invoice)
+        ]);
+
+        // Handle cases where invoice is not found
+        if (!$invoice) {
+            Log::error('Invoice not found', [
+                'invoice_id' => $invoiceId,
+                'available_invoices' => array_column($invoices, 'linvoiceid')
+            ]);
+
+            return redirect()->route('auth.invoice-list')
+                ->withErrors(['error' => 'Requested invoice could not be found.']);
+        }
+
+        // Return the view with the invoice
+        return view('auth.invoice-view', compact('invoice'));
+    }
 
 
 
@@ -2767,16 +2915,29 @@ class AuthenticationController extends Controller
     // }
 
 
-    public function viewInvoice($invoiceId)
+    public function viewInvoiceLATESTWORK($invoiceId)
     {
-        // Get the invoices from session
-        $invoices = Session::get('invoices', []);
-        Log::info('Invoices from session in viewInvoice', ['invoices' => $invoices]);
 
-        // Search for the invoice by its ID
+        Log::info('Session data in viewInvoice', ['session_invoices' => Session::get('invoices')]);
+        // // Get the invoices from session
+        // $invoices = Session::get('invoices', []);
+        // Log::info('Invoices from session in viewInvoice', ['invoices' => $invoices]);
+
+        // // Search for the invoice by its ID
+        // $invoice = collect($invoices)->firstWhere('linvoiceid', $invoiceId);
+
+        // // Check if the invoice exists
+        // if (!$invoice) {
+        //     return redirect()->route('auth.invoice-list')->withErrors(['error' => 'Invoice not found']);
+        // }
+
+
+        $invoices = Session::get('invoices', []);
         $invoice = collect($invoices)->firstWhere('linvoiceid', $invoiceId);
 
-        // Check if the invoice exists
+        // Log the invoice to verify it is fetched
+        Log::info('Invoice details', ['invoice' => $invoice]);
+
         if (!$invoice) {
             return redirect()->route('auth.invoice-list')->withErrors(['error' => 'Invoice not found']);
         }
@@ -2815,6 +2976,49 @@ class AuthenticationController extends Controller
     }
 
 
+    public function payInvoice2(Request $request)
+    {
+        // Log the entire incoming request for debugging
+        Log::info('Payment Request Received', [
+            'method' => $request->method(),
+            'all_input' => $request->all(),
+            'json_input' => $request->json()->all(),
+            'headers' => $request->headers->all()
+        ]);
+
+        try {
+            // Validate incoming request data
+            $validatedData = $request->validate([
+                'invoiceid' => ['required', 'string']
+            ]);
+
+            // Rest of your existing code...
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Log validation errors specifically
+            Log::error('Validation Failed', [
+                'errors' => $e->errors(),
+                'input' => $request->all()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            // Enhanced error logging
+            Log::error('Payment Process Error', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'input' => $request->all()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'An unexpected error occurred: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 
     public function payInvoice(Request $request)
     {
@@ -2832,7 +3036,7 @@ class AuthenticationController extends Controller
 
             // Check if email and password exist in session
             if (!$email || !$password) {
-                return redirect()->route('auth.login')->withErrors(['error' => 'You must be logged in to make a payment.']);
+                return response()->json(['success' => false, 'message' => 'You must be logged in to make a payment.']);
             }
 
             // Prepare the payload for the API
@@ -2879,43 +3083,50 @@ class AuthenticationController extends Controller
                 $responseData = json_decode($responseBody, true);
                 Log::info('Payment processed successfully', ['data' => $responseData['data']]);
 
-                // Handle success - you can redirect to an invoice list or payment confirmation page
-                return redirect()->route('auth.invoice-list')
-                    ->with('success', $responseData['message'] ?? 'Payment was successful.');
+                // Return success response
+                return response()->json([
+                    'success' => true,
+                    'message' => $responseData['message'] ?? 'Payment was successful.'
+                ]);
             }
 
             if ($statusCode === 401) {
                 $responseData = json_decode($responseBody, true);
                 Log::warning('Unauthorized access', ['response' => $responseData]);
-                return redirect()->back()
-                    ->withErrors(['error' => $responseData['message'] ?? 'Unauthorized access'])
-                    ->withInput();
+                return response()->json([
+                    'success' => false,
+                    'message' => $responseData['message'] ?? 'Unauthorized access'
+                ]);
             }
 
             if ($statusCode === 422) {
                 $responseData = json_decode($responseBody, true);
                 Log::warning('Validation error from API', ['response' => $responseData]);
-                return redirect()->back()
-                    ->withErrors(['error' => $responseData['message'] ?? 'Validation failed'])
-                    ->withInput();
+                return response()->json([
+                    'success' => false,
+                    'message' => $responseData['message'] ?? 'Validation failed'
+                ]);
             }
 
             // Handle other unexpected statuses
             Log::error('Unexpected status code', ['status_code' => $statusCode, 'response' => $responseBody]);
-            return redirect()->back()
-                ->withErrors(['error' => 'An unexpected error occurred. Please try again later.'])
-                ->withInput();
+            return response()->json([
+                'success' => false,
+                'message' => 'An unexpected error occurred. Please try again later.'
+            ]);
         } catch (\Exception $e) {
             Log::error('Unexpected error', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
 
-            return redirect()->back()
-                ->withErrors(['error' => 'An unexpected error occurred. Please try again later.'])
-                ->withInput();
+            return response()->json([
+                'success' => false,
+                'message' => 'An unexpected error occurred. Please try again later.'
+            ]);
         }
     }
+
 
 
 

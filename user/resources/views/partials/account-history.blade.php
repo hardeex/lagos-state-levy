@@ -53,7 +53,16 @@
 
 
         <div class="bg-white shadow-md rounded-lg overflow-hidden">
-            <table class="w-full">
+            <!-- Search Form -->
+            <div class="flex justify-between items-center mt-4">
+                <div class="flex items-center space-x-2">
+                    <input type="text" id="searchInput" class="px-2 py-1 border rounded" placeholder="Search..."
+                        onkeyup="filterTable()">
+                </div>
+            </div>
+
+            <!-- Table -->
+            <table class="w-full mt-4">
                 <thead class="bg-gray-200">
                     <tr>
                         <th class="px-4 py-2 text-left text-gray-700">S/N</th>
@@ -79,94 +88,99 @@
                         <!-- Options will be populated by JavaScript -->
                     </select>
                 </div>
-                <div class="flex items-center space-x-2">
-                    <input type="text" id="searchInput" class="px-2 py-1 border rounded" placeholder="Search..."
-                        onkeyup="filterTable()">
-                </div>
             </div>
         </div>
-    </div>
 
+        <script>
+            // Pass the dynamic account history data from Blade
+            const accountHistory = @json($accountHistory); // Convert PHP data to JSON and inject it
 
-    <script>
-        // Pass the dynamic account history data from Blade
-        const accountHistory = @json($accountHistory); // Convert PHP data to JSON and inject it
+            let currentPage = 1;
+            const rowsPerPage = 15;
 
-        let currentPage = 1;
-        const rowsPerPage = 15;
-
-        // Function to paginate the data and update the table
-        function paginateData() {
-            const tableBody = document.getElementById('accountHistoryBody');
-            tableBody.innerHTML = ''; // Clear the table
-
-            const startIndex = (currentPage - 1) * rowsPerPage;
-            const endIndex = startIndex + rowsPerPage;
-            const paginatedData = accountHistory.slice(startIndex, endIndex);
-
-            // Loop through the paginated data and add rows to the table
-            paginatedData.forEach((entry, index) => {
-                const row = `
-                    <tr class="border-b hover:bg-gray-50">
-                        <td class="px-4 py-2">${startIndex + index + 1}</td> <!-- S/N -->
-                        <td class="px-4 py-2">${entry.created_at}</td> <!-- Date -->
-                        <td class="px-4 py-2">${entry.lparticulars}</td> <!-- Particulars -->
-                        <td class="px-4 py-2">${entry.lref}</td> <!-- Reference -->
-                        <td class="px-4 py-2">${entry.ldr}</td> <!-- Levy -->
-                        <td class="px-4 py-2">${entry.lcr || '0'}</td> <!-- Payment -->
-                        <td class="px-4 py-2">${entry.ldr - (entry.lcr || 0)}</td> <!-- Balance -->
-                        <td class="px-4 py-2">${entry.data || 'N/A'}</td> <!-- Data -->
-                    </tr>
-                `;
-                tableBody.innerHTML += row; // Append the row to the table body
-            });
-
-            // Update pagination controls
-            updatePaginationControls();
-        }
-
-        // Function to update pagination controls
-        function updatePaginationControls() {
-            const totalPages = Math.ceil(accountHistory.length / rowsPerPage);
-            const pageSelect = document.getElementById('pageSelect');
-            pageSelect.innerHTML = ''; // Clear previous options
-
-            // Add options for each page number
-            for (let i = 1; i <= totalPages; i++) {
-                const option = document.createElement('option');
-                option.value = i;
-                option.textContent = `Page ${i}`;
-                pageSelect.appendChild(option);
+            // Function to format the date in a human-readable format
+            function formatDate(dateString) {
+                const options = {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                };
+                return new Date(dateString).toLocaleDateString(undefined, options);
             }
 
-            // Set the currently selected page
-            pageSelect.value = currentPage;
-        }
+            // Function to paginate the data and update the table
+            function paginateData() {
+                const tableBody = document.getElementById('accountHistoryBody');
+                tableBody.innerHTML = ''; // Clear the table
 
-        // Function to handle page change
-        document.getElementById('pageSelect').addEventListener('change', (event) => {
-            currentPage = parseInt(event.target.value);
-            paginateData();
-        });
+                const startIndex = (currentPage - 1) * rowsPerPage;
+                const endIndex = startIndex + rowsPerPage;
+                const paginatedData = accountHistory.slice(startIndex, endIndex);
 
-        // Function to filter the table based on search input
-        function filterTable() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const filteredData = accountHistory.filter(entry => {
-                return entry.lparticulars.toLowerCase().includes(searchTerm) ||
-                    entry.lref.toLowerCase().includes(searchTerm) ||
-                    entry.created_at.toLowerCase().includes(searchTerm);
+                // Loop through the paginated data and add rows to the table
+                paginatedData.forEach((entry, index) => {
+                    const row = `
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="px-4 py-2">${startIndex + index + 1}</td> <!-- S/N -->
+                            <td class="px-4 py-2">${formatDate(entry.created_at)}</td> <!-- Date -->
+                            <td class="px-4 py-2">${entry.lparticulars}</td> <!-- Particulars -->
+                            <td class="px-4 py-2">${entry.lref}</td> <!-- Reference -->
+                            <td class="px-4 py-2">${entry.ldr}</td> <!-- Levy -->
+                            <td class="px-4 py-2">${entry.lcr || '0'}</td> <!-- Payment -->
+                            <td class="px-4 py-2">${entry.ldr - (entry.lcr || 0)}</td> <!-- Balance -->
+                            <td class="px-4 py-2">${entry.lcomment || 'N/A'}</td> <!-- Data (comment as placeholder for Data) -->
+                        </tr>
+                    `;
+                    tableBody.innerHTML += row; // Append the row to the table body
+                });
+
+                // Update pagination controls
+                updatePaginationControls();
+            }
+
+            // Function to update pagination controls
+            function updatePaginationControls() {
+                const totalPages = Math.ceil(accountHistory.length / rowsPerPage);
+                const pageSelect = document.getElementById('pageSelect');
+                pageSelect.innerHTML = ''; // Clear previous options
+
+                // Add options for each page number
+                for (let i = 1; i <= totalPages; i++) {
+                    const option = document.createElement('option');
+                    option.value = i;
+                    option.textContent = `Page ${i}`;
+                    pageSelect.appendChild(option);
+                }
+
+                // Set the currently selected page
+                pageSelect.value = currentPage;
+            }
+
+            // Function to handle page change
+            document.getElementById('pageSelect').addEventListener('change', (event) => {
+                currentPage = parseInt(event.target.value);
+                paginateData();
             });
 
-            // Update the table with filtered data
-            accountHistory.length = 0; // Clear the existing data
-            accountHistory.push(...filteredData); // Push filtered data to the array
-            currentPage = 1; // Reset to page 1 when searching
-            paginateData();
-        }
+            // Function to filter the table based on search input
+            function filterTable() {
+                const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+                const filteredData = accountHistory.filter(entry => {
+                    return entry.lparticulars.toLowerCase().includes(searchTerm) ||
+                        entry.lref.toLowerCase().includes(searchTerm) ||
+                        entry.created_at.toLowerCase().includes(searchTerm) ||
+                        entry.lcomment.toLowerCase().includes(searchTerm);
+                });
 
-        // Initial call to paginate and display data
-        window.onload = paginateData;
-    </script>
+                // Update the table with filtered data
+                accountHistory.length = 0; // Clear the existing data
+                accountHistory.push(...filteredData); // Push filtered data to the array
+                currentPage = 1; // Reset to page 1 when searching
+                paginateData();
+            }
 
-</div>
+            // Initial call to paginate and display data
+            window.onload = paginateData;
+        </script>
+
+    </div>

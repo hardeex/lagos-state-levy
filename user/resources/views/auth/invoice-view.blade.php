@@ -7,6 +7,7 @@
     <title>Invoice #{{ $invoice['linvoiceid'] }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <style>
         @media print {
             body {
@@ -114,7 +115,7 @@
                 </div>
 
                 {{-- Payment Gateways --}}
-                <div class="bg-gray-100 p-6 rounded-lg mb-6 print:hidden">
+                {{-- <div class="bg-gray-100 p-6 rounded-lg mb-6 print:hidden">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4">Select Payment Gateway</h3>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <button class="gateway-btn" data-gateway="paystack">
@@ -137,7 +138,80 @@
                             <span>Bank Transfer</span>
                         </button>
                     </div>
+                </div> --}}
+
+                <div class="bg-gray-100 p-6 rounded-lg mb-6 print:hidden">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Select Payment Gateway</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <button class="gateway-btn" data-gateway="paystack">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 mx-auto mb-2 text-blue-600"
+                                fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M14.5 10c-.83 0-1.5.67-1.5 1.5v1c0 .83.67 1.5 1.5 1.5h1c.28 0 .5.22.5.5v1c0 .28-.22.5-.5.5h-2c-.28 0-.5-.22-.5-.5M10 12.5v-1c0-.83-.67-1.5-1.5-1.5h-1c-.28 0-.5.22-.5.5v3c0 .28.22.5.5.5h2c.83 0 1.5-.67 1.5-1.5m4.5-1.5c-.83 0-1.5.67-1.5 1.5v3c0 .28.22.5.5.5h1c.28 0 .5-.22.5-.5v-3c0-.28-.22-.5-.5-.5zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
+                            </svg>
+                            <span>Paystack</span>
+                        </button>
+                        <button class="gateway-btn" data-gateway="stripe">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 mx-auto mb-2 text-indigo-500"
+                                fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M14 10h3c1.105 0 2-.895 2-2V6c0-1.105-.895-2-2-2h-3v6zm-4 0V4H7c-1.105 0-2 .895-2 2v2c0 1.105.895 2 2 2h3zm4 4h3c1.105 0 2 .895 2 2v2c0 1.105-.895 2-2 2h-3v-6zm-4 0v6H7c-1.105 0-2-.895-2-2v-2c0-1.105.895-2 2-2h3z" />
+                            </svg>
+                            <span>Stripe</span>
+                        </button>
+                        <button class="gateway-btn" data-gateway="flutterwave">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 mx-auto mb-2 text-green-600"
+                                fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                            </svg>
+                            <span>Flutterwave</span>
+                        </button>
+                        <button class="gateway-btn" data-gateway="bank-transfer">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 mx-auto mb-2 text-gray-700"
+                                fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                            </svg>
+                            <span>Bank Transfer</span>
+                        </button>
+                    </div>
                 </div>
+
+                <style>
+                    .gateway-btn {
+                        @apply flex flex-col items-center justify-center p-4 rounded-lg bg-white hover:bg-gray-50 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300;
+                    }
+
+                    .gateway-btn:hover {
+                        @apply shadow-lg;
+                    }
+
+                    .gateway-btn.selected {
+                        @apply bg-blue-100 border-2 border-blue-500;
+                    }
+                </style>
+
+                <script>
+                    document.addEventListener('DOMContentLoaded', () => {
+                        const gatewayButtons = document.querySelectorAll('.gateway-btn');
+
+                        gatewayButtons.forEach(button => {
+                            button.addEventListener('click', () => {
+                                // Remove selected state from all buttons
+                                gatewayButtons.forEach(btn => btn.classList.remove('selected'));
+
+                                // Add selected state to clicked button
+                                button.classList.add('selected');
+
+                                // Get the selected gateway
+                                const selectedGateway = button.getAttribute('data-gateway');
+
+                                // You can add your custom logic here to handle the gateway selection
+                                console.log('Selected Gateway:', selectedGateway);
+                            });
+                        });
+                    });
+                </script>
 
                 {{-- Action Buttons --}}
                 <div class="flex flex-col md:flex-row justify-between space-y-4 md:space-y-0 md:space-x-4 print:hidden">
@@ -193,8 +267,47 @@
         document.getElementById('proceedToPayment').addEventListener('click', function() {
             const selectedGateway = document.querySelector('.gateway-btn.border-4');
             if (selectedGateway) {
-                alert(`Proceeding with payment via ${selectedGateway.getAttribute('data-gateway')}`);
-                // Implement actual payment gateway redirection logic here
+                // Directly use the invoice ID from the page context
+                const invoiceId = "{{ $invoice['linvoiceid'] }}"; // Laravel Blade syntax
+
+                if (!invoiceId) {
+                    alert('Invoice ID is missing');
+                    return;
+                }
+
+                // Send the payment request to the server
+                fetch('/invoice/pay', { // Use relative URL instead of named route
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                                'content')
+                        },
+                        body: JSON.stringify({
+                            invoiceid: invoiceId
+                        })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Response Data:', data);
+
+                        if (data.success) {
+                            alert(data.message || 'Payment processed successfully!');
+                            window.location.href = '/invoice/list';
+                        } else {
+                            alert(data.message || 'Payment failed.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error processing payment:', error);
+                        alert('An error occurred while processing the payment. Please try again later.');
+                    });
             } else {
                 alert('Please select a payment gateway');
             }

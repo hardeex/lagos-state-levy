@@ -81,18 +81,25 @@
                                 <td class="px-4 py-2">{{ $invoice['due_date'] ?? 'N/A' }}</td>
                                 <td class="px-4 py-2">₦{{ number_format($invoice['lamount'] ?? 0, 2) }}</td>
                                 <td class="px-4 py-2">
-                                    <span class="bg-red-500 text-white px-2 py-1 rounded text-sm">
-                                        {{ $invoice['status'] ?? 'UNPAID' }}
+                                    <span
+                                        class="text-white px-2 py-1 rounded text-sm 
+                                        {{ $invoice['lpaystatus'] == 'PAID' ? 'bg-green-500' : 'bg-red-500' }}">
+                                        {{ $invoice['lpaystatus'] ?? 'UNPAID' }}
                                     </span>
                                 </td>
+
                                 <td class="px-4 py-2">
-                                    <a href="#"
+                                <td class="px-4 py-2">
+                                    <a href="{{ route('invoice.view', ['invoiceId' => $invoice['linvoiceid']]) }}"
                                         class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded text-sm">
                                         View
                                     </a>
+                                </td>
 
-                                  
-                                    
+
+
+
+
 
 
 

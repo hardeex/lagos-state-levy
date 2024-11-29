@@ -14,7 +14,9 @@
             <div class="bg-red-50 border-l-4 border-red-500 rounded-lg p-4 shadow-sm">
                 <div class="flex items-center mb-2">
                     <svg class="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                        <path fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                            clip-rule="evenodd" />
                     </svg>
                     <h3 class="text-red-800 font-medium">There were some errors with your submission</h3>
                 </div>
@@ -25,12 +27,14 @@
                 </ul>
             </div>
         @endif
-    
+
         @if (session('success'))
             <div class="bg-green-50 border-l-4 border-green-500 rounded-lg p-4 shadow-sm">
                 <div class="flex items-center">
                     <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        <path fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clip-rule="evenodd" />
                     </svg>
                     <p class="text-green-700 font-medium">{{ session('success') }}</p>
                 </div>
@@ -121,8 +125,8 @@
                             </div>
                         </div>
                         <div class="contact-item">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="contact-icon" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="contact-icon" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
@@ -136,14 +140,13 @@
                 </section>
             </div>
         </div>
-
         <section class="mt-12 bg-white p-8 rounded-lg shadow-md">
             <h3 class="text-3xl font-semibold mb-6 text-blue-600">Frequently Asked Questions</h3>
             <div class="space-y-4" x-data="{ activeAccordion: null }">
                 <div class="border-b border-gray-200 pb-4">
                     <button @click="activeAccordion = activeAccordion === 1 ? null : 1"
                         class="flex justify-between items-center w-full p-3 transition-colors hover:bg-gray-100 rounded-md focus:outline-none">
-                        <span class="font-medium text-gray-700">What is a government levy?</span>
+                        <span class="font-medium text-gray-700">What is a Fire Warden?</span>
                         <svg :class="{ 'rotate-180': activeAccordion === 1 }"
                             class="w-5 h-5 transition-transform transform" xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 20 20" fill="currentColor">
@@ -158,16 +161,14 @@
                         x-transition:leave="transition ease-in duration-300"
                         x-transition:leave-start="opacity-100 transform scale-100"
                         x-transition:leave-end="opacity-0 transform scale-95" class="mt-2 text-gray-600">
-                        A government levy is a tax imposed by the government on a specific activity, product, or service to
-                        raise revenue for public purposes. In Lagos State, these levies help fund essential services and
-                        infrastructure development.
+                        A fire warden needs to effectively organize an evacuation from the building if there is a fire.
                     </div>
                 </div>
 
                 <div class="border-b border-gray-200 pb-4">
                     <button @click="activeAccordion = activeAccordion === 2 ? null : 2"
                         class="flex justify-between items-center w-full p-3 transition-colors hover:bg-gray-100 rounded-md focus:outline-none">
-                        <span class="font-medium text-gray-700">How can I pay my levy?</span>
+                        <span class="font-medium text-gray-700">What are the Responsibilities of Fire Wardens?</span>
                         <svg :class="{ 'rotate-180': activeAccordion === 2 }"
                             class="w-5 h-5 transition-transform transform" xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 20 20" fill="currentColor">
@@ -182,12 +183,15 @@
                         x-transition:leave="transition ease-in duration-300"
                         x-transition:leave-start="opacity-100 transform scale-100"
                         x-transition:leave-end="opacity-0 transform scale-95" class="mt-2 text-gray-600">
-                        You can pay your levy through various convenient methods:
+                        The exact responsibilities of Fire Wardens varies from workplace to workplace. In general, the main
+                        duties of fire wardens are to:
                         <ul class="list-disc list-inside mt-2">
-                            <li>Online through our secure payment portal</li>
-                            <li>At any Lagos State Internal Revenue Service (LIRS) office</li>
-                            <li>Through designated banks</li>
-                            <li>Using mobile payment apps</li>
+                            <li>Perform risk assessments to identify fire hazards</li>
+                            <li>Report and record all fire hazards</li>
+                            <li>Ensure that all fire alarms and firefighting equipment are in good condition</li>
+                            <li>Organize fire drills</li>
+                            <li>Provide fire safety training for new employees</li>
+                            <li>Provide fire safety refresher training for existing employees</li>
                         </ul>
                     </div>
                 </div>
@@ -195,7 +199,7 @@
                 <div class="border-b border-gray-200 pb-4">
                     <button @click="activeAccordion = activeAccordion === 3 ? null : 3"
                         class="flex justify-between items-center w-full p-3 transition-colors hover:bg-gray-100 rounded-md focus:outline-none">
-                        <span class="font-medium text-gray-700">What happens if I don't pay my levy?</span>
+                        <span class="font-medium text-gray-700">How Many Fire Wardens Does Your Workplace Need?</span>
                         <svg :class="{ 'rotate-180': activeAccordion === 3 }"
                             class="w-5 h-5 transition-transform transform" xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 20 20" fill="currentColor">
@@ -210,22 +214,26 @@
                         x-transition:leave="transition ease-in duration-300"
                         x-transition:leave-start="opacity-100 transform scale-100"
                         x-transition:leave-end="opacity-0 transform scale-95" class="mt-2 text-gray-600">
-                        Failure to pay your levy may result in:
+                        <p>Considerations for calculating fire warden numbers:</p>
                         <ul class="list-disc list-inside mt-2">
-                            <li>Accumulation of penalties and interest charges</li>
-                            <li>Legal action or prosecution</li>
-                            <li>Restrictions on government services</li>
-                            <li>Negative impact on your credit rating</li>
+                            <li>Size of premises: one fire warden per floor at a minimum</li>
+                            <li>Presence of highly flammable materials</li>
+                            <li>Nature of work that may impede evacuation</li>
                         </ul>
-                        If you're having difficulty paying, please contact us to discuss payment options or potential relief
-                        programs.
+                        <p class="mt-2">Number of fire wardens by risk level:</p>
+                        <ul class="list-disc list-inside mt-2">
+                            <li>Low-risk: one trained fire warden for 20 occupants</li>
+                            <li>Medium-risk: one trained fire warden for every 15 occupants</li>
+                            <li>High-risk: one fire warden for every 8 occupants</li>
+                        </ul>
+                        <p class="mt-2">A business must assess its risk level.</p>
                     </div>
                 </div>
 
-                <div class="pb-4">
+                <div class="border-b border-gray-200 pb-4">
                     <button @click="activeAccordion = activeAccordion === 4 ? null : 4"
                         class="flex justify-between items-center w-full p-3 transition-colors hover:bg-gray-100 rounded-md focus:outline-none">
-                        <span class="font-medium text-gray-700">Can I appeal a levy decision?</span>
+                        <span class="font-medium text-gray-700">What is a Lagos State Fire Levy?</span>
                         <svg :class="{ 'rotate-180': activeAccordion === 4 }"
                             class="w-5 h-5 transition-transform transform" xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 20 20" fill="currentColor">
@@ -240,20 +248,74 @@
                         x-transition:leave="transition ease-in duration-300"
                         x-transition:leave-start="opacity-100 transform scale-100"
                         x-transition:leave-end="opacity-0 transform scale-95" class="mt-2 text-gray-600">
-                        Yes, you have the right to appeal a levy decision. Here's the process:
+                        A Lagos State fire levy is a tax or fee imposed on businesses to fund fire prevention, protection,
+                        and emergency services in Lagos State.
+                    </div>
+                </div>
+
+                <div class="border-b border-gray-200 pb-4">
+                    <button @click="activeAccordion = activeAccordion === 5 ? null : 5"
+                        class="flex justify-between items-center w-full p-3 transition-colors hover:bg-gray-100 rounded-md focus:outline-none">
+                        <span class="font-medium text-gray-700">Services Covered by Fire Levy</span>
+                        <svg :class="{ 'rotate-180': activeAccordion === 5 }"
+                            class="w-5 h-5 transition-transform transform" xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    <div x-show="activeAccordion === 5" x-transition:enter="transition ease-out duration-300"
+                        x-transition:enter-start="opacity-0 transform scale-95"
+                        x-transition:enter-end="opacity-100 transform scale-100"
+                        x-transition:leave="transition ease-in duration-300"
+                        x-transition:leave-start="opacity-100 transform scale-100"
+                        x-transition:leave-end="opacity-0 transform scale-95" class="mt-2 text-gray-600">
+                        The Lagos State Fire Levy covers:
+                        <ul class="list-disc list-inside mt-2">
+                            <li>Fire prevention</li>
+                            <li>Fire suppression</li>
+                            <li>Emergency medical response</li>
+                            <li>Rescue operations</li>
+                            <li>Fire safety education</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="pb-4">
+                    <button @click="activeAccordion = activeAccordion === 6 ? null : 6"
+                        class="flex justify-between items-center w-full p-3 transition-colors hover:bg-gray-100 rounded-md focus:outline-none">
+                        <span class="font-medium text-gray-700">Fire Safety Clearance Certificate Procedure</span>
+                        <svg :class="{ 'rotate-180': activeAccordion === 6 }"
+                            class="w-5 h-5 transition-transform transform" xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    <div x-show="activeAccordion === 6" x-transition:enter="transition ease-out duration-300"
+                        x-transition:enter-start="opacity-0 transform scale-95"
+                        x-transition:enter-end="opacity-100 transform scale-100"
+                        x-transition:leave="transition ease-in duration-300"
+                        x-transition:leave-start="opacity-100 transform scale-100"
+                        x-transition:leave-end="opacity-0 transform scale-95" class="mt-2 text-gray-600">
+                        Steps to obtain Fire Safety Clearance Certificate:
                         <ol class="list-decimal list-inside mt-2">
-                            <li>Submit a written appeal within 30 days of receiving the levy notice</li>
-                            <li>Clearly explain the reasons for your appeal and provide supporting documentation</li>
-                            <li>The appeals committee will review your case</li>
-                            <li>You'll be notified of the decision within 60 days</li>
+                            <li>Register your business online</li>
+                            <li>Search for and pay required fees for your business sector</li>
+                            <li>List all business branches in Lagos</li>
+                            <li>Pay required fees through the portal</li>
+                            <li>If required, visit accredited consultants for safety equipment certification</li>
+                            <li>Gather and upload required documents and certificates</li>
+                            <li>Request facility visitation</li>
+                            <li>Fire Levy certificate will be approved alongside the fire safety certificate after
+                                inspection</li>
                         </ol>
-                        Note that filing an appeal does not automatically suspend your obligation to pay the levy. Consult
-                        with a tax professional for guidance on your specific situation.
                     </div>
                 </div>
             </div>
         </section>
-
 
         <section class="mt-12 bg-white p-6 rounded-lg shadow-md">
             <h3 class="text-2xl font-semibold mb-6 text-green-600">Regional Offices</h3>
