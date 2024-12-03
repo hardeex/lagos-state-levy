@@ -118,20 +118,41 @@
                 const paginatedData = accountHistory.slice(startIndex, endIndex);
 
                 // Loop through the paginated data and add rows to the table
+                // paginatedData.forEach((entry, index) => {
+                //     const row = `
+        //         <tr class="border-b hover:bg-gray-50">
+        //             <td class="px-4 py-2">${startIndex + index + 1}</td> <!-- S/N -->
+        //             <td class="px-4 py-2">${formatDate(entry.created_at)}</td> <!-- Date -->
+        //             <td class="px-4 py-2">${entry.lparticulars}</td> <!-- Particulars -->
+        //             <td class="px-4 py-2">${entry.lref}</td> <!-- Reference -->
+        //             <td class="px-4 py-2">${entry.ldr}</td> <!-- Levy -->
+        //             <td class="px-4 py-2">${entry.lcr || '0'}</td> <!-- Payment -->
+        //             <td class="px-4 py-2">${entry.ldr - (entry.lcr || 0)}</td> <!-- Balance -->
+        //             <td class="px-4 py-2">${entry.lcomment || 'N/A'}</td> <!-- Data (comment as placeholder for Data) -->
+        //         </tr>
+        //     `;
+                //     tableBody.innerHTML += row; // Append the row to the table body
+                // });
+
+                let balance = 0;
+
                 paginatedData.forEach((entry, index) => {
+                    balance += entry.ldr;
+                    balance -= entry.lcr ?? 0;
+
                     const row = `
-                        <tr class="border-b hover:bg-gray-50">
-                            <td class="px-4 py-2">${startIndex + index + 1}</td> <!-- S/N -->
-                            <td class="px-4 py-2">${formatDate(entry.created_at)}</td> <!-- Date -->
-                            <td class="px-4 py-2">${entry.lparticulars}</td> <!-- Particulars -->
-                            <td class="px-4 py-2">${entry.lref}</td> <!-- Reference -->
-                            <td class="px-4 py-2">${entry.ldr}</td> <!-- Levy -->
-                            <td class="px-4 py-2">${entry.lcr || '0'}</td> <!-- Payment -->
-                            <td class="px-4 py-2">${entry.ldr - (entry.lcr || 0)}</td> <!-- Balance -->
-                            <td class="px-4 py-2">${entry.lcomment || 'N/A'}</td> <!-- Data (comment as placeholder for Data) -->
-                        </tr>
-                    `;
-                    tableBody.innerHTML += row; // Append the row to the table body
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="px-4 py-2">${startIndex + index + 1}</td>
+                    <td class="px-4 py-2">${formatDate(entry.created_at)}</td>
+                    <td class="px-4 py-2">${entry.lparticulars}</td>
+                    <td class="px-4 py-2">${entry.lref}</td>
+                    <td class="px-4 py-2">${entry.ldr}</td>
+                    <td class="px-4 py-2">${entry.lcr || '0'}</td>
+                    <td class="px-4 py-2">${balance}</td>
+                    <td class="px-4 py-2">${entry.lcomment || 'N/A'}</td>
+                </tr>
+            `;
+                    tableBody.innerHTML += row;
                 });
 
                 // Update pagination controls

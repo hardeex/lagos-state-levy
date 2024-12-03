@@ -16,7 +16,7 @@ Route::post('/api/business/load-subsector', [AuthenticationController::class, 'l
 // OTP verification routes
 Route::get('/register/otp-verify', [AuthenticationController::class, 'verifyOTP'])->name('auth.user-otp-verify');
 Route::post('/api/verify-otp', [AuthenticationController::class, 'verifyOTPSubmit'])->name('auth.otp-verify-submit');
-Route::post('/api/resend-otp', [AuthenticationController::class, 'resendOTP'])->name('auth.resend-otp');
+Route::post('/api/resend-otp', [AuthenticationController::class, 'resendOTPSubmit'])->name('otp.resend');
 
 // user authentication routes
 Route::get('/login', [AuthenticationController::class, 'loginUser'])->name('auth.login-user');
@@ -31,16 +31,20 @@ Route::post('/api/change-password', [AuthenticationController::class, 'initiateP
 // declaration routes
 Route::get('/declaration', [AuthenticationController::class, 'declaration'])->name('auth.declaration');
 Route::post('/api/declaration', [AuthenticationController::class, 'storeDeclaration'])->name('auth.declaration-submit');
+Route::get('/list-branches', [AuthenticationController::class, 'listBranchesPage'])->name('auth.list-branches');
 Route::delete('/delete-branch', [AuthenticationController::class, 'deleteBranch'])->name('auth.delete-branch');
 Route::post('/final-declaration', [AuthenticationController::class, 'finalDeclaration'])->name('auth.final-declaration');
 Route::post('/api/business/building-types', [AuthenticationController::class, 'getBuildingTypes']);
 Route::get('/business/profile', [AuthenticationController::class, 'getBusinessProfile'])->name('business.profile');
+Route::get('/show-business/profile', [AuthenticationController::class, 'showBusinessProfile'])->name('user.profile');
 Route::get('/view-branches', [AuthenticationController::class, 'viewBranchesForm'])->name('auth.viewBranches');
 Route::post('/api/view-branches', [AuthenticationController::class, 'viewBranches'])->name('auth.viewBranches-submit');
 Route::get('/accounting', [AuthenticationController::class, 'billing'])->name('auth.billing');
 Route::get('/official-returns', [AuthenticationController::class, 'officialReturns'])->name('auth.official-returns');
 Route::get('/receipt', [AuthenticationController::class, 'receipt'])->name('auth.receipt');
 Route::get('/upload-receipt', [AuthenticationController::class, 'uploadReceipt'])->name('auth.upload-receipt');
+Route::post('/api/upload-receipt', [AuthenticationController::class, 'uploadDocument'])->name('auth.upload-document');
+Route::post('/api/get-document', [AuthenticationController::class, 'getDocument'])->name('auth.get-document');
 Route::get('/invoice-list', [AuthenticationController::class, 'invoiceList'])->name('auth.invoice-list');
 Route::get('/api/invoice-list', [AuthenticationController::class, 'storeInvoiceList'])->name('auth.generate-invoice');
 Route::get('/invoice/{invoiceId}', [AuthenticationController::class, 'viewInvoice'])->name('invoice.view');
@@ -72,6 +76,8 @@ Route::get('/consultant-carde', [GeneralController::class, 'carde'])->name('user
 // unconfirmed routes
 Route::get('/support', [GeneralController::class, 'support'])->name('user.support');
 Route::get('apply-for-certificate', [GeneralController::class, 'applyCertificate'])->name('user.certtificate');
+Route::post('/start-application', [AuthenticationController::class, 'startApplication'])->name('user.application');
+Route::post('application-list', [AuthenticationController::class, 'applicationList'])->name('user.application-list');
 Route::get('/requirement', [GeneralController::class, 'requirements'])->name('user.requirement');
 Route::get('/consultancy/fee', [GeneralController::class, 'consultancyFee'])->name('user.consultancy-fee');
 Route::get('/consultancy-form', [GeneralController::class, 'consultancyForm'])->name('user.training-fee');

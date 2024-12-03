@@ -1,5 +1,5 @@
 @extends('dashboard.base')
-@Section('title', 'Upload Receipt')
+@Section('title', 'Branches List')
 
 
 @section('sidebar')
@@ -8,5 +8,9 @@
 
 
 @section('content')
-    @include('partials.upload-receipt')
+    @include('partials.branhes-list')
 @endsection
+
+
+
+

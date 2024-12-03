@@ -40,15 +40,6 @@
 
             <form action="{{ route('auth.otp-verify-submit') }}" method="POST">
                 @csrf
-                {{-- <div class="mb-4">
-                    <label for="business_email" class="block text-sm font-medium text-gray-700 mb-2">
-                        Business Email
-                    </label>
-                    <input type="email" id="business_email" name="business_email"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        required value="{{ old('business_email') }}">
-                </div> --}}
-
                 <div class="mb-4">
                     <label for="business_email" class="block text-sm font-medium text-gray-700 mb-2">
                         Business Email
@@ -87,12 +78,6 @@
                 Didn't receive the OTP?
                 <a href="#" class="text-blue-500 hover:underline" id="resend-link">Resend OTP</a>
             </p>
-
-            <form id="resend-form" action="{{ route('auth.resend-otp') }}" method="POST" class="hidden">
-                @csrf
-                <input type="hidden" name="verification_method" id="resend_verification_method" value="email">
-                <input type="hidden" name="business_email" id="resend_business_email" value="">
-            </form>
         </div>
     </div>
 
@@ -100,11 +85,11 @@
         document.addEventListener('DOMContentLoaded', function() {
             const verificationMethod = document.getElementById('verification_method');
             const otpLabel = document.getElementById('otpLabel');
-            const resendForm = document.getElementById('resend-form');
             const resendLink = document.getElementById('resend-link');
             const businessEmail = document.getElementById('business_email');
-            const resendBusinessEmail = document.getElementById('resend_business_email');
+            const resendForm = document.getElementById('resend-form');
             const resendVerificationMethod = document.getElementById('resend_verification_method');
+            const resendBusinessEmail = document.getElementById('resend_business_email');
 
             // Update OTP label when verification method changes
             verificationMethod.addEventListener('change', function() {
@@ -139,4 +124,11 @@
             });
         });
     </script>
+
+    <form id="resend-form" action="{{ route('otp.resend') }}" method="POST" class="hidden">
+        @csrf
+        <input type="hidden" name="verification_method" id="resend_verification_method" value="email">
+        <input type="hidden" name="business_email" id="resend_business_email"
+            value="{{ old('business_email', $businessEmail) }}">
+    </form>
 @endsection

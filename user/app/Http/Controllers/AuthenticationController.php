@@ -33,6 +33,16 @@ class AuthenticationController extends Controller
 
     public function declaration()
     {
+
+        // Fetch the business profile
+        $profile = $this->getBusinessProfile();
+
+        // Check if the profile is successfully retrieved and if the ldeclarations field is YES
+        if ($profile && isset($profile['ldeclarations']) && $profile['ldeclarations'] === 'YES') {
+            // If ldeclarations is YES, redirect to the dashboard
+            return redirect()->route('auth.dashboard');
+        }
+
         // Fetch branches before displaying the page
         $branches = $this->fetchBranches();
 
@@ -141,6 +151,20 @@ class AuthenticationController extends Controller
     }
 
 
+    public function listBranchesPage(Request $request)
+    {
+        $branches = $this->fetchBranches();
+
+        if ($branches) {
+            // print_r($branches);
+            // exit();
+
+
+            return view('auth.branches-list', compact('branches'));
+        } else {
+            return redirect()->back()->with('error', 'Could not fetch business profile');
+        }
+    }
 
 
     private function fetchBranches($batch = 1)
@@ -230,115 +254,6 @@ class AuthenticationController extends Controller
     }
 
 
-
-    public function finalDeclarationORIGINAL(Request $request)
-    {
-        Log::info('Business final declaration method is called');
-
-        try {
-            // Get stored credentials
-            $email = Session::get('business_email');
-            $password = Session::get('business_password');
-
-            if (!$email || !$password) {
-                Log::warning('No stored credentials found for final declaration');
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Authentication required. Please log in again.'
-                ], 401);
-            }
-
-            // First fetch and verify branches
-            $branches = $this->fetchBranches();
-
-            // Log branch verification
-            Log::info('Verifying branches before final declaration:', [
-                'branch_count' => count($branches),
-                'cached_count' => count(Session::get('cached_branches', [])),
-                'email' => $email
-            ]);
-
-            if (empty($branches)) {
-                // Try to get from cache
-                $branches = Session::get('cached_branches', []);
-                if (empty($branches)) {
-                    return response()->json([
-                        'status' => 'error',
-                        'message' => 'No branches found. Please add at least one branch before submitting.'
-                    ], 404);
-                }
-            }
-
-            // Proceed with final declaration
-            $apiUrl = config('api.base_url') . '/business/finaldeclearation';
-
-            $payload = [
-                'email' => $email,
-                'password' => $password,
-                'branches' => $branches
-            ];
-
-            Log::info('Submitting final declaration:', [
-                'email' => $email,
-                'branch_count' => count($branches)
-            ]);
-
-            $response = $this->client->post($apiUrl, [
-                'headers' => [
-                    'Content-Type' => 'application/json',
-                    'Accept' => 'application/json',
-                ],
-                'json' => $payload
-            ]);
-
-            // Get the status code and response body
-            $statusCode = $response->getStatusCode();
-            $responseBody = json_decode($response->getBody()->getContents(), true);
-
-            // Log the full response from the API
-            Log::info('Final declaration response:', [
-                'status_code' => $statusCode,
-                'response' => $responseBody
-            ]);
-
-            // Check if the response status is success (200 OK)
-            if ($statusCode === 200) {
-                // Log all the response data to see everything
-                Log::info('Final Declaration Successful. Full Data:', $responseBody);
-
-                // Clear cached branches after successful submission
-                Session::forget('cached_branches');
-
-                // Set session variable to indicate declaration completed
-                Session::put('declaration_completed', true);
-
-                return response()->json([
-                    'status' => 'success',
-                    'message' => $responseBody['message'] ?? 'Declarations registered successfully!',
-                    'branch_count' => count($branches),
-                    'data' => $responseBody // Return the full data from the response here
-                ]);
-            }
-
-            // If the status code is not 200, return an error message with the status code
-            return response()->json([
-                'status' => 'error',
-                'message' => $responseBody['message'] ?? 'Failed to process declaration',
-                'response' => $responseBody
-            ], $statusCode);
-        } catch (\Exception $e) {
-            // Log any exceptions
-            Log::error('Error in final declaration', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return response()->json([
-                'status' => 'error',
-                'message' => 'An unexpected error occurred. Please try again later.'
-            ], 500);
-        }
-    }
 
 
 
@@ -736,48 +651,76 @@ class AuthenticationController extends Controller
     }
 
 
-    public function resendOTP(Request $request)
+    public function resendOTPSubmit(Request $request)
     {
-        // Validate the request
+        Log::info('OTP resend method called');
+
+        // Validate the request to ensure the email is passed
         $validatedData = $request->validate([
-            'verification_method' => ['required', 'in:email,phone'],
             'business_email' => ['required', 'email'],
+            'verification_method' => ['required', 'in:email,phone'],
         ]);
 
+        // Retrieve the email from the session
+        $sessionEmail = session('business_email');
+
+        // Ensure the email from the request matches the session email
+        if ($validatedData['business_email'] !== $sessionEmail) {
+            return redirect()->back()->withErrors(['error' => 'Email mismatch. Please try again.'])->withInput();
+        }
+
         $client = new Client();
-        $apiUrl = config('api.base_url') . '/resendotp';
+        $apiUrl = config('api.base_url') . '/emailotp/resend';
 
         try {
+            // Log the validated data
+            Log::info('Validated data for resend OTP:', $validatedData);
+
+            // Prepare the payload
             $payload = [
-                'business_email' => $validatedData['business_email'],
-                'verification_method' => $validatedData['verification_method'],
+                'email' => $sessionEmail // Use the session email
             ];
 
+            // Log the payload before making the API call
+            Log::info('Payload for resend OTP API request:', $payload);
+
+            // Make the API call to resend OTP
             $response = $client->post($apiUrl, [
                 'headers' => ['Content-Type' => 'application/json'],
                 'json' => $payload,
             ]);
 
+            // Log the API response
             $responseData = json_decode($response->getBody(), true);
+            Log::info('API response for resend OTP received:', $responseData);
 
             if (isset($responseData['status']) && $responseData['status'] === 'success') {
-                return redirect()->back()
-                    ->with('success', 'OTP has been resent successfully.');
+                return redirect()->back()->with('success', 'OTP resent successfully!');
             }
 
+            // Log the error message if resend OTP fails
+            Log::warning('Resend OTP failed:', [
+                'error_message' => $responseData['message'] ?? 'Unknown error.',
+                'payload' => $payload
+            ]);
+
             return redirect()->back()
-                ->withErrors(['error' => $responseData['message'] ?? 'Failed to resend OTP.']);
+                ->withErrors(['error' => $responseData['message'] ?? 'Failed to resend OTP.'])
+                ->withInput();
         } catch (RequestException $e) {
-            Log::error('OTP resend failed', [
+            Log::error('Resend OTP failed', [
                 'error' => $e->getMessage(),
                 'payload' => $payload,
                 'response' => $e->hasResponse() ? (string) $e->getResponse()->getBody() : null,
             ]);
 
             return redirect()->back()
-                ->withErrors(['error' => 'Failed to resend OTP. Please try again.']);
+                ->withErrors(['error' => 'Failed to resend OTP. Please try again.'])
+                ->withInput();
         }
     }
+
+
 
     public function loginUser()
     {
@@ -1043,6 +986,9 @@ class AuthenticationController extends Controller
                 // Save the profile data and other necessary details to session
                 $profile_data = $responseData['data'];
 
+                // print_r($responseData);
+                // exit();
+
                 // Save the industry and subsector in session separately
                 Session::put('lindustry', $profile_data['lindustry']);
                 Session::put('lsubsector', $profile_data['lsubsector']);
@@ -1070,85 +1016,25 @@ class AuthenticationController extends Controller
         }
     }
 
-
-    public function getBusinessProfile2()
+    public function showBusinessProfile()
     {
-        Log::info('Fetching business profile');
+        // Fetch the business profile data
+        $profile = $this->getBusinessProfile();
 
-        // Ensure the user is logged in or has a valid session
-        $email = Session::get('business_email');
-        $password = Session::get('business_password');
-        $industry = Session::get('selected_industry');  // Retrieve selected industry
-        $subsector = Session::get('selected_subsector'); // Retrieve selected subsector
-
-        // If email, password, or industry/subsector are missing, log and return an error response
-        if (!$email || !$password || !$industry || !$subsector) {
-            Log::warning('User not logged in or missing credentials');
-            //return null; 
-            return redirect()->route('auth.login-user')
-                ->withErrors(['error' => 'User not logged in or missing credentials.'])
-                ->withInput();
-        }
-
-        // Create the API client
-        $client = new Client();
-        $apiUrl = config('api.base_url') . '/business/profile';
-
-        // Prepare the payload to send to the API
-        $payload = [
-            'email' => $email,
-            'password' => $password,
-            'industry' => $industry,   // Include the industry
-            'subsector' => $subsector  // Include the subsector
-        ];
-
-        // Prepare headers for the request
-        $headers = [
-            'Content-Type' => 'application/json',
-            'Accept' => 'application/json',
-        ];
-
-        try {
-            // Send the request to the API with the payload and headers
-            $response = $client->post($apiUrl, [
-                'headers' => $headers,
-                'json' => $payload // Send the email, password, industry, and subsector in the JSON body
-            ]);
-
-            // Decode the response from the API
-            $responseData = json_decode($response->getBody(), true);
-
-            // Check if the response is valid
-            if (isset($responseData['status']) && $responseData['status'] === 'success') {
-                // Save the profile data to session
-                $profile_data = $responseData['data'];
-
-                // Log the profile data being stored in session
-                Log::info('Saved profile data to session', [
-                    'profile_data' => $profile_data
-                ]);
-
-                // Save industry and subsector in session (from API response)
-                Session::put('lindustry', $profile_data['lindustry']);
-                Session::put('lsubsector', $profile_data['lsubsector']);
-
-                // Optionally, log the industry and subsector separately if needed
-                Log::info('Saved business profile industry and subsector to session', [
-                    'lindustry' => $profile_data['lindustry'],
-                    'lsubsector' => $profile_data['lsubsector']
-                ]);
-
-                return $profile_data; // Return the profile data to be used further
-            } else {
-                Log::warning('Failed to retrieve business profile', ['response' => $responseData]);
-                return null; // Return null if API call failed
-            }
-        } catch (\Exception $e) {
-            // Log any errors or exceptions
-            Log::error('Error fetching business profile', ['exception' => $e->getMessage()]);
-            return null; // Return null if there's an error
+        // Check if profile data was successfully retrieved
+        if ($profile) {
+            // print_r($profile);
+            // exit();
+            // Pass the profile data to the view
+            return view('auth.business_profile', compact('profile'));
+        } else {
+            // If no profile data, redirect to an error page or show a message
+            return redirect()->back()->with('error', 'Could not fetch business profile');
         }
     }
+
+
+
 
 
     public function logoutUser(Request $request)
@@ -1238,87 +1124,141 @@ class AuthenticationController extends Controller
         return view('auth.change-password');
     }
 
+    // public function initiatePasswordReset(Request $request)
+    // {
+    //     Log::info('Initiate password reset method is called');
+
+    //     try {
+    //         // Validate incoming request data
+    //         $validatedData = $request->validate([
+    //             'email' => ['required', 'email'],
+    //         ]);
+
+    //         // Prepare the payload for the API
+    //         $payload = [
+    //             'email' => $validatedData['email'],
+    //         ];
+
+    //         // Log the final payload to inspect the data being sent
+    //         Log::info('Final payload being sent to API', ['payload' => $payload]);
+
+    //         $client = new Client([
+    //             'timeout' => 30,
+    //             'connect_timeout' => 5,
+    //             'http_errors' => false,
+    //             'verify' => false
+    //         ]);
+
+    //         $apiUrl = config('api.base_url') . '/business/initiatepasswordreset';
+    //         Log::debug('Attempting API call to: ' . $apiUrl);
+
+    //         $response = $client->post($apiUrl, [
+    //             'headers' => [
+    //                 'Content-Type' => 'application/json',
+    //                 'Accept' => 'application/json',
+    //             ],
+    //             'json' => $payload
+    //         ]);
+
+    //         $statusCode = $response->getStatusCode();
+    //         $responseBody = $response->getBody()->getContents();
+
+    //         // Log API response for debugging
+    //         Log::info('API Response', [
+    //             'statusCode' => $statusCode,
+    //             'body' => $responseBody
+    //         ]);
+
+    //         if ($statusCode === 200) {
+    //             $responseData = json_decode($responseBody, true);
+    //             Log::info('Password reset email sent successfully', ['data' => $responseData['data']]);
+    //             return redirect()->route('auth.login')
+    //                 ->with('success', 'Password reset email sent successfully! Please check your inbox.');
+    //         }
+
+    //         if ($statusCode === 404) {
+    //             $responseData = json_decode($responseBody, true);
+    //             Log::warning('Email not found', ['response' => $responseData]);
+    //             return redirect()->back()
+    //                 ->withErrors(['error' => $responseData['message'] ?? 'Email not found'])
+    //                 ->withInput();
+    //         }
+
+    //         if ($statusCode === 500) {
+    //             Log::error('Internal server error', ['response' => $responseBody]);
+    //             return redirect()->back()
+    //                 ->withErrors(['error' => 'Error sending password reset email. Please try again later.'])
+    //                 ->withInput();
+    //         }
+
+    //         // Handle other unexpected statuses
+    //         Log::error('Unexpected status code', ['status_code' => $statusCode, 'response' => $responseBody]);
+    //         return redirect()->back()
+    //             ->withErrors(['error' => 'An unexpected error occurred. Please try again later.'])
+    //             ->withInput();
+    //     } catch (\Exception $e) {
+    //         Log::error('Unexpected error', [
+    //             'message' => $e->getMessage(),
+    //             'trace' => $e->getTraceAsString()
+    //         ]);
+
+    //         return redirect()->back()
+    //             ->withErrors(['error' => 'An unexpected error occurred. Please try again later.'])
+    //             ->withInput();
+    //     }
+    // }
+
     public function initiatePasswordReset(Request $request)
     {
-        Log::info('Initiate password reset method is called');
+        Log::info('Password reset initiation method called');
+
+        // Retrieve the email from the session
+        $sessionEmail = session('business_email');
+
+        // Check if the email exists in the session
+        if (!$sessionEmail) {
+            Log::warning('No email found in session for password reset');
+            return redirect()->route('auth.login-user')
+                ->with('error', 'Your session has expired or you are not logged in.');
+        }
+
+        // Prepare the payload with the session email
+        $payload = [
+            'email' => $sessionEmail,
+        ];
+
+        // Proceed with the API request
+        $client = new Client();
+        $apiUrl = config('api.base_url') . '/business/initiatepasswordreset';
 
         try {
-            // Validate incoming request data
-            $validatedData = $request->validate([
-                'email' => ['required', 'email'],
-            ]);
-
-            // Prepare the payload for the API
-            $payload = [
-                'email' => $validatedData['email'],
-            ];
-
-            // Log the final payload to inspect the data being sent
-            Log::info('Final payload being sent to API', ['payload' => $payload]);
-
-            $client = new Client([
-                'timeout' => 30,
-                'connect_timeout' => 5,
-                'http_errors' => false,
-                'verify' => false
-            ]);
-
-            $apiUrl = config('api.base_url') . '/business/initiatepasswordreset';
-            Log::debug('Attempting API call to: ' . $apiUrl);
-
             $response = $client->post($apiUrl, [
-                'headers' => [
-                    'Content-Type' => 'application/json',
-                    'Accept' => 'application/json',
-                ],
-                'json' => $payload
+                'headers' => ['Content-Type' => 'application/json'],
+                'json' => $payload,
             ]);
 
-            $statusCode = $response->getStatusCode();
-            $responseBody = $response->getBody()->getContents();
+            $responseData = json_decode($response->getBody(), true);
 
-            // Log API response for debugging
-            Log::info('API Response', [
-                'statusCode' => $statusCode,
-                'body' => $responseBody
-            ]);
+            // Log the response data
+            Log::info('API response for password reset initiation:', $responseData);
 
-            if ($statusCode === 200) {
-                $responseData = json_decode($responseBody, true);
-                Log::info('Password reset email sent successfully', ['data' => $responseData['data']]);
-                return redirect()->route('auth.login')
-                    ->with('success', 'Password reset email sent successfully! Please check your inbox.');
+            if ($responseData['status'] === 'success') {
+                // Redirect to the password reset form with success message
+                return redirect()->route('auth.change-password-form')
+                    ->with('success', 'Password reset email sent successfully!');
             }
 
-            if ($statusCode === 404) {
-                $responseData = json_decode($responseBody, true);
-                Log::warning('Email not found', ['response' => $responseData]);
-                return redirect()->back()
-                    ->withErrors(['error' => $responseData['message'] ?? 'Email not found'])
-                    ->withInput();
-            }
-
-            if ($statusCode === 500) {
-                Log::error('Internal server error', ['response' => $responseBody]);
-                return redirect()->back()
-                    ->withErrors(['error' => 'Error sending password reset email. Please try again later.'])
-                    ->withInput();
-            }
-
-            // Handle other unexpected statuses
-            Log::error('Unexpected status code', ['status_code' => $statusCode, 'response' => $responseBody]);
-            return redirect()->back()
-                ->withErrors(['error' => 'An unexpected error occurred. Please try again later.'])
-                ->withInput();
+            // If API returns an error, show the error message
+            return redirect()->back()->withErrors(['error' => $responseData['message'] ?? 'Failed to initiate password reset.']);
         } catch (\Exception $e) {
-            Log::error('Unexpected error', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+            // Log the exception error
+            Log::error('Password reset initiation failed', [
+                'error' => $e->getMessage(),
+                'payload' => $payload,
             ]);
 
             return redirect()->back()
-                ->withErrors(['error' => 'An unexpected error occurred. Please try again later.'])
-                ->withInput();
+                ->withErrors(['error' => 'An error occurred while initiating the password reset. Please try again later.']);
         }
     }
 
@@ -2092,7 +2032,7 @@ class AuthenticationController extends Controller
             // Handle the response based on status code
             if ($statusCode === 200) {
                 // Document uploaded successfully
-                return redirect()->route('auth.document-list')->with('success', 'Document uploaded successfully.');
+                return redirect()->back()->with('success', 'Document uploaded successfully.');
             }
 
             // Handle error from the API
@@ -2113,7 +2053,9 @@ class AuthenticationController extends Controller
     }
 
 
-    public function getDoc(Request $request)
+
+
+    public function getDocument(Request $request)
     {
         Log::info('Attempting to fetch document');
 
@@ -2200,6 +2142,10 @@ class AuthenticationController extends Controller
     }
 
 
+
+
+
+
     public function viewBranches(Request $request)
     {
         Log::info('View branches method is called');
@@ -2264,7 +2210,7 @@ class AuthenticationController extends Controller
             switch ($statusCode) {
                 case 200:
                     Log::info('Branches retrieved successfully', ['response' => $responseData]);
-                    return view('auth.view', ['branches' => $responseData['data']]); // Update the view path as necessary
+                    return view('auth.view', ['branches' => $responseData['data']]);
                 case 401:
                     Log::warning('Unauthorized access', ['response' => $responseData]);
                     return redirect()->route('auth.login')
@@ -2296,6 +2242,10 @@ class AuthenticationController extends Controller
                 ->withInput();
         }
     }
+
+
+
+
 
     public function deleteBranch(Request $request)
     {
@@ -2555,7 +2505,7 @@ class AuthenticationController extends Controller
                 'body' => $responseBody
             ]);
 
-            // Check the response status code
+            //Check the response status code
             if ($statusCode === 200) {
                 $responseData = json_decode($responseBody, true);
 
@@ -2572,9 +2522,20 @@ class AuthenticationController extends Controller
                 }
             }
 
+
             if ($statusCode === 401) {
                 $responseData = json_decode($responseBody, true);
+                // Debugging log for specific balance fields
+                Log::info('Balance Information', [
+                    'lcr' => $responseData['data'][0]['lcr'], // Just log lcr for debugging
+                    'ldr' => $responseData['data'][0]['ldr']
+                ]);
+                Log::info('API Response Data', ['data' => $responseData['data']]);
+
                 Log::warning('Unauthorized access', ['response' => $responseData]);
+
+                print_r($responseData);
+                exit();
                 return redirect()->back()
                     ->withErrors(['error' => $responseData['message'] ?? 'Unauthorized access'])
                     ->withInput();
@@ -3250,14 +3211,210 @@ class AuthenticationController extends Controller
 
 
 
+    // public function dashboard()
+    // {
+    //     // Check if declaration has been completed
+    //     if (!Session::get('declaration_completed', false)) {
+    //         return redirect()->route('auth.declaration')->with('error', 'You must complete the final declaration before accessing the dashboard.');
+    //     }
+
+    //     return view('auth.dashboard');
+    // }
+
+
     public function dashboard()
     {
-        // Check if declaration has been completed
-        if (!Session::get('declaration_completed', false)) {
-            return redirect()->route('auth.declaration')->with('error', 'You must complete the final declaration before accessing the dashboard.');
+        // Fetch the business profile
+        $profile = $this->getBusinessProfile();
+
+        // Check if the profile is successfully retrieved and if the ldeclarations field is YES
+        if ($profile && isset($profile['ldeclarations']) && $profile['ldeclarations'] === 'YES') {
+            // If ldeclarations is YES, proceed to the dashboard
+            return view('auth.dashboard');
+            // return redirect()->route('auth.declaration');
+        } else {
+            // If ldeclarations is not YES, redirect to the declaration page
+            return redirect()->route('auth.declaration');
+            //return view('auth.dashboard');
+        }
+    }
+
+
+
+    public function startApplication(Request $request)
+    {
+        // Log the incoming request for debugging (request body and session data)
+        Log::info('Incoming application request', [
+            'request' => $request->all(),
+            'session_email' => Session::get('business_email'),
+            'session_password' => Session::get('business_password'),
+        ]);
+
+        // Ensure email and password are stored in the session before making the request
+        $email = Session::get('business_email');
+        $password = Session::get('business_password');
+
+        // Validate form data
+        $validatedData = $request->validate([
+            'lyear' => ['required', 'integer'],
+            'lagency' => ['required', 'string'],
+            'applytype' => ['required', 'string'],
+            'bcomment' => ['nullable', 'string'],
+        ]);
+
+        // Log the validated data to inspect it
+        Log::info('Validated application data', [
+            'lyear' => $validatedData['lyear'],
+            'lagency' => $validatedData['lagency'],
+            'applytype' => $validatedData['applytype'],
+            'bcomment' => $validatedData['bcomment'],
+        ]);
+
+        // Create payload for the API request
+        $payload = [
+            'lbizemail' => $email,
+            'lyear' => $validatedData['lyear'],
+            'lagency' => $validatedData['lagency'],
+            'applytype' => $validatedData['applytype'],  // Ensure applytype is captured correctly
+            'bcomment' => $validatedData['bcomment'],
+            'password' => $password,  // Add password from session
+        ];
+
+        // Log the payload to see what is being sent to the API
+        Log::info('Prepared payload for API', [
+            'payload' => $payload
+        ]);
+
+        $client = new Client();
+        $apiUrl = config('api.base_url') . '/business/applicationrequest';
+
+        try {
+            // Log the API request that will be sent
+            Log::info('Sending API request', [
+                'url' => $apiUrl,
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                ],
+                'json_payload' => $payload,
+            ]);
+
+            // Send the request to the API
+            $response = $client->post($apiUrl, [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                ],
+                'json' => $payload,
+            ]);
+
+            // Log the raw response from the API
+            $responseData = json_decode($response->getBody(), true);
+            Log::info('API response received', [
+                'status_code' => $response->getStatusCode(),
+                'response_data' => $responseData
+            ]);
+
+            // Handle the response
+            if ($responseData['status'] === 'success') {
+                return redirect()->back()
+                    ->with('success', 'Application submitted successfully!');
+            } else {
+                // Log any errors that come back from the API
+                Log::warning('API error response', [
+                    'message' => $responseData['message'] ?? 'Unknown error from API'
+                ]);
+                return redirect()->back()->withErrors(['error' => $responseData['message'] ?? 'An error occurred']);
+            }
+        } catch (\Exception $e) {
+            // Log any exceptions that occur during the request
+            Log::error('Error submitting application', [
+                'error_message' => $e->getMessage(),
+                'stack_trace' => $e->getTraceAsString()
+            ]);
+            return redirect()->back()->withErrors(['error' => 'An error occurred while processing your application.']);
+        }
+    }
+
+
+    public function applicationList(Request $request)
+    {
+        // Log the incoming request for debugging
+        Log::info('Incoming application list request', [
+            'session_email' => Session::get('business_email'),
+            'session_password' => Session::get('business_password'),
+        ]);
+
+        // Ensure email and password are stored in the session before making the request
+        $email = Session::get('business_email');
+        $password = Session::get('business_password');
+
+        // Validate email and password session data
+        if (!$email || !$password) {
+            Log::error('Missing email or password in session');
+            return redirect()->back()->withErrors(['error' => 'Email or password is missing from the session.']);
         }
 
-        return view('auth.dashboard');
+        // Create payload for the API request
+        $payload = [
+            'email' => $email,
+            'password' => $password,
+        ];
+
+        // Log the payload to see what is being sent to the API
+        Log::info('Prepared payload for application list API', [
+            'payload' => $payload
+        ]);
+
+        $client = new Client();
+        $apiUrl = config('api.base_url') . '/business/applicationlist';
+
+        try {
+            // Log the API request that will be sent
+            Log::info('Sending API request', [
+                'url' => $apiUrl,
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                ],
+                'json_payload' => $payload,
+            ]);
+
+            // Send the request to the API
+            $response = $client->post($apiUrl, [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                ],
+                'json' => $payload,
+            ]);
+
+            // Log the raw response from the API
+            $responseData = json_decode($response->getBody(), true);
+            Log::info('API response received', [
+                'status_code' => $response->getStatusCode(),
+                'response_data' => $responseData
+            ]);
+
+            // Handle the response
+            if ($responseData['status'] === 'success') {
+                //return the list of applications to the view
+                return view('auth.application-list', ['applications' => $responseData['data']]);
+            } else {
+                // Log any errors that come back from the API
+                Log::warning('API error response', [
+                    'message' => $responseData['message'] ?? 'Unknown error from API'
+                ]);
+                return redirect()->back()->withErrors(['error' => $responseData['message'] ?? 'An error occurred']);
+            }
+        } catch (\Exception $e) {
+            // Log any exceptions that occur during the request
+            Log::error('Error fetching application list', [
+                'error_message' => $e->getMessage(),
+                'stack_trace' => $e->getTraceAsString()
+            ]);
+            return redirect()->back()->withErrors(['error' => 'An error occurred while fetching the application list.']);
+        }
     }
 
 

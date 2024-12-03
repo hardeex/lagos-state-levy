@@ -1,5 +1,5 @@
 @extends('dashboard.base')
-@Section('title', 'Upload Receipt')
+@Section('title', 'My Application')
 
 
 @section('sidebar')
@@ -8,5 +8,5 @@
 
 
 @section('content')
-    @include('partials.upload-receipt')
+    @include('partials.application-list')
 @endsection

@@ -46,14 +46,14 @@
                 <form method="POST" action="{{ route('auth.change-password-submit') }}">
                     @csrf
 
-                    <div class="mb-4">
+                    {{-- <div class="mb-4">
                         <label for="email" class="block text-gray-700 text-sm font-bold mb-2">Email</label>
                         <input type="email" name="email" id="email"
                             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                             required>
-                    </div>
+                    </div> --}}
 
-                    <div class="mb-4">
+                    {{-- <div class="mb-4">
                         <label for="current_password" class="block text-gray-700 text-sm font-bold mb-2">Current
                             Password</label>
                         <div class="relative">
@@ -74,7 +74,7 @@
                         @error('current_password')
                             <p class="text-red-500 text-xs italic mt-2">{{ $message }}</p>
                         @enderror
-                    </div>
+                    </div> --}}
 
                     <div class="mb-4">
                         <label for="password" class="block text-gray-700 text-sm font-bold mb-2">New Password</label>

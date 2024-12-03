@@ -1,5 +1,5 @@
 @extends('dashboard.base')
-@Section('title', 'Declaration')
+@Section('title', 'Clearance')
 
 
 @section('sidebar')
